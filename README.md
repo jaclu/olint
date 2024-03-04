@@ -2,7 +2,7 @@
 
 Olint is a standalone linting tool designed to operate independently of git cycles. It detects available linting tools and scans the entire file tree, starting from the current working directory, to process recently changed files first, regardless of their location.
 
-If a file is successfully linted, Olint saves its filename and the time of its latest change in a cache. On subsequent runs, Olint skips files that haven't changed since the last run.
+If a file is successfully linted, Olint saves its filename and the time of its latest change in a cache. On subsequent runs, Olint skips files that haven't changed.
 
 ## Installation
 
@@ -21,6 +21,13 @@ olint -c 4
 ```
 
 This command checks files changed in the last 4 hours and continues with the next file after linting issues are found.
+
+
+```
+olint -l
+```
+
+This command lists detected linters and displays any default options used. You can override this in a per project .olint.conf file (see below).
 
 ## Supported Linters
 
