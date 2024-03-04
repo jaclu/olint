@@ -1,7 +1,5 @@
 # Olint
 
-**Note: Still in early development - you have been warned...**
-
 Olint is a standalone linting tool designed to operate independently of git cycles. It detects available linting tools and scans the entire file tree, starting from the current working directory, to process recently changed files first, regardless of their location.
 
 If a file is successfully linted, Olint saves its filename and the time of its latest change in a cache. On subsequent runs, Olint skips files that haven't changed since the last run.
