@@ -36,10 +36,13 @@ echo "checking vale:   $fname"
 
 ## Sample .olint.conf file, defining what to ignore
 
+The first two lines are purely optional
+
 ```bash
 
 #!/bin/bash
 # This is sourced. Fake bang-path to help editors and linters
+
 #
 #  Excludes by prefix/suffix
 #
@@ -55,7 +58,7 @@ suffixes+=(
 #  Specifix excludes, use the file name displayed by olint
 #
 excludes+=(
-    ./.git/
+    ./tes_db.sqlite
 )
 
 #
@@ -76,5 +79,8 @@ First line defines cache version
 
 The rest of the cache file is one file per line, sorted in reverse
 chronological order. That means the most reasently changed file comes first.
+
+Next time olint is run, current mtime is compared with what is in the
+cache. If it has not changed, that file is skipped.
 
 each line is: mtime|date|relative filepath
