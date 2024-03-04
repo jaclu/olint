@@ -11,6 +11,9 @@
 # olint cache
 .cache.olint
 
+# per project olint config
+.olint.conf
+
 # defines where deploy will install olint
 .destination
 
