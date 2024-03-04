@@ -8,8 +8,11 @@
 # Exclude files with '#' in their names anywhere in the repository
 **/*#*
 
-# linter olint cache
+# olint cache
 .cache.olint
+
+# defines where deploy will install olint
+.destination
 
 base.py
 nested_abort.sh

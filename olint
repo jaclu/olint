@@ -774,29 +774,30 @@ do_show_stats() {
     # }
 }
 
-show_help() { # Multi OK 1
+show_help() {
     echo "Usage: ${prog_name} [-h] [-c] [-l] [-n] [-v] [number]
+
+Lint all files recursively in reverse chronological order.
 
 Available options:
 
--h  --help      Print this help and exit
--c  --continue  Continues with next file after linter issues are found.
--l  --linters   Lists supported and available linters.
--n  --nocache   Don't use caching for successfully linted files.
--v  --verbose   increase verbosity, multiple -v can be used to
-                increase verbosity level.
-number          Only check files changed in the last number hours.
+-h, --help        Print this help and exit
+-c, --continue    Continue with the next file after linter issues are found.
+-l, --linters     List supported and available linters.
+-n, --nocache     Don't use caching for successfully linted files.
+-v, --verbose     Increase verbosity. Multiple -v flags can be used to
+                  increase verbosity level.
+number            Only check files changed in the last number hours.
 
-lints all files recursevly in reverse chronological order
+Supported linters: shellcheck, checkbashisms, flake8, vale
 
-If a file is succeefully linted, filename and time of latest change is
-saved in a cache (.cache.olint).
-Next time olint is run files that have not been changed are skipped.
+If a file is successfully linted, the filename and time of the latest change
+are saved in a cache (.cache.olint). Next time olint is run, files that have
+not been changed are skipped.
 
-Linters supported: shellcheck, checkbashisms, flake8, vale
-
-.olint.conf can be used to define files that should not be linted,
-see README.md for more info about this file.
+The .olint.conf file can be used to define which linters should be used and
+optionally set specific parameters for them. This file can also define which
+files should be ignored. See README.md for more information about this file.
 "
     exit 0
 }
