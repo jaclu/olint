@@ -65,7 +65,9 @@ export linter_vale="skip_this"
 
 ## .olint.cache
 
-The `.olint.cache` file stores information about recently changed files to optimize Olint's performance. Each line in the cache file contains the file's modification time, date, and relative filepath, sorted in reverse chronological order.
+The `.olint.cache` file stores information about recently changed files
+to optimize Olint's performance, each line in the cache file contains the file's modification time, date,
+and relative filepath, sorted in reverse chronological order.
 
 ## Contributing
 

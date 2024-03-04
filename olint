@@ -454,7 +454,7 @@ display_linter_used() {
     # echo "${file_type}using ${lbl}: ${fname}"
 
     # Check if file_type is not empty
-    if [ -n "${file_type}" ]; then
+    if [[ -n "${file_type}" ]]; then
         # Add a space and dash after file_type if it's not empty
         file_type="${file_type} -"
     else
