@@ -1,51 +1,47 @@
 # Olint
 
-Still in early development - you have been warned...
+**Note: Still in early development - you have been warned...**
 
-The purpose of this linting tool is to work in a standalone fashion,
-not depending on git cycles.
+Olint is a standalone linting tool designed to operate independently of git cycles. It detects available linting tools and scans the entire file tree, starting from the current working directory, to process recently changed files first, regardless of their location.
 
-It first detects available linting tools, then it scans the entire file tree,
-starting at the current working directory, sorting it in reverse chronological
-order, in order to process most recently changed files first.
-Disregarding what folder they are in.
+If a file is successfully linted, Olint saves its filename and the time of its latest change in a cache. On subsequent runs, Olint skips files that haven't changed since the last run.
 
-If a file is succeefully linted, filename and time of its latest change
-is saved in a cache.
-Next time olint is run files that have not been changed are skipped.
+## Installation
 
-If you only want to monitor files that have been recently changed, give an int
-option such as `olint 4` this will only check files changed in the last
-4 hours. The cache for files with older time stamps will be maintained.
+To install Olint, follow these steps:
 
-A config file can be used to define files/folders to be excluded based on
-prefix, suffix and by path relative to the project directory,
-see an example below.
+1. [Download](#) the latest release or clone the repository.
+2. Run ./deploy
+3. Install any missing linters that you intend to use.
 
-## Linters supported
+## Usage
+
+To use Olint, simply run the `olint` command followed by any options or arguments you want to pass. For example:
+
+```
+olint -c 4
+```
+
+This command checks files changed in the last 4 hours and continues with the next file after linting issues are found.
+
+## Supported Linters
+
+Olint supports the following linters out of the box:
 
 - shellcheck
 - checkbashisms
 - flake8
 - vale
 
-echo "checking bash:   $fname"
-echo "checking posix:  $fname"
-echo "checking python: $fname"
-echo "checking vale:   $fname"
+## Configuration
 
-## Sample .olint.conf file, defining what to ignore
-
-The first two lines are purely optional
+You can customize Olint's behavior using a `.olint.conf` file. Here's an example configuration:
 
 ```bash
-
 #!/bin/bash
 # This is sourced. Fake bang-path to help editors and linters
 
-#
-#  Excludes by prefix/suffix
-#
+# Excludes by prefix/suffix
 prefixes+=(
     ./.venv/
 )
@@ -54,33 +50,27 @@ suffixes+=(
     .bas
 )
 
-#
-#  Specifix excludes, use the file name displayed by olint
-#
+# Specific excludes, use the file name displayed by Olint
 excludes+=(
     ./tes_db.sqlite
 )
 
-#
-#  Here cmd path and options passed can be changed.
-#  If a linter shouldn't be used set it to skip_this
-#
+# Define linter commands and options, if you wan't to override the defaults.
+# "skip_this" is a special case and means that this linter will not be used.
 export linter_shellcheck="shellcheck -o all"
 export linter_checkbashisms="/odd/path/checkbashisms"
 export linter_flake8="/odd/path/flake8"
 export linter_vale="skip_this"
-
-
 ```
 
 ## .olint.cache
 
-First line defines cache version
+The `.olint.cache` file stores information about recently changed files to optimize Olint's performance. Each line in the cache file contains the file's modification time, date, and relative filepath, sorted in reverse chronological order.
 
-The rest of the cache file is one file per line, sorted in reverse
-chronological order. That means the most reasently changed file comes first.
+## Contributing
 
-Next time olint is run, current mtime is compared with what is in the
-cache. If it has not changed, that file is skipped.
+Contributions to Olint are welcome! If you find a bug or have a feature request, please open an issue or submit a pull request.
 
-each line is: mtime|date|relative filepath
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
