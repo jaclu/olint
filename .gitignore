@@ -1,0 +1,17 @@
+#
+#  Various temp files
+#
+
+# Editor backup files
+*~
+*.bak
+# Exclude files with '#' in their names anywhere in the repository
+**/*#*
+
+# linter olint cache
+.cache.olint
+
+base.py
+nested_abort.sh
+xterm.js
+tmp/
