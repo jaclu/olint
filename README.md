@@ -49,8 +49,14 @@ Here's an example configuration:
 #!/bin/bash
 # This is sourced. Fake bang-path to help editors and linters
 
+# specific file excluded
+excludes=(
+    ./.cache.olint
+)
+
 # Excludes by prefix/suffix
 prefixes+=(
+    ./.git/
     ./.venv/
 )
 suffixes+=(
