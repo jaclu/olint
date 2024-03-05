@@ -17,7 +17,7 @@
 
 error_msg() {
     #
-    #  Display error, and exit if exit code > -1
+    #  Display error to /dev/stderr, and exit if exit code > -1
     #
     local msg="$1"
     local exit_code="${2:-1}"
@@ -27,10 +27,32 @@ error_msg() {
         echo "error_msg() no param"
         exit 9
     fi
-    # trimmed="$(echo -e "$msg" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^\\n*//' -e 's/\\n*$//')"
-
     printf "\n\nERROR: %s\n\n" "$msg" >&2
     [[ "$exit_code" -gt -1 ]] && exit "$exit_code"
+}
+
+dbg_print() {
+    #
+    #  Displays info to /dev/stderr
+    #
+    local msg="$1"
+    local this_debug_level="${2:-1}"
+    [[ "$debug_level" -ge "$this_debug_level" ]] || return
+    printf "v%s>%*s%s\n" "$this_debug_level" "$dbg_indent" "" "$msg" >&2
+}
+
+select_config_dir() {
+    #
+    #  Selects config location
+    #
+    if [[ -n "$XDG_CONFIG_HOME" ]]; then
+        olint_cfg_dir="$XDG_CONFIG_HOME"/olint
+    else
+        olint_cfg_dir=~/.config/olint
+    fi
+    mkdir -p "$olint_cfg_dir"/plugins || {
+        error_msg "Failed to create folder: $olint_cfg_dir"
+    }
 }
 
 display_time_elapsed() {
@@ -52,18 +74,9 @@ display_time_elapsed() {
     echo
 }
 
-dbg_print() {
-    local msg="$1"
-    local this_debug_level="${2:-1}"
-    # echo ">> dbg_print lvl [$debug_level] this msg [$this_debug_level]" >&2
-    [[ "$debug_level" -ge "$this_debug_level" ]] || return
-    # echo "v$this_debug_level> $msg" >&2
-    printf "v%s>%*s%s\n" "$this_debug_level" "$dbg_indent" "" "$msg" >&2
-}
-
 get_config() {
     local dbg_indent=$dbg_indent
-    local f_config=".olint.conf"
+    local f_config
 
     dbg_print "get_config()"
     ((dbg_indent++)) # increase indent until this returns
@@ -77,30 +90,24 @@ get_config() {
     linter_vale=vale
     excludes=(
         ./.cache.olint
-    ) #  Specifix excludes
+    )           #  Specifix excludes
     prefixes=() # Excludes by prefix
     suffixes=() # Excludes by suffix
 
     #
     #  handling base configuration
     #
-    if [[ -n "$XDG_CONFIG_HOME" ]]; then
-        [[ -d "$XDG_CONFIG_HOME" ]] || {
-            error_msg "XDG_CONFIG_HOME folder does not exist: $XDG_CONFIG_HOME"
-        }
-        conf_default="$XDG_CONFIG_HOME/olint/config"
-    else
-        conf_default=~/.config/olint/config
-    fi
-    [[ -f "$conf_default" ]] && {
-        dbg_print "base configuration: $conf_default"
+    f_config="$olint_cfg_dir"/config
+    [[ -f "$f_config" ]] && {
+        dbg_print "base configuration: $f_config"
         # shellcheck source=/dev/null
-        source "$conf_default" || error_msg "Failed to source default config: $conf_default"
+        source "$f_config" || error_msg "Failed to source default config: $f_config"
     }
 
     #
     #  handling project configuration
     #
+    f_config=".olint.conf"
     if [[ -f "$f_config" ]]; then
         dbg_print "project configuration: $f_config"
         # shellcheck source=/dev/null
@@ -163,10 +170,16 @@ cache_write() {
     dbg_print "cache_write()"
 
     # abort if not using cache
-    $use_cache || return
+    $use_cache || {
+        dbg_print "  aborting due to not using cache"
+        return
+    }
 
     # If no changes have happened, no need to save cache
-    $cache_is_changed || return
+    $cache_is_changed || {
+        dbg_print "  aborting due to no changes"
+        return
+    }
 
     # clear previous cache
     echo "$olint_cache_version" >"$f_cache_file"
@@ -196,7 +209,10 @@ cache_read() {
     ((dbg_indent++)) # increase indent until this returns
 
     # abort if not using cache
-    $use_cache || return
+    $use_cache || {
+        dbg_print "  aborting due to not using cache"
+        return
+    }
 
     # Check if the file exists and is readable
     if [[ -r "$f_cache_file" ]]; then
@@ -385,9 +401,9 @@ mtime_2_date() {
 #===============================================================
 
 use_linter() {
+    [[ -z "$1" ]] && return 1             # False
     [[ "$1" = "$skip_this" ]] && return 1 # False
-    [[ -z "$1" ]] && error_msg "use_linter() - no param"
-    return 0 # True
+    return 0                              # True
 }
 
 do_parse_linter_def() {
@@ -406,11 +422,11 @@ do_parse_linter_def() {
 
     dbg_print "do_parse_linter_def($lint_cmd,$task)" 2
     if [[ -z "$lint_cmd" ]]; then
-        cmd="$skip_this"
+        cmd=""
         options=""
     elif [[ "${lint_cmd%"${lint_cmd#?}"}" = "-" ]]; then
         error_msg "linter cmd starts with  [$lint_cmd]" -1
-        cmd="$skip_this"
+        cmd=""
         options=""
     else
         [[ -n "$task" ]] || error_msg "do_parse_linter_def($lint_cmd) - missing param 2"
@@ -421,26 +437,22 @@ do_parse_linter_def() {
     # if there were no options they will be the same
     [[ "$options" = "$cmd" ]] && options=""
 
-    if [[ $cmd != "$skip_this" ]]; then
-        dbg_print "><> 1 will attempt cmd [$cmd]"
+    if [[ -n "$cmd" ]]; then
         verif_cmd="$(command -v "$cmd")" || {
-            dbg_print "><> command -v failed"
-            verif_cmd="$skip_this"
+            verif_cmd=""
         }
-        dbg_print "><> 2 verif_cmd [$verif_cmd]"
     else
-        verif_cmd="$skip_this"
+        verif_cmd=""
     fi
-    dbg_print "><> will do case"
+    [[ -z "$verif_cmd" ]] && {
+        cmd=""
+        options=""
+    }
+
     case "$task" in
     verify)
-        if use_linter "$verif_cmd"; then
-            dbg_print "case verify: [$verif_cmd $options]"
-            echo "$verif_cmd $options"
-        else
-            dbg_print "case verify: [$verif_cmd]"
-            echo "$verif_cmd"
-        fi
+        [[ -n "$verif_cmd" ]] && [[ -n "$options" ]] && verif_cmd="$verif_cmd $options"
+        echo "$verif_cmd"
         ;;
 
     cmd) echo "$cmd" ;;
@@ -478,7 +490,11 @@ linters_available() {
 
 }
 
-display_linters() {
+do_display_linters() {
+    local all_excludes
+    local all_prefixes
+    local all_suffixes
+
     echo "Linters supported: shellcheck checkbashisms flake8 vale"
     echo "Linters used:"
     use_linter "$linter_shellcheck" && echo "shellcheck:    $linter_shellcheck"
@@ -486,6 +502,35 @@ display_linters() {
     use_linter "$linter_flake8" && echo "flake8:        $linter_flake8"
     use_linter "$linter_vale" && echo "vale:          $linter_vale"
     echo
+
+    all_excludes="${excludes[*]}"
+    all_prefixes="${prefixes[*]}"
+    all_suffixes="${suffixes[*]}"
+
+    if [[ -n "$all_excludes" ]] || [[ -n "$all_prefixes" ]] || [[ -n "$all_suffixes" ]]; then
+        echo "===  Filters that will be applied on file names  ==="
+        echo
+        [[ -n "$all_excludes" ]] && {
+            echo "---  Files excluded  ---"
+            for excluded_file in "${excludes[@]}"; do
+                echo "$excluded_file"
+            done
+            echo
+        }
+        [[ -n "$all_prefixes" ]] && {
+            echo "---  Prefixes ignored  ---"
+            echo "$all_prefixes"
+            echo
+        }
+        [[ -n "$all_suffixes" ]] && {
+            echo "---  Duffixes ignored  ---"
+            echo "  $all_suffixes"
+            echo
+        }
+    else
+        echo "No filtering defined, all files will be processed"
+    fi
+
 }
 
 handle_linting_error() {
@@ -712,6 +757,7 @@ process_file_tree() {
         }
 
         extension="${fname##*.}"
+
         case "$extension" in
         py | py3)
             #
@@ -838,7 +884,7 @@ Available options:
 
 -h, --help        Print this help and exit
 -c, --continue    Continue with the next file after linter issues are found.
--l, --linters     List supported and used linters.
+-l, --linters     List supported and used linters and excluded file patterns.
 -n, --nocache     Don't use caching for successfully linted files.
 -N, --clearcache  Remove cache file if present.
 -v, --verbose     Increase verbosity. Multiple -v flags can be used to
@@ -867,7 +913,7 @@ files should be ignored. See README.md for more information about this file.
 prog_name=$(basename "$0")
 this_uname="$(uname -s)"
 
-dbg_indent=1 # used to indent calls from within a "parrent" func
+dbg_indent=1 # used to indent printoutd in dbg_print
 #
 #  Some debug level constants, to make it easier to limit what
 #  is displayed
@@ -947,11 +993,12 @@ while [[ -n "$1" ]]; do
 done
 
 [[ "$debug_level" -gt 0 ]] && echo "Debug lvl is: $debug_level"
+select_config_dir
 get_config
 linters_available
 
 $display_linters && {
-    display_linters
+    do_display_linters
     exit 0
 }
 

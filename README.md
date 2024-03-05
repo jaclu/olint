@@ -26,7 +26,9 @@ This command checks files changed in the last 4 hours and continues with the nex
 olint -l
 ```
 
-This command lists detected linters and displays any default options used. You can override this in a per project .olint.conf file (see below).
+This command lists detected linters and filters.
+You can change this per project in a .olint.conf file
+or in the default config file (see below).
 
 ## Supported Linters
 
@@ -58,15 +60,15 @@ suffixes+=(
 
 # Specific excludes, use the file name displayed by Olint
 excludes+=(
-    ./tes_db.sqlite
+    ./test_db.sqlite
 )
 
 # Define linter commands and options, if you wan't to override the defaults.
-# "skip_this" is a special case and means that this linter will not be used.
+# ending it with `=` is a special case and means that this linter will not be used.
 export linter_shellcheck="shellcheck -o all"
 export linter_checkbashisms="/odd/path/checkbashisms"
 export linter_flake8="/odd/path/flake8"
-export linter_vale="skip_this"
+export linter_vale=
 ```
 
 ## .olint.cache
