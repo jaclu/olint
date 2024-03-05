@@ -951,17 +951,9 @@ while [[ -n "$1" ]]; do
 
     -a) abort_after=true ;; # Unofficial option for olint dev
 
-    -c | --continue)
-        echo "Will contine with next file if linter found issues"
-        lint_continue=true
-        ;;
-
+    -c | --continue) lint_continue=true ;;
     -l | --linters) display_linters=true ;;
-
-    -n | --nocache)
-        echo "Will not use cache for checked files"
-        use_cache=false
-        ;;
+    -n | --nocache) use_cache=false ;;
 
     -N | --clearcache)
         if [[ -f "$f_cache_file" ]]; then
@@ -995,6 +987,11 @@ done
 [[ "$debug_level" -gt 0 ]] && echo "Debug lvl is: $debug_level"
 select_config_dir
 get_config
+
+$lint_continue && echo "Will contine with next file if linter found issues"
+$use_cache || echo "Will not use cache for checked files"
+echo
+
 linters_available
 
 $display_linters && {
