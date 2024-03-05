@@ -75,7 +75,9 @@ get_config() {
     linter_checkbashisms=checkbashisms
     linter_flake8=flake8
     linter_vale=vale
-    excludes=() #  Specifix excludes
+    excludes=(
+        ./.cache.olint
+    ) #  Specifix excludes
     prefixes=() # Excludes by prefix
     suffixes=() # Excludes by suffix
 
