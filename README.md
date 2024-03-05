@@ -16,14 +16,13 @@ To install Olint, follow these steps:
 
 To use Olint, simply run the `olint` command followed by any options or arguments you want to pass. For example:
 
-```
+```shell
 olint -c 4
 ```
 
 This command checks files changed in the last 4 hours and continues with the next file after linting issues are found.
 
-
-```
+```shell
 olint -l
 ```
 
