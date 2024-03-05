@@ -193,40 +193,36 @@ cache_read() {
     dbg_print "cache_read()"
     ((dbg_indent++)) # increase indent until this returns
 
-    if $use_cache; then
-        # Check if the file exists and is readable
-        if [[ -r "$f_cache_file" ]]; then
-            dbg_print "found cache file: $f_cache_file" 3
+    # abort if not using cache
+    $use_cache || return
 
-            # Read each line of the file and add to the array
+    # Check if the file exists and is readable
+    if [[ -r "$f_cache_file" ]]; then
+        dbg_print "found cache file: $f_cache_file" 3
 
-            while IFS= read -r cached_line; do
-                dbg_print "read line: $cached_line" 3
-                if $waiting_for_header; then
-                    [[ "$cached_line" = "$olint_cache_version" ]] || {
-                        echo
-                        echo "Incorrect cashe version"
-                        echo "  expected: [$olint_cache_version]"
-                        echo "  found:    [$cached_line]"
-                        echo
-                        echo "Will ignore this cache and replace it in 3 seconds - hit Ctrl-C to abort!"
-                        sleep 3
-                        break
-                    }
-                    waiting_for_header=false
-                    dbg_print "found correct header: $olint_cache_version" 3
-                    continue
-                else
-                    IFS='|' read -r f_mtime f_date f_name <<<"$cached_line"
-                    cache_old["$f_name"]="$f_mtime|$f_date"
-                fi
-            done <"$f_cache_file"
-        fi
-    else
-        [[ -f "$f_cache_file" ]] && {
-            echo "Removed olint cache"
-            rm -f "$f_cache_file"
-        }
+        # Read each line of the file and add to the array
+
+        while IFS= read -r cached_line; do
+            dbg_print "read line: $cached_line" 3
+            if $waiting_for_header; then
+                [[ "$cached_line" = "$olint_cache_version" ]] || {
+                    echo
+                    echo "Incorrect cashe version"
+                    echo "  expected: [$olint_cache_version]"
+                    echo "  found:    [$cached_line]"
+                    echo
+                    echo "Will ignore this cache and replace it in 3 seconds - hit Ctrl-C to abort!"
+                    sleep 3
+                    break
+                }
+                waiting_for_header=false
+                dbg_print "found correct header: $olint_cache_version" 3
+                continue
+            else
+                IFS='|' read -r f_mtime f_date f_name <<<"$cached_line"
+                cache_old["$f_name"]="$f_mtime|$f_date"
+            fi
+        done <"$f_cache_file"
     fi
 }
 
@@ -842,6 +838,7 @@ Available options:
 -c, --continue    Continue with the next file after linter issues are found.
 -l, --linters     List supported and used linters.
 -n, --nocache     Don't use caching for successfully linted files.
+-N, --clearcache  Remove cache file if present.
 -v, --verbose     Increase verbosity. Multiple -v flags can be used to
                   increase verbosity level.
 number            Only check files changed in the last number hours.
@@ -916,6 +913,16 @@ while [[ -n "$1" ]]; do
     -n | --nocache)
         echo "Will not use cache for checked files"
         use_cache=false
+        ;;
+
+    -N | --clearcache)
+        if [[ -f "$f_cache_file" ]]; then
+            echo "Removing $f_cache_file"
+            rm -f "$f_cache_file"
+        else
+            echo "No cache found: $f_cache_file"
+        fi
+        exit 0
         ;;
 
     -s) # This option is not ready to be used, thus not mentioned in the help
