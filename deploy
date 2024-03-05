@@ -8,7 +8,6 @@
 #
 #
 
-#  shell check disable=SC1007
 CURRENT_DIR="$(dirname -- "$0")"
 conf_file="$CURRENT_DIR/.destination"
 
@@ -30,6 +29,6 @@ if [ ! -d "$dest" ]; then
 fi
 
 echo
-echo "-----   Deploying man_asdf   -----"
+echo "-----   Deploying olint   -----"
 
 rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest"
