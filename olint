@@ -29,7 +29,7 @@ error_msg() {
     fi
     # trimmed="$(echo -e "$msg" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^\\n*//' -e 's/\\n*$//')"
 
-    printf "\n\nERROR: %s\n\n" "$msg"
+    printf "\n\nERROR: %s\n\n" "$msg" >&2
     [[ "$exit_code" -gt -1 ]] && exit "$exit_code"
 }
 
@@ -62,43 +62,57 @@ dbg_print() {
 }
 
 get_config() {
+    local dbg_indent=$dbg_indent
     local f_config=".olint.conf"
 
     dbg_print "get_config()"
-    #
-    #  Defaults that can be overriden in a project config file
-    #
+    ((dbg_indent++)) # increase indent until this returns
 
-    linter_vale=vale
-    linter_shellcheck="shellcheck -x -e SC2312"
-    linter_checkbashisms="checkbashisms -n -x"
+    #
+    #  Defaults that can be overriden in config files
+    #
+    linter_shellcheck=shellcheck
+    linter_checkbashisms=checkbashisms
     linter_flake8=flake8
+    linter_vale=vale
+    excludes=() #  Specifix excludes
+    prefixes=() # Excludes by prefix
+    suffixes=() # Excludes by suffix
 
     #
-    #  Specifix excludes
+    #  handling base configuration
     #
-    excludes=(
-        ./.cache.olint
-    )
-
-    #
-    #  Excludes by prefix/suffix
-    #
-    prefixes=(
-        ./.git/
-        ./.vscode
-    )
-    suffixes=(
-        \~
-        \#
-        .pyc
-    )
-
-    if [[ -f "$f_config" ]]; then
-        # shellcheck source=/dev/null
-        source "$f_config" || error_msg "Failed to source exclusions: $f_config"
-        # echo "Config overrides found: $f_config"
+    if [[ -n "$XDG_CONFIG_HOME" ]]; then
+        [[ -d "$XDG_CONFIG_HOME" ]] || {
+            error_msg "XDG_CONFIG_HOME folder does not exist: $XDG_CONFIG_HOME"
+        }
+        conf_default="$XDG_CONFIG_HOME/olint/config"
+    else
+        conf_default=~/.config/olint/config
     fi
+    [[ -f "$conf_default" ]] && {
+        dbg_print "base configuration: $conf_default"
+        # shellcheck source=/dev/null
+        source "$conf_default" || error_msg "Failed to source default config: $conf_default"
+    }
+
+    #
+    #  handling project configuration
+    #
+    if [[ -f "$f_config" ]]; then
+        dbg_print "project configuration: $f_config"
+        # shellcheck source=/dev/null
+        source "$f_config" || error_msg "Failed to source project config: $f_config"
+    fi
+
+    dbg_print "---  Configuration used  ---" 2
+    dbg_print "linter_shellcheck: $linter_shellcheck" 2
+    dbg_print "linter_checkbashisms: $linter_checkbashisms" 2
+    dbg_print "linter_flake8: $linter_flake8" 2
+    dbg_print "linter_vale: $linter_vale" 2
+    dbg_print "prefixes ${prefixes[*]}" 2
+    dbg_print "suffixes ${suffixes[*]}" 2
+    dbg_print "excludes ${excludes[*]}" 2
 }
 
 #===============================================================
@@ -150,7 +164,7 @@ cache_write() {
     $use_cache || return
 
     # If no changes have happened, no need to save cache
-    "$cache_is_changed" || return
+    $cache_is_changed || return
 
     # clear previous cache
     echo "$olint_cache_version" >"$f_cache_file"
@@ -378,59 +392,95 @@ use_linter() {
     return 0 # True
 }
 
-parse_lint_def() {
+do_parse_linter_def() {
+    #
+    #  Handles the different notations
+    #   linter_cmd
+    #   linter_cmd -with -options
+    #   skip_this
+    #   ""
+    #
     local lint_cmd="$1"
     local task="$2"
     local cmd
     local options
     local verif_cmd
 
-    [[ -n "$task" ]] || error_msg "parse_lint_def() - missing param 1"
-    [[ -n "$lint_cmd" ]] || error_msg "parse_lint_def() - missing param 2"
-    dbg_print "parse_lint_def()" 2
-    cmd="$(echo "$lint_cmd" | cut -d' ' -f1)"
-    options="$(echo "$lint_cmd" | cut -d' ' -f2-)"
+    dbg_print "do_parse_linter_def($lint_cmd,$task)" 2
+    if [[ -z "$lint_cmd" ]]; then
+        cmd="$skip_this"
+        options=""
+    elif [[ "${lint_cmd%"${lint_cmd#?}"}" = "-" ]]; then
+        error_msg "linter cmd starts with  [$lint_cmd]" -1
+        cmd="$skip_this"
+        options=""
+    else
+        [[ -n "$task" ]] || error_msg "do_parse_linter_def($lint_cmd) - missing param 2"
+        cmd="$(echo "$lint_cmd" | cut -d' ' -f1)"
+        options="$(echo "$lint_cmd" | cut -d' ' -f2-)"
+    fi
 
     # if there were no options they will be the same
     [[ "$options" = "$cmd" ]] && options=""
 
-    verif_cmd="$(command -v "$cmd")" || verif_cmd="$skip_this"
-
+    if [[ $cmd != "$skip_this" ]]; then
+        dbg_print "><> 1 will attempt cmd [$cmd]"
+        verif_cmd="$(command -v "$cmd")" || {
+            dbg_print "><> command -v failed"
+            verif_cmd="$skip_this"
+        }
+        dbg_print "><> 2 verif_cmd [$verif_cmd]"
+    else
+        verif_cmd="$skip_this"
+    fi
+    dbg_print "><> will do case"
     case "$task" in
     verify)
         if use_linter "$verif_cmd"; then
+            dbg_print "case verify: [$verif_cmd $options]"
             echo "$verif_cmd $options"
         else
+            dbg_print "case verify: [$verif_cmd]"
             echo "$verif_cmd"
         fi
         ;;
 
     cmd) echo "$cmd" ;;
     options) echo "$options" ;;
-    *) error_msg "parse_lint_def() - bad param 1 [$task]" ;;
+    *) error_msg "do_parse_linter_def() - bad param 1 [$task]" ;;
     esac
     return 0 # True
 }
 
-identify_available_linters() {
+verify_lint_cmd() {
+    local lint_cmd="$1"
+    local cmd_parsed
+
+    dbg_print "verify_lint_cmd($lint_cmd)" 2
+
+    if cmd_parsed="$(do_parse_linter_def "$lint_cmd" verify)"; then
+        echo "$cmd_parsed"
+    else
+        error_msg "Failed to parse lint cmd: $lint_cmd"
+    fi
+    dbg_print "- result [$cmd_parsed]"
+}
+
+linters_available() {
     #
     #  Scan for and define usable linters
     #
+    dbg_print "linters_available()"
 
-    dbg_print "identify_available_linters()"
+    linter_shellcheck="$(verify_lint_cmd "$linter_shellcheck")"
+    # dbg_print "after verif linter_shellcheck [$linter_shellcheck]" 0
+    linter_checkbashisms="$(verify_lint_cmd "$linter_checkbashisms")"
+    linter_flake8="$(verify_lint_cmd "$linter_flake8")"
+    linter_vale="$(verify_lint_cmd "$linter_vale")"
 
-    # echo
-    # echo "loop"
-    # for param in "cmd" "options" "verify"; do
-    #     echo "# $param   [$(parse_lint_def "$linter_shellcheck" "$param")]"
-    # done
-    # error_msg "loop done"
+}
 
-    linter_shellcheck="$(parse_lint_def "$linter_shellcheck" verify)" || error_msg "$linter_shellcheck"
-    linter_checkbashisms="$(parse_lint_def "$linter_checkbashisms" verify)" || error_msg "$linter_checkbashisms"
-    linter_flake8="$(parse_lint_def "$linter_flake8" verify)" || error_msg "$linter_flake8"
-    linter_vale="$(parse_lint_def "$linter_vale" verify)" || error_msg "$linter_vale"
-
+display_linters() {
     echo "Linters supported: shellcheck checkbashisms flake8 vale"
     echo "Linters used:"
     use_linter "$linter_shellcheck" && echo "shellcheck:    $linter_shellcheck"
@@ -441,12 +491,19 @@ identify_available_linters() {
 }
 
 handle_linting_error() {
+    #
+    #  Either write out allready processed files to cache and then exit
+    #  or continue based upon
+    #
     $lint_continue && return
     cache_write
     exit 1
 }
 
-display_linter_used() {
+show_linter_action() {
+    #
+    #  Display what linter is used and what file is processed
+    #
     local fname="$1"
     local file_type="$2"
     local lbl="$3"
@@ -477,7 +534,7 @@ do_shellcheck() {
     [[ -z "$fname" ]] && error_msg "do_shellcheck() - no paran given!" 1
 
     use_linter "$linter_shellcheck" || return 1
-    display_linter_used "$fname" "$file_type" shellcheck
+    show_linter_action "$fname" "$file_type" shellcheck
 
     eval "$linter_shellcheck" "$fname" || {
         handle_linting_error
@@ -494,7 +551,7 @@ do_checkbashisms() {
     [[ -z "$fname" ]] && error_msg "do_checkbashisms() - no paran given!" 1
 
     use_linter "$linter_checkbashisms" || return 1
-    display_linter_used "$fname" "$file_type" checkbashisms
+    show_linter_action "$fname" "$file_type" checkbashisms
     #
     #  Dont exit for checkbasims issues, just display them
     #  and do a LF to make the warning stand out
@@ -510,7 +567,7 @@ do_flake8() {
     [[ -z "$fname" ]] && error_msg "do_flake8() - no paran given!" 1
 
     use_linter "$linter_flake8" || return 1 # False
-    display_linter_used "$fname" "$file_type" flake8
+    show_linter_action "$fname" "$file_type" flake8
     eval "$linter_flake8" "$fname" || {
         handle_linting_error
         return 1 # False
@@ -527,7 +584,7 @@ do_vale() {
     [[ -z "$fname" ]] && error_msg "do_vale() - no paran given!" 1
 
     use_linter "$linter_vale" || return 1 # False
-    display_linter_used "$fname" "$file_type" vale
+    show_linter_action "$fname" "$file_type" vale
 
     eval "$linter_vale" "$fname" >"$vale_tmp" || {
         cat "$vale_tmp"
@@ -783,7 +840,7 @@ Available options:
 
 -h, --help        Print this help and exit
 -c, --continue    Continue with the next file after linter issues are found.
--l, --linters     List supported and available linters.
+-l, --linters     List supported and used linters.
 -n, --nocache     Don't use caching for successfully linted files.
 -v, --verbose     Increase verbosity. Multiple -v flags can be used to
                   increase verbosity level.
@@ -808,7 +865,9 @@ files should be ignored. See README.md for more information about this file.
 #
 #===============================================================
 
-debug_level=0
+prog_name=$(basename "$0")
+this_uname="$(uname -s)"
+
 dbg_indent=1 # used to indent calls from within a "parrent" func
 #
 #  Some debug level constants, to make it easier to limit what
@@ -822,23 +881,20 @@ dbglvl_data_types=8
 
 # Will only be updated if cache format is changed
 olint_cache_version="olint cache vers 0.2.3"
-use_cache=true #    cache is disabled by option: -C
 cache_is_changed=false
 f_cache_file=".cache.olint" # mtime|date|fname
 declare -A cache_old        # What is read from cache file
 declare -A cache_new        # What will be written to cache file
 
-this_uname="$(uname -s)"
+skip_this="skip_this" # used to indicate a linter should not be used
 
-skip_this="skip_this"
-h_max_age=0         # no max time
-abort_after=false   # abort after is incomplete: -a
-lint_continue=false # continue with next file on linter issues -c
-show_stats=false    # filetype summary is enabled by option: -s
-
-prog_name=$(basename "$0")
-
-get_config
+abort_after=false     # (unofficial olint dev) option: -a
+lint_continue=false   # option: -c
+display_linters=false # option: -l
+use_cache=true        # option: -n
+show_stats=false      # (unofficial olint dev) option: -s
+debug_level=0         # option: -v
+h_max_age=0           # no max file age for items to be processed
 
 while [[ -n "$1" ]]; do
     case $1 in
@@ -848,20 +904,14 @@ while [[ -n "$1" ]]; do
         show_help || error_msg "show_help() failure"
         ;;
 
-    #
-    #  Debuging option, not meant to be used outside olint dev
-    #
-    -a) abort_after=true ;;
+    -a) abort_after=true ;; # Unofficial option for olint dev
 
-    -c)
+    -c | --continue)
         echo "Will contine with next file if linter found issues"
         lint_continue=true
         ;;
 
-    -l | --linters)
-        identify_available_linters
-        exit 0
-        ;;
+    -l | --linters) display_linters=true ;;
 
     -n | --nocache)
         echo "Will not use cache for checked files"
@@ -880,16 +930,22 @@ while [[ -n "$1" ]]; do
 
     *) # only remaining param type is an int
         h_max_age="$1"
-        echo "Will only check files changed in the last $h_max_ageh"
+        echo "Will only check files changed in the last $h_max_age"
         ;;
 
     esac
     shift
 done
 
-[[ "$debug_level" -gt 0 ]] && echo "Verbose lvel is: $debug_level"
+[[ "$debug_level" -gt 0 ]] && echo "Debug lvl is: $debug_level"
+get_config
+linters_available
 
-identify_available_linters
+$display_linters && {
+    display_linters
+    exit 0
+}
+
 cache_read
 process_file_tree
 do_show_stats
