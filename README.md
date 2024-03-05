@@ -39,7 +39,9 @@ Olint supports the following linters out of the box:
 
 ## Configuration
 
-You can customize Olint's behavior using a `.olint.conf` file. Here's an example configuration:
+olint first checks for a configuration file in the base configuration directory. If `$XDG_CONFIG_HOME` is defined, olint looks for the configuration file at `$XDG_CONFIG_HOME/olint/config`; otherwise, it checks `~/.config/olint/config`. Once this base configuration is parsed, olint examines the local project configuration file, `.olint.conf`.
+
+Here's an example configuration:
 
 ```bash
 #!/bin/bash
@@ -51,7 +53,7 @@ prefixes+=(
 )
 suffixes+=(
     .cfg
-    .bas
+    .doc
 )
 
 # Specific excludes, use the file name displayed by Olint
