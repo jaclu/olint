@@ -27,7 +27,7 @@ error_msg() {
         echo "error_msg() no param"
         exit 9
     fi
-    printf "\n\nERROR: %s\n\n" "$msg" >&2
+    printf "\\n\\nERROR: %s\\n\\n" "$msg" >&2
     [[ "$exit_code" -gt -1 ]] && exit "$exit_code"
 }
 
@@ -38,7 +38,7 @@ dbg_print() {
     local msg="$1"
     local this_debug_level="${2:-1}"
     [[ "$debug_level" -ge "$this_debug_level" ]] || return
-    printf "v%s>%*s%s\n" "$this_debug_level" "$dbg_indent" "" "$msg" >&2
+    printf "v%s>%*s%s\\n" "$this_debug_level" "$dbg_indent" "" "$msg" >&2
 }
 
 select_config_dir() {
@@ -259,11 +259,17 @@ get_cache_item() {
     #
     local f_to_check="$1"
     local dbg_indent=$dbg_indent
+    local cached_item
 
     dbg_print "get_cache_item($f_to_check)" "$dbglvl_cache_events_more"
     ((dbg_indent++)) # increase indent until this returns
 
-    [[ -v cache_old["$f_to_check"] ]] || {
+    #
+    #  [[ -v cache_old["$f_to_check"] ]] doesnt work on Debian 10
+    #  instead first extract it to a variable, then do the check
+    #
+    cached_item="${cache_old["$f_to_check"]}"
+    [[ -n "$cached_item" ]] || {
         dbg_print "item not found" "$((dbglvl_cache_events_more + 1))"
         return 1 # false
     }
@@ -565,7 +571,7 @@ show_linter_action() {
     fi
 
     # Print using printf with fixed-width formatting
-    printf "%-8susing %-14s: %s\n" "$file_type" "$lbl" "$fname"
+    printf "%-8susing %-14s: %s\\n" "$file_type" "$lbl" "$fname"
 }
 
 #
@@ -714,10 +720,17 @@ process_file_tree() {
         # shellcheck disable=SC2312
         mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
     else
-        # all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2))
-        # shellcheck disable=SC2312
-        mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
-
+        if test -d /proc/ish; then
+            #
+            #  iSH kernel doesnt support enough of /proc to make mapfile work
+            #
+            # shellcheck disable=SC2207
+            all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##'))
+        else
+            # all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2))
+            # shellcheck disable=SC2312
+            mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+        fi
     fi
 
     trap 'handle_ctrl_c INT' INT
