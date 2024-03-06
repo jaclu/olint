@@ -229,7 +229,7 @@ cache_read() {
             if $waiting_for_header; then
                 [[ "$cached_line" = "$olint_cache_version" ]] || {
                     echo
-                    echo "Incorrect cashe version"
+                    echo "Incorrect cache version"
                     echo "  expected: [$olint_cache_version]"
                     echo "  found:    [$cached_line]"
                     echo
