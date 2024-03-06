@@ -60,5 +60,5 @@ deploy_default_config() {
     fi
 }
 
-deploy_app
 deploy_default_config
+deploy_app
