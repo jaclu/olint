@@ -168,17 +168,20 @@ is_integer() {
 #===============================================================
 
 cache_write() {
+    local dbg_indent=$dbg_indent
+
     dbg_print "cache_write()"
+    ((dbg_indent++)) # increase indent until this returns
 
     # abort if not using cache
     $use_cache || {
-        dbg_print "  aborting due to not using cache"
+        dbg_print "skipped task due to not using cache"
         return
     }
 
     # If no changes have happened, no need to save cache
     $cache_is_changed || {
-        dbg_print "  aborting due to no changes"
+        dbg_print "skipped task due to no changes"
         return
     }
 
@@ -199,9 +202,9 @@ cache_read() {
     #
     #  First line is expected to contain an identifier
     #
-    local IFS
     local dbg_indent=$dbg_indent
     local waiting_for_header=true
+    local IFS
     local f_name
     local f_date
     local f_mtime
@@ -211,7 +214,7 @@ cache_read() {
 
     # abort if not using cache
     $use_cache || {
-        dbg_print "  aborting due to not using cache"
+        dbg_print "skipped task due to not using cache"
         return
     }
 
@@ -739,10 +742,12 @@ process_file_tree() {
             [[ "$fname" == *"$suffix" ]] && continue 2
         done
 
+        dbg_print "Examining: $fname"
+
         # abort if a time limit was set
         recent_enough "$fname" || {
             # maintain cache items if this run is time limited
-            dbg_print "process_file_tree() - to old to be processed" 3
+            dbg_print "to old to be processed" 3
             filename_is_cached "$fname"
             continue
         }
