@@ -51,13 +51,13 @@ Here's an example configuration:
 
 # specific file excluded
 excludes=(
-    ./.cache.olint
+    .cache.olint
 )
 
 # Excludes by prefix/suffix
 prefixes+=(
-    ./.git/
-    ./.venv/
+    .git/
+    .venv/
 )
 suffixes+=(
     .cfg
@@ -66,7 +66,7 @@ suffixes+=(
 
 # Specific excludes, use the file name displayed by Olint
 excludes+=(
-    ./test_db.sqlite
+    test_db.sqlite
 )
 
 # Define linter commands and options, if you wan't to override the defaults.

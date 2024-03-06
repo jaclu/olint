@@ -90,7 +90,7 @@ get_config() {
     linter_vale=vale
 
     excludes=(
-        ./.cache.olint
+        .cache.olint
     )           #  Specifix excludes
     prefixes=() # Excludes by prefix
     suffixes=() # Excludes by suffix
@@ -402,9 +402,8 @@ mtime_2_date() {
 #===============================================================
 
 use_linter() {
-    [[ -z "$1" ]] && return 1             # False
-    [[ "$1" = "$skip_this" ]] && return 1 # False
-    return 0                              # True
+    [[ -z "$1" ]] && return 1 # False
+    return 0                  # True
 }
 
 do_parse_linter_def() {
@@ -412,7 +411,6 @@ do_parse_linter_def() {
     #  Handles the different notations
     #   linter_cmd
     #   linter_cmd -with -options
-    #   skip_this
     #   ""
     #
     local lint_cmd="$1"
@@ -650,13 +648,16 @@ lint_posix() {
     local fname="$1"
 
     [[ -z "$fname" ]] && error_msg "lint_posix() - no paran given!" 1
-    use_linter "$linter_shellcheck" || return 1 # False
+
     dbg_print "lint_posix($fname)" "$dbglvl_linting_details"
 
-    # echo "using posix: $fname"
-    do_shellcheck "$fname" "posix" || return 1    # False
-    do_checkbashisms "$fname" "posix" || return 1 # False
-    return 0                                      # True
+    use_linter "$linter_shellcheck" && {
+        do_shellcheck "$fname" "posix" || return 1 # False
+    }
+    use_linter "$linter_checkbashisms" && {
+        do_checkbashisms "$fname" "posix" || return 1 # False
+    }
+    return 0 # True
 }
 
 lint_bash() {
@@ -708,11 +709,11 @@ process_file_tree() {
     if [[ $this_uname == "Darwin" ]]; then
         # macOS version
         # shellcheck disable=SC2312
-        mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; | sort -n -r -k1,1 | cut -d' ' -f2-)
+        mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
     else
         # all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2))
         # shellcheck disable=SC2312
-        mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2-)
+        mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
 
     fi
 
@@ -926,13 +927,11 @@ dbglvl_linting_details="$((dbglvl_linting_basic + 1))"
 dbglvl_data_types=8
 
 # Will only be updated if cache format is changed
-olint_cache_version="olint cache vers 0.2.3"
+olint_cache_version="olint cache vers: 0.2.4"
 cache_is_changed=false
 f_cache_file=".cache.olint" # mtime|date|fname
 declare -A cache_old        # What is read from cache file
 declare -A cache_new        # What will be written to cache file
-
-skip_this="skip_this" # used to indicate a linter should not be used
 
 abort_after=false     # (unofficial olint dev) option: -a
 lint_continue=false   # option: -c

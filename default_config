@@ -9,14 +9,23 @@
 # export linter_checkbashisms="checkbashisms -n -x"
 
 #
-#  Explicit excludes
+#  If you use '+='' you will add new items to the existing list
+#  using '=' you will replace the previous list, could be handy in a project
+#  config if the global conf lists a lot of stuff normally not of interest
+#  but it should be checked in a specific project
 #
+
+# Explicit excludes, give entire filename as listed by olint
 excludes+=(
 )
+
+# Filter by prefix, as listed by olint
 prefixes+=(
-    ./.git/
-    ./.vscode
+    .git/
+    .vscode
 )
+
+# Filter by suffix
 suffixes+=(
     \~
     \#
