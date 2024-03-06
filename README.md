@@ -8,9 +8,9 @@ If a file is successfully linted, Olint saves its filename and the time of its l
 
 To install Olint, follow these steps:
 
-1. [Download](#) the latest release or clone the repository.
-2. Run ./deploy
-3. Install any missing linters that you intend to use.
+1. Download the latest release or clone the repository.
+2. Run `./deploy` this is used both to install and to update.
+3. Execute `olint -l` to list available linters, and install any missing ones from the supported list that you plan to use.
 
 ## Usage
 
