@@ -33,11 +33,7 @@ deploy_app() {
     echo
     echo "-----   Deploying olint   -----"
 
-    #rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental' -e '^[[:space:]]'
     rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental'
-
-    #    rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest"
-
 }
 
 #===============================================================
@@ -53,9 +49,7 @@ deploy_default_config() {
     f_default_conf="$d_default_conf/config"
     if [ -f "$f_default_conf" ]; then
         echo "Global config already pressent: $f_default_conf"
-        # echo "If removed it will be replaced by the default next time this is run."
     else
-        # echo "Would do: cp $CURRENT_DIR/default_config $f_default_conf"
         cp "$CURRENT_DIR"/default_config "$f_default_conf"
 
         echo
