@@ -30,9 +30,6 @@ deploy_app() {
         exit 1
     fi
 
-    echo
-    echo "-----   Deploying olint   -----"
-
     rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental'
 }
 
@@ -59,6 +56,9 @@ deploy_default_config() {
 
     fi
 }
+
+echo
+echo "-----   Deploying olint   -----"
 
 deploy_default_config
 deploy_app
