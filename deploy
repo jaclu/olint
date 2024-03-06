@@ -1,34 +1,70 @@
 #!/bin/sh
 #
-#  Copyright (c) 2024: Jacob.Lundqvist@gmail.com
+#  Part of https://github.com/jaclu/olint
+#
+#  Copyright (c) 2023,2024: Jacob.Lundqvist@gmail.com
 #
 #  License: MIT
 #
-#  Part of https://github.com/jaclu/olint
+#  This deploy olint and the default config file (if not already present)
+#  Can be run again to deploy updates.
 #
+
+deploy_app() {
+    f_destination="$CURRENT_DIR/.destination"
+
+    if [ ! -f "$f_destination" ]; then
+        echo "If you put a destination folder in the file $f_destination"
+        echo "This deploy will use rsync and copy any updates to that location."
+        echo "typically this will only need sudo on first deploy."
+        echo "Example:"
+        echo "  echo /usr/local/bin > $f_destination"
+        exit 1
+    fi
+
+    dest="$(cat "$f_destination")"
+
+    if [ ! -d "$dest" ]; then
+        echo "ERROR: The directory mentioned in .destination does not exist"
+        echo "       Supplied destination: $dest"
+        exit 1
+    fi
+
+    echo
+    echo "-----   Deploying olint   -----"
+
+    #rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental' -e '^[[:space:]]'
+    rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental'
+
+    #    rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest"
+
+}
+
+#===============================================================
 #
+#   Main
+#
+#===============================================================
 
 CURRENT_DIR="$(dirname -- "$0")"
-conf_file="$CURRENT_DIR/.destination"
 
-if [ ! -f "$conf_file" ]; then
-    echo "If you put a destination folder in the file $conf_file"
-    echo "This deploy will use rsync and copy any updates to that location."
-    echo "typically this will only need sudo on first deploy."
-    echo "Example:"
-    echo "  echo /usr/local/bin > $conf_file"
-    exit 1
-fi
+deploy_default_config() {
+    d_default_conf="$("$CURRENT_DIR"/olint -C)"
+    f_default_conf="$d_default_conf/config"
+    if [ -f "$f_default_conf" ]; then
+        echo "Global config already pressent: $f_default_conf"
+        # echo "If removed it will be replaced by the default next time this is run."
+    else
+        # echo "Would do: cp $CURRENT_DIR/default_config $f_default_conf"
+        cp "$CURRENT_DIR"/default_config "$f_default_conf"
 
-dest="$(cat "$conf_file")"
+        echo
+        echo "A default config has been copied to $f_default_conf"
+        echo "You should inspect it to ensure it matches your preferences."
+        echo "As long as it is present, it will not be overwritten."
 
-if [ ! -d "$dest" ]; then
-    echo "ERROR: The directory mentioned in .destination does not exist"
-    echo "       Supplied destination: $dest"
-    exit 1
-fi
+    fi
+}
 
-echo
-echo "-----   Deploying olint   -----"
-
-rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest"
+deploy_app
+deploy_default_config

@@ -2,7 +2,7 @@
 #
 #  Part of https://github.com/jaclu/olint
 #
-#  Copyright (c) 2023,2024: Jacob.Lundqvist@gmail.com
+#  Copyright (c) 2024: Jacob.Lundqvist@gmail.com
 #
 #  License: MIT
 #
@@ -50,7 +50,7 @@ select_config_dir() {
     else
         olint_cfg_dir=~/.config/olint
     fi
-    mkdir -p "$olint_cfg_dir"/plugins || {
+    mkdir -p "$olint_cfg_dir" || {
         error_msg "Failed to create folder: $olint_cfg_dir"
     }
 }
@@ -88,6 +88,7 @@ get_config() {
     linter_checkbashisms=checkbashisms
     linter_flake8=flake8
     linter_vale=vale
+
     excludes=(
         ./.cache.olint
     )           #  Specifix excludes
@@ -952,6 +953,13 @@ while [[ -n "$1" ]]; do
     -a) abort_after=true ;; # Unofficial option for olint dev
 
     -c | --continue) lint_continue=true ;;
+
+    -C) # Suport for ./deploy - prints out the config dir
+        select_config_dir
+        echo "$olint_cfg_dir"
+        exit 0
+        ;;
+
     -l | --linters) display_linters=true ;;
     -n | --nocache) use_cache=false ;;
 
@@ -985,6 +993,7 @@ while [[ -n "$1" ]]; do
 done
 
 [[ "$debug_level" -gt 0 ]] && echo "Debug lvl is: $debug_level"
+
 select_config_dir
 get_config
 
