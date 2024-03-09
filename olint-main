@@ -410,131 +410,9 @@ mtime_2_date() {
 #
 #===============================================================
 
-add_plugin_extension() {
-    local plugin="$1"
-    local ext="$2"
-    local item
-
-    dbg_print "add_plugin_extension($plugin, $ext)" 0
-    if [[ -z "${linter_extensions[$ext]}" ]]; then
-        echo "><> created $ext =$plugin"
-        linter_extensions[$ext]="$plugin"
-    else
-        for item in ${linter_extensions[$ext]}; do
-            [[ "$item" = "$plugin" ]] && return 0
-        done
-        echo "><> appended: $ext $plugin"
-        linter_extensions[$ext]+=" $plugin"
-    fi
-}
-
-add_plugin_mimetype() {
-    local plugin="$1"
-    local mime="$2"
-    local item
-
-    dbg_print "add_plugin_mimetype($plugin, $mime)" 0
-
-    if [[ -z "${linter_mimetypes[$mime]}" ]]; then
-        echo "><> created $mime =$plugin"
-        linter_mimetypes[$mime]="$plugin"
-    else
-        for item in ${linter_mimetypes[$mime]}; do
-            [[ "$item" = "$plugin" ]] && return 0
-        done
-        echo "><> appended: $mime $plugin"
-        linter_mimetypes[$mime]+=" $plugin"
-    fi
-}
-
-check_linter_plugins() {
-    local dbg_indent=$dbg_indent
-    local plugin_dir="$olint_cfg_dir"/plugins
-
-    dbg_print "check_linter_plugins()"
-    ((dbg_indent++)) # increase indent until this returns
-
-    for plugin_def in "$plugin_dir"/*; do
-        if [[ -f "$plugin_def" ]]; then
-            # skip files ending with ~
-            [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
-
-            dbg_print "Processing file: $plugin_def"
-
-            #  Ensure we dont keep variables over iterations
-            unset plugin_name
-            unset plugin_cmd
-            unset plugin_extensions
-            unset plugin_mimetypes
-
-            # shellcheck disable=SC1090
-            source "$plugin_def"
-            dbg_print "sourced: $plugin_def"
-
-            # Checks
-            #  plugin_name not empty
-            [[ -z "$plugin_name" ]] && {
-                dbg_print "Plugin $plugin_def - missing: plugin_name" 0
-                continue
-            }
-            #  plugin_cmd  not empty
-            [[ -z "$plugin_cmd" ]] && {
-                dbg_print "Plugin $plugin_def - missing: plugin_cmd" 0
-                continue
-            }
-            # shellcheck disable=SC2154
-            [[ ${#plugin_extensions[@]} -eq 0 ]] &&
-                [[ ${#plugin_mimetypes[@]} -eq 0 ]] && {
-
-                error_msg "Plugin $plugin_def - neither " \
-                    "plugin_extensions nor plugin_mimetypes defined"
-            }
-
-            #  plugin_cmd begins with a callable
-            cmd_ok="$(verify_lint_cmd "$plugin_cmd")"
-            linter_cmd["$plugin_name"]="$cmd_ok"
-
-            for ext in "${plugin_extensions[@]}"; do
-                add_plugin_extension "$plugin_name" "$ext"
-            done
-
-            for mimetype in "${plugin_mimetypes[@]}"; do
-                add_plugin_mimetype "$plugin_name" "$mimetype"
-            done
-
-            # Perform actions on the file here
-        fi
-    done
-}
-
-display_linters() {
-    dbg_print "new_display_linters()"
-
-    echo
-    echo "Linters detected: "
-    for linter_name in "${!linter_cmd[@]}"; do
-        echo " $linter_name  - ${linter_cmd[$linter_name]}"
-    done
-    echo
-
-    echo "Supported extensions:"
-    # for ext in "${!linter_extensions[@]}"; do
-
-    # Obtain the keys of the associative array and sort them alphabetically
-    keys=$(for ext in "${!linter_extensions[@]}"; do echo "$ext"; done | sort)
-
-    # Iterate through the sorted keys
-    for ext in $keys; do
-        echo " $ext - handlers: ${linter_extensions[$ext]}"
-    done
-    echo
-
-    echo "mimet-types detected: "
-    for mime in "${!linter_mimetypes[@]}"; do
-        echo " '$mime'  - ${linter_mimetypes[$mime]}"
-    done
-    echo
-
+use_linter() {
+    [[ -z "$1" ]] && return 1 # False
+    return 0                  # True
 }
 
 do_parse_linter_def() {
@@ -606,6 +484,63 @@ verify_lint_cmd() {
     dbg_print "- result [$cmd_parsed]"
 }
 
+linters_available() {
+    #
+    #  Scan for and define usable linters
+    #
+    dbg_print "linters_available()"
+
+    linter_shellcheck="$(verify_lint_cmd "$linter_shellcheck")"
+    # dbg_print "after verif linter_shellcheck [$linter_shellcheck]" 0
+    linter_checkbashisms="$(verify_lint_cmd "$linter_checkbashisms")"
+    linter_flake8="$(verify_lint_cmd "$linter_flake8")"
+    linter_vale="$(verify_lint_cmd "$linter_vale")"
+
+}
+
+do_display_linters() {
+    local all_excludes
+    local all_prefixes
+    local all_suffixes
+
+    echo "Linters supported: shellcheck checkbashisms flake8 vale"
+    echo "Linters used:"
+    use_linter "$linter_shellcheck" && echo "shellcheck:    $linter_shellcheck"
+    use_linter "$linter_checkbashisms" && echo "checkbashisms: $linter_checkbashisms"
+    use_linter "$linter_flake8" && echo "flake8:        $linter_flake8"
+    use_linter "$linter_vale" && echo "vale:          $linter_vale"
+    echo
+
+    all_excludes="${excludes[*]}"
+    all_prefixes="${prefixes[*]}"
+    all_suffixes="${suffixes[*]}"
+
+    if [[ -n "$all_excludes" ]] || [[ -n "$all_prefixes" ]] || [[ -n "$all_suffixes" ]]; then
+        echo "===  Filters that will be applied on file names  ==="
+        echo
+        [[ -n "$all_excludes" ]] && {
+            echo "---  Files excluded  ---"
+            for excluded_file in "${excludes[@]}"; do
+                echo "$excluded_file"
+            done
+            echo
+        }
+        [[ -n "$all_prefixes" ]] && {
+            echo "---  Prefixes ignored  ---"
+            echo "$all_prefixes"
+            echo
+        }
+        [[ -n "$all_suffixes" ]] && {
+            echo "---  Duffixes ignored  ---"
+            echo "  $all_suffixes"
+            echo
+        }
+    else
+        echo "No filtering defined, all files will be processed"
+    fi
+
+}
+
 handle_linting_error() {
     #
     #  Either write out allready processed files to cache and then exit
@@ -614,6 +549,29 @@ handle_linting_error() {
     $lint_continue && return
     cache_write
     exit 1
+}
+
+show_linter_action() {
+    #
+    #  Display what linter is used and what file is processed
+    #
+    local fname="$1"
+    local file_type="$2"
+    local lbl="$3"
+    # [[ -n "$file_type" ]] && file_type="$file_type - "
+    # echo "$file_typeusing $lbl: $fname"
+
+    # Check if file_type is not empty
+    if [[ -n "$file_type" ]]; then
+        # Add a space and dash after file_type if it's not empty
+        file_type="$file_type -"
+    else
+        # If file_type is empty, assign 8 spaces
+        file_type="        "
+    fi
+
+    # Print using printf with fixed-width formatting
+    printf "%-8susing %-14s: %s\\n" "$file_type" "$lbl" "$fname"
 }
 
 #
@@ -728,27 +686,6 @@ lint_bash() {
 #
 #===============================================================
 
-should_fname_be_excluded() {
-    #
-    #  Check if fname matches exclusion rules
-    #
-    local fname="$1"
-
-    for exclude in "${excludes[@]}"; do
-        [[ "$fname" == "$exclude" ]] && return 0
-    done
-
-    for prefix in "${prefixes[@]}"; do
-        [[ "$fname" == "$prefix"* ]] && return 0
-    done
-
-    for suffix in "${suffixes[@]}"; do
-        [[ "$fname" == *"$suffix" ]] && return 0
-    done
-
-    return 1
-}
-
 handle_ctrl_c() {
     trap '' INT # abort capturing Ctrl-C
     echo
@@ -768,7 +705,7 @@ process_file_tree() {
     local suffix
     local f_type
 
-    dbg_print "process_file_tree()" 0
+    dbg_print "process_file_tree()"
     ((dbg_indent++)) # increase indent until this returns
 
     #
@@ -799,7 +736,6 @@ process_file_tree() {
     trap 'handle_ctrl_c INT' INT
 
     for fname in "${all_files[@]}"; do
-        handler_found=false
         # abort after this file
         $abort_after && {
             [[ "$previous_fname" = "./bin_shared/dev/pip-hierarchy2" ]] && break
@@ -807,9 +743,19 @@ process_file_tree() {
         }
         [[ -d "$fname" ]] && continue
 
-        should_fname_be_excluded "$fname" && continue
+        for exclude in "${excludes[@]}"; do
+            [[ "$fname" == "$exclude" ]] && continue 2
+        done
 
-        dbg_print "Examining: $fname" 0
+        for prefix in "${prefixes[@]}"; do
+            [[ "$fname" == "$prefix"* ]] && continue 2
+        done
+
+        for suffix in "${suffixes[@]}"; do
+            [[ "$fname" == *"$suffix" ]] && continue 2
+        done
+
+        dbg_print "Examining: $fname"
 
         # abort if a time limit was set
         recent_enough "$fname" || {
@@ -819,59 +765,70 @@ process_file_tree() {
             continue
         }
 
+        # skip already checked files
+
+        # # display_file_age "$fname"
+        # recent_enough
+        # continue
+
         filename_is_cached "$fname" && {
             echo "no changes: $fname"
             continue
         }
 
-        # extension="${fname##*.}"
-        # if [ "$extension" != "$fname" ]; then
-        #     extension=".$extension"
-        # else
-        #     extension=""
-        # fi
+        extension="${fname##*.}"
 
-        # [[ -n "$extension" ]] && {
-        #     echo "><> extension is: [$extension]"
-        #     ext_handlers="${linter_extensions[$extension]}"
-        #     # [[ -n "$ext_handlers" ]] && error_msg "><> ext_handlers [$ext_handlers]"
-        #     for linter in $ext_handlers; do
-        #         echo "><> ext handled by: $linter"
-        #         handler_found=true
-        #         echo "><> -----   handling it"
-        #         echo "using '${linter_cmd["$linter"]}' : $fname"
-        #         linter_output="$(eval "${linter_cmd["$linter"]}" "$fname")" || {
-        #             echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
-        #             echo "$linter_output"
-        #             handle_linting_error
-        #             continue
-        #         }
-        #     done
-        #     $handler_found && {
-        #         echo "processed by ext handler - $fname"
-        #         continue
-        #     }
-        # }
+        case "$extension" in
+        py | py3)
+            #
+            #  Since Markdown files containing Python code gets
+            #  identified as Python, extension is used to detect Python
+            #
+            items_python+=("$fname")
+            do_flake8 "$fname" && cache_add "$fname"
+            continue
+            ;;
+        *) ;; # use normal detect: file -b
+        esac
 
         f_type="$(file -b "$fname")"
-        echo "><> considering $fname - mimetype [$f_type]"
-        mimetype_handlers="${linter_extensions[$extension]}"
-        for word in $mimetype_handlers; do
-            [[ "$word" != "$f_type" ]] && continue
-            handler_found=true
-            echo "><> -----   handling it"
-            eval "${linter_cmd["$word"]}" "$fname" || {
-                handle_linting_error
-                continue
-            }
-        done
 
-        $handler_found && {
-            echo "processed by ext mimetype handler - $fname"
+        #
+        #  To handle a new file type, just repeat one of the below blocs
+        #  lets say you identify Python files and want to track them
+        #  add the file to something like items_python  in order to pressent
+        #  them just make a call like this:
+        #    list_item_group "Python" "${items_python[@]}"
+        #
+        if [[ "$f_type" == *"POSIX shell script"* ]]; then
+            items_posix+=("$fname")
+            lint_posix "$fname" && cache_add "$fname"
             continue
-        }
-
-        dbg_print "Unsupported file type [$f_type] - $fname" 0
+        elif [[ "$f_type" == *"Bourne-Again shell script"* ]]; then
+            items_bash+=("$fname")
+            do_shellcheck "$fname" "bash" && cache_add "$fname"
+            continue
+        elif [[ "$f_type" == *"ASCII text"* ]]; then
+            #  This must come after items_ucode_esc, otherwise this
+            #  very generic string would match most files
+            items_ascii+=("$fname")
+            do_vale "$fname" "text" && cache_add "$fname"
+            continue
+        elif [[ "$f_type" == *"Unicode text, UTF-8 text, with escape"* ]] ||
+            [[ "$f_type" == *"UTF-8 Unicode text, with escape"* ]]; then
+            #  Who might have guessed on MacOS file -b output looks different...
+            items_ucode_esc+=("$fname")
+            do_vale "$fname" "unicode+esc" && cache_add "$fname"
+            continue
+        elif [[ "$f_type" == *"Unicode text, UTF-8 text"* ]] ||
+            [[ "$f_type" == *"UTF-8 Unicode text"* ]]; then
+            #  This must come after items_ucode_esc, otherwise that would eat this
+            items_ucode+=("$fname")
+            do_vale "$fname" "unicode" && cache_add "$fname"
+            continue
+        else
+            dbg_print "Unsupported file type [$f_type] - $fname" 1
+        fi
     done
 
     trap '' INT # abort capturing Ctrl-C
@@ -892,6 +849,50 @@ list_item_group() {
     for item in "${items[@]}"; do
         echo "$item"
     done
+}
+
+do_show_stats() {
+    #
+    #  Display selected file types
+    #
+    $show_stats || return
+
+    list_item_group posix "${items_posix[@]}"
+    list_item_group bash "${items_bash[@]}"
+
+    # list_item_group "ASCII text" "${items_ascii[@]}"
+    # list_item_group perl "${items_perl[@]}"
+    # list_item_group C "${items_c[@]}"
+    # list_item_group makefile "${items_makefile[@]}"
+    # list_item_group openrc "${items_openrc[@]}"
+    list_item_group "Unicode text, UTF-8 text" "${items_ucode[@]}"
+    list_item_group "Unicode text, UTF-8 text, with escape" "${items_ucode_esc[@]}"
+
+    # list_item_group "ELF 32-bit LSB pie executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2" "${items_bin32_linux_so[@]}"
+    # list_item_group "ELF 32-bit LSB pie executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-musl-i386" "${items_bin32_musl[@]}"
+    # list_item_group "ELF 32-bit LSB shared object, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-musl-i386.so.1, with debug_info, not stripped" "${items_bin32_other[@]}"
+
+    #
+    #  Unrecognized file types
+    #
+    # if [[ ${#file_types[@]} -gt 0 ]]; then
+    #     list_item_group "Unclassified file types" "${file_types[@]}"
+    # fi
+
+    #
+    #  Some special cases, that will always be displayed if any such item was found
+    #
+
+    # test -d /proc/ish && {
+    #
+    #  Make sure no bin64 items are pressent!
+    #
+    # if [[ ${#items_bin64[@]} -gt 0 ]]; then
+    #     echo
+    #     echo "***  iSH can not run 64-bit bins, this is a problem!  ***"
+    #     list_item_group "ELF 64-bit LSB executable" "${items_bin64[@]}"
+    # fi
+    # }
 }
 
 show_help() {
@@ -950,17 +951,13 @@ f_cache_file=".cache.olint" # mtime|date|fname
 declare -A cache_old        # What is read from cache file
 declare -A cache_new        # What will be written to cache file
 
-declare -A linter_cmd
-declare -A linter_extensions
-declare -A linter_mimetypes
-
-abort_after=false       # (unofficial olint dev) option: -a
-lint_continue=false     # option: -c
-b_display_linters=false # option: -l
-use_cache=true          # option: -n
-show_stats=false        # (unofficial olint dev) option: -s
-debug_level=0           # option: -v
-h_max_age=0             # no max file age for items to be processed
+abort_after=false     # (unofficial olint dev) option: -a
+lint_continue=false   # option: -c
+display_linters=false # option: -l
+use_cache=true        # option: -n
+show_stats=false      # (unofficial olint dev) option: -s
+debug_level=0         # option: -v
+h_max_age=0           # no max file age for items to be processed
 
 while [[ -n "$1" ]]; do
     case $1 in
@@ -980,7 +977,7 @@ while [[ -n "$1" ]]; do
         exit 0
         ;;
 
-    -l | --linters) b_display_linters=true ;;
+    -l | --linters) display_linters=true ;;
     -n | --nocache) use_cache=false ;;
 
     -N | --clearcache)
@@ -1016,16 +1013,18 @@ done
 
 select_config_dir
 get_config
-check_linter_plugins
 
 $lint_continue && echo "Will contine with next file if linter found issues"
 $use_cache || echo "Will not use cache for checked files"
 echo
 
-$b_display_linters && {
-    display_linters
+linters_available
+
+$display_linters && {
+    do_display_linters
     exit 0
 }
 
 cache_read
 process_file_tree
+do_show_stats

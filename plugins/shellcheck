@@ -1,0 +1,21 @@
+#!/bin/false
+
+plugin_name="shellcheck"
+plugin_cmd="shellcheck"
+
+# file extentions this plugin handles
+plugin_extentions=(
+    .sh
+    .bash
+)
+
+# mime-types this plugin handles
+plugin_mimetypes=(
+    "*POSIX shell script*"
+    "*Bourne-Again shell script*"
+)
+
+# Files this plugin should not handle
+plugin_excludes=(
+    ./tmp/foo.sh
+)
