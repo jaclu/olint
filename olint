@@ -708,27 +708,6 @@ consider_lf_type() {
 
 }
 process_file_tree() {
-    local dbg_indent=$dbg_indent
-    local all_files
-    local fname
-    local handler_found
-    local previous_fname
-    local linter
-
-    # extention handling
-    # local extension
-    # local ext_handlers
-
-    # file type handling
-    local file_types
-    local file_type
-    local lf_type
-
-    dbg_print "process_file_tree()"
-    ((dbg_indent++)) # increase indent until this returns
-
-    trap 'handle_ctrl_c INT' INT
-
     #
     #  Loop over al files, sorted by file age, newest firtst.
     #  Then identifying filetype using: file -b
@@ -736,6 +715,23 @@ process_file_tree() {
     #  as they come up. Thereby minimizing pointless wait time, since
     #  the file tree is globally sorted by age
     #
+    local dbg_indent=$dbg_indent
+    local all_files
+    local fname
+    local handler_found
+    local linter
+
+    # extention handling
+    local extension ext_handlers
+
+    # file type handling
+    local file_types file_type lf_type
+
+    dbg_print "process_file_tree()"
+    ((dbg_indent++)) # increase indent until this returns
+
+    trap 'handle_ctrl_c INT' INT
+
     if [[ $this_uname == "Darwin" ]]; then
         # macOS version
         # shellcheck disable=SC2312
@@ -749,25 +745,24 @@ process_file_tree() {
             all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##'))
         else
             # all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2))
-            # shellcheck disable=SC2312
+            # shell  check disable=SC2312
             mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
         fi
     fi
 
     for fname in "${all_files[@]}"; do
         handler_found=false
-        # abort after this file
-        $abort_after && {
-            [[ "$previous_fname" = "./bin_shared/dev/pip-hierarchy2" ]] && break
-            previous_fname="$fname"
-        }
+        # debug help
+        # $abort_after && {
+        #     [[ "$previous_fname" = "./bin_shared/dev/pip-hierarchy2" ]] && break
+        #     previous_fname="$fname"
+        # }
         [[ -d "$fname" ]] && continue
 
         # [[ "$fname" = "files_to_check/base.py" ]] || continue
 
         should_fname_be_excluded "$fname" && continue
 
-        dbg_print " " 1
         dbg_print "Examining file: $fname" 1
 
         # abort if a time limit was set
@@ -797,16 +792,7 @@ process_file_tree() {
             for linter in $ext_handlers; do
                 handler_found=true
                 show_linter_action "$fname" "$linter"
-                # echo "using '${linter_cmd["$linter"]}' : $fname"
                 lint_file "$linter" "$fname"
-                # if eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output"; then
-                #     cache_add "$fname"
-                # else
-                #     echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
-                #     cat "$f_linter_output"
-                #     handle_linting_error
-                #     continue
-                # fi
             done
             if $handler_found; then
                 dbg_print "processed by ext handler - $fname"
@@ -816,7 +802,6 @@ process_file_tree() {
             fi
         }
 
-        # error_msg "linters for ${linter_file_types['Bourne-Again shell script*']}"
         IFS='|' read -r -a file_types <<<"$(file -b "$fname" | sed 's#, #|#g')"
 
         for file_type in "${file_types[@]}"; do
@@ -824,21 +809,12 @@ process_file_tree() {
 
             for lf_type in "${!linter_file_types[@]}"; do
                 consider_lf_type "$fname" "$lf_type" && {
-                    dbg_print "processed as '$lf_type' - $fname" 2
+                    dbg_print "processed as '$lf_type' - $fname" 1
                     continue 3
                 }
-                # dbg_print "Unsupported lf_type - $lf_type" 0
             done
-            # $handler_found && {
-            #     echo "[2] processed file_type [$file_type] - $fname"
-            #     continue 2
-            # }
             dbg_print "Unsupported file_type - $file_type" 9
         done
-        # $handler_found && {
-        #     echo "processed by some file_type handler - $fname"
-        #     continue
-        # }
     done
 
     trap '' INT # abort capturing Ctrl-C
@@ -908,7 +884,7 @@ declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
 
-abort_after=false       # (unofficial olint dev) option: -a
+# abort_after=false       # (unofficial olint dev) option: -a
 lint_continue=false     # option: -c
 b_display_linters=false # option: -l
 use_cache=true          # option: -n
@@ -924,7 +900,7 @@ while [[ -n "$1" ]]; do
         show_help || error_msg "show_help() failure"
         ;;
 
-    -a) abort_after=true ;; # Unofficial option for olint dev
+    # -a) abort_after=true ;; # Unofficial option for olint dev
 
     -c | --continue) lint_continue=true ;;
 
