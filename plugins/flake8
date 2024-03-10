@@ -1,7 +1,10 @@
-#!/bin/false
+#!/bin/bash
+# shellcheck disable=SC2034
+
 
 plugin_name="flake8"
 plugin_cmd="flake8 --color=always"
+plugin_priority=2 # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(

@@ -38,7 +38,7 @@ dbg_print() {
     local msg="$1"
     local this_debug_level="${2:-1}"
     [[ "$debug_level" -ge "$this_debug_level" ]] || return
-    printf "v%s>%*s%s\\n" "$this_debug_level" "$dbg_indent" "" "$msg" >&2
+    printf "%s>%*s%s\\n" "$this_debug_level" "$dbg_indent" "" "$msg" >&2
 }
 
 env_cleanup() {
@@ -50,7 +50,13 @@ env_cleanup() {
     exit "$ex_code"
 }
 
-select_config_dir() {
+get_config() {
+    local dbg_indent=$dbg_indent
+    local f_config
+
+    dbg_print "get_config()"
+    ((dbg_indent++)) # increase indent until this returns
+
     #
     #  Selects config location
     #
@@ -62,23 +68,10 @@ select_config_dir() {
     mkdir -p "$olint_cfg_dir" || {
         error_msg "Failed to create folder: $olint_cfg_dir"
     }
-}
-
-get_config() {
-    local dbg_indent=$dbg_indent
-    local f_config
-
-    dbg_print "get_config()"
-    ((dbg_indent++)) # increase indent until this returns
 
     #
     #  Defaults that can be overriden in config files
     #
-    linter_shellcheck=shellcheck
-    linter_checkbashisms=checkbashisms
-    linter_flake8=flake8
-    linter_vale=vale
-
     excludes=(
         .cache.olint
     )           #  Specifix excludes
@@ -106,10 +99,6 @@ get_config() {
     fi
 
     dbg_print "---  Configuration used  ---" 2
-    dbg_print "linter_shellcheck: $linter_shellcheck" 2
-    dbg_print "linter_checkbashisms: $linter_checkbashisms" 2
-    dbg_print "linter_flake8: $linter_flake8" 2
-    dbg_print "linter_vale: $linter_vale" 2
     dbg_print "prefixes ${prefixes[*]}" 2
     dbg_print "suffixes ${suffixes[*]}" 2
     dbg_print "excludes ${excludes[*]}" 2
@@ -379,30 +368,59 @@ mtime_2_date() {
 #
 #===============================================================
 
-add_plugin_extension() {
-    local plugin="$1"
-    local ext="$2"
-    local item
+# Function to sort linters based on priorities
+sort_linters() {
+    local -n linters_array=$1
+    local sorted_linters=()
 
-    dbg_print "add_plugin_extension($plugin, $ext)"
+    dbg_print "sort_linters(${linters_array[*]}" "$dbglvl_lintscan_details"
+
+    mapfile -t sorted_linters < <(
+        for linter in "${linters_array[@]}"; do
+            echo "$linter ${linter_priorities[$linter]}"
+        done | sort -k2n | awk '{print $1}'
+    )
+    # dbg_print "sort_linters() - sorted [${sorted_linters[*]}]" 0
+    echo "${sorted_linters[@]}"
+}
+
+add_plugin_extension() {
+    local dbg_indent=$dbg_indent
+    local plugin="$1"
+    local plugin_priority="$2"
+    local ext="$3"
+    local item
+    local unsorted
+
+    dbg_print "add_plugin_extension($plugin, $plugin_priority, $ext)" "$dbglvl_lintscan_basic"
+    ((dbg_indent++)) # increase indent until this returns
     if [[ -z "${linter_extensions[$ext]}" ]]; then
-        # echo "><> created $ext =$plugin"
         linter_extensions[$ext]="$plugin"
     else
         for item in ${linter_extensions[$ext]}; do
             [[ "$item" = "$plugin" ]] && return 0
         done
-        # echo "><> appended: $ext $plugin"
         linter_extensions[$ext]+=" $plugin"
+
+        unsorted=()
+        for itm in ${linter_extensions[$ext]}; do
+            unsorted+=("$itm")
+        done
+        # echo "><> before sorting: [${unsorted[*]}]"
+        sorted_items="$(sort_linters unsorted)"
+        linter_extensions[$ext]="$sorted_items"
+        # echo "sorted linter_extensions: ${linter_extensions[$ext]}"
     fi
 }
 
 add_plugin_file_type() {
+    local dbg_indent=$dbg_indent
     local plugin="$1"
     local file_type="$2"
     local item
 
-    dbg_print "add_plugin_file_type($plugin, $file_type)"
+    dbg_print "add_plugin_file_type($plugin, $file_type)" "$dbglvl_lintscan_basic"
+    ((dbg_indent++)) # increase indent until this returns
 
     if [[ -z "${linter_file_types[$file_type]}" ]]; then
         # echo "><> created '$file_type' = $plugin"
@@ -413,7 +431,81 @@ add_plugin_file_type() {
         done
         # echo "><> appended: $file_type $plugin"
         linter_file_types[$file_type]+=" $plugin"
+
+        unsorted=()
+        for itm in ${linter_file_types[$file_type]}; do
+            unsorted+=("$itm")
+        done
+
+        # echo "><> before sorting: [${unsorted[*]}]"
+        sorted_items="$(sort_linters unsorted)"
+        linter_file_types[$file_type]="$sorted_items"
+        # echo "sorted linter_file_types: ${linter_extensions[$file_type]}"
     fi
+}
+
+parse_plugin_file() {
+    local dbg_indent=$dbg_indent
+    local plugin_def="$1"
+    local plugin_priority
+    local plugin_name
+    local plugin_cmd
+    local plugin_extensions
+    local plugin_file_types
+    local cmd_ok
+
+    dbg_print "parse_plugin_file($plugin_def)" "$dbglvl_lintscan_basic"
+    ((dbg_indent++)) # increase indent until this returns
+
+    #  Ensure we dont keep variables over iterations
+    plugin_priority=10 # set a default priority
+
+    # shellcheck disable=SC1090
+    source "$plugin_def"
+    dbg_print "sourced: $plugin_def" 3
+
+    # Checks
+    #  plugin_name not empty
+    [[ -z "$plugin_name" ]] && {
+        dbg_print "Plugin $plugin_def - missing: plugin_name" 0
+        return 1 # False
+    }
+    #  plugin_cmd  not empty
+    [[ -z "$plugin_cmd" ]] && {
+        dbg_print "Plugin $plugin_def - missing: plugin_cmd" 0
+        return 1 # False
+    }
+    #  plugin_cmd begins with a callable
+
+    cmd_ok="$(verify_lint_cmd "$plugin_cmd")"
+    [[ -z "$cmd_ok" ]] && {
+        dbg_print "Bad command for $plugin_name: [$plugin_cmd]"
+        return 1 # False
+    }
+    linter_cmd["$plugin_name"]="$cmd_ok"
+    linter_priorities["$plugin_name"]="$plugin_priority"
+
+    # echo "prio for $plugin_name = ${linter_priorities[$plugin_name]}"
+    # for l in "${!linter_priorities[@]}"; do
+    #     echo "  $l - prio:${linter_priorities[$l]}"
+    # done
+
+    # shellcheck disable=SC2154
+    [[ ${#plugin_extensions[@]} -eq 0 ]] &&
+        [[ ${#plugin_file_types[@]} -eq 0 ]] && {
+
+        error_msg "Plugin $plugin_def - neither " \
+            "plugin_extensions nor plugin_file_types defined"
+    }
+
+    for ext in "${plugin_extensions[@]}"; do
+        add_plugin_extension "$plugin_name" "$plugin_priority" "$ext"
+    done
+
+    for file_type in "${plugin_file_types[@]}"; do
+        add_plugin_file_type "$plugin_name" "$file_type"
+    done
+    return 0 # True
 }
 
 check_linter_plugins() {
@@ -428,51 +520,7 @@ check_linter_plugins() {
         if [[ -f "$plugin_def" ]]; then
             # skip files ending with ~
             [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
-
-            dbg_print "Processing file: $plugin_def"
-
-            #  Ensure we dont keep variables over iterations
-            unset plugin_name
-            unset plugin_cmd
-            unset plugin_extensions
-            unset plugin_file_types
-
-            # shellcheck disable=SC1090
-            source "$plugin_def"
-            dbg_print "sourced: $plugin_def"
-
-            # Checks
-            #  plugin_name not empty
-            [[ -z "$plugin_name" ]] && {
-                dbg_print "Plugin $plugin_def - missing: plugin_name" 0
-                continue
-            }
-            #  plugin_cmd  not empty
-            [[ -z "$plugin_cmd" ]] && {
-                dbg_print "Plugin $plugin_def - missing: plugin_cmd" 0
-                continue
-            }
-            # shellcheck disable=SC2154
-            [[ ${#plugin_extensions[@]} -eq 0 ]] &&
-                [[ ${#plugin_file_types[@]} -eq 0 ]] && {
-
-                error_msg "Plugin $plugin_def - neither " \
-                    "plugin_extensions nor plugin_file_types defined"
-            }
-
-            #  plugin_cmd begins with a callable
-            cmd_ok="$(verify_lint_cmd "$plugin_cmd")"
-            linter_cmd["$plugin_name"]="$cmd_ok"
-
-            for ext in "${plugin_extensions[@]}"; do
-                add_plugin_extension "$plugin_name" "$ext"
-            done
-
-            for file_type in "${plugin_file_types[@]}"; do
-                add_plugin_file_type "$plugin_name" "$file_type"
-            done
-
-            # Perform actions on the file here
+            parse_plugin_file "$plugin_def"
         fi
     done
 }
@@ -480,7 +528,7 @@ check_linter_plugins() {
 display_linters() {
     local file_type
 
-    dbg_print "new_display_linters()"
+    dbg_print "new_display_linters()" "$dbglvl_lintscan_basic"
 
     echo
     echo "Linters detected: "
@@ -516,13 +564,14 @@ do_parse_linter_def() {
     #   linter_cmd -with -options
     #   ""
     #
+    local dbg_indent=$dbg_indent
     local lint_cmd="$1"
-    local task="$2"
     local cmd
     local options
     local verif_cmd
 
-    dbg_print "do_parse_linter_def($lint_cmd,$task)" 2
+    dbg_print "do_parse_linter_def($lint_cmd)" "$dbglvl_lintscan_details"
+    ((dbg_indent++)) # increase indent until this returns
     if [[ -z "$lint_cmd" ]]; then
         cmd=""
         options=""
@@ -531,7 +580,6 @@ do_parse_linter_def() {
         cmd=""
         options=""
     else
-        [[ -n "$task" ]] || error_msg "do_parse_linter_def($lint_cmd) - missing param 2"
         cmd="$(echo "$lint_cmd" | cut -d' ' -f1)"
         options="$(echo "$lint_cmd" | cut -d' ' -f2-)"
     fi
@@ -551,31 +599,26 @@ do_parse_linter_def() {
         options=""
     }
 
-    case "$task" in
-    verify)
-        [[ -n "$verif_cmd" ]] && [[ -n "$options" ]] && verif_cmd="$verif_cmd $options"
-        echo "$verif_cmd"
-        ;;
-
-    cmd) echo "$cmd" ;;
-    options) echo "$options" ;;
-    *) error_msg "do_parse_linter_def() - bad param 1 [$task]" ;;
-    esac
+    [[ -n "$verif_cmd" ]] && [[ -n "$options" ]] &&
+        verif_cmd="$verif_cmd $options"
+    echo "$verif_cmd"
     return 0 # True
 }
 
 verify_lint_cmd() {
+    local dbg_indent=$dbg_indent
     local lint_cmd="$1"
     local cmd_parsed
 
-    dbg_print "verify_lint_cmd($lint_cmd)" 2
+    dbg_print "verify_lint_cmd($lint_cmd)" "$dbglvl_lintscan_details"
+    ((dbg_indent++)) # increase indent until this returns
 
-    if cmd_parsed="$(do_parse_linter_def "$lint_cmd" verify)"; then
+    if cmd_parsed="$(do_parse_linter_def "$lint_cmd")"; then
         echo "$cmd_parsed"
     else
         error_msg "Failed to parse lint cmd: $lint_cmd"
     fi
-    dbg_print "- result [$cmd_parsed]"
+    # dbg_print "result [$cmd_parsed]"
 }
 
 handle_linting_error() {
@@ -597,6 +640,21 @@ show_linter_action() {
 
     # Print using printf with fixed-width formatting
     printf "%-14s: %s\\n" "$linter" "$fname"
+}
+
+lint_file() {
+    local linter="$1"
+    local fname="$2"
+
+    if eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output"; then
+        cache_add "$fname"
+        return 0 # True
+    else
+        # echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
+        cat "$f_linter_output"
+        handle_linting_error
+    fi
+    return 1 # False
 }
 
 #===============================================================
@@ -637,6 +695,23 @@ handle_ctrl_c() {
     env_cleanup 1
 }
 
+consider_lf_type() {
+    local fname="$1"
+    local lf_type="$2"
+    local linter
+
+    # shellcheck disable=SC2053
+    [[ "$file_type" == $lf_type ]] && {
+        dbg_print "matching lf_type [$lf_type]" 3
+        for linter in ${linter_file_types["$lf_type"]}; do
+            show_linter_action "$fname" "$linter"
+            lint_file "$linter" "$fname" || return 1 # False
+            return 0                                 # True
+        done
+        return 1 # False
+    }
+
+}
 process_file_tree() {
     local dbg_indent=$dbg_indent
     local all_files
@@ -654,7 +729,7 @@ process_file_tree() {
     local file_type
     local lf_type
 
-    dbg_print "process_file_tree()" 0
+    dbg_print "process_file_tree()"
     ((dbg_indent++)) # increase indent until this returns
 
     trap 'handle_ctrl_c INT' INT
@@ -693,8 +768,11 @@ process_file_tree() {
         }
         [[ -d "$fname" ]] && continue
 
+        # [[ "$fname" = "files_to_check/base.py" ]] || continue
+
         should_fname_be_excluded "$fname" && continue
 
+        dbg_print " " 1
         dbg_print "Examining file: $fname" 1
 
         # abort if a time limit was set
@@ -725,61 +803,42 @@ process_file_tree() {
                 handler_found=true
                 show_linter_action "$fname" "$linter"
                 # echo "using '${linter_cmd["$linter"]}' : $fname"
-                eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output" || {
-                    echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
-                    cat "$f_linter_output"
-                    handle_linting_error
-                    continue
-                }
+                lint_file "$linter" "$fname"
+                # if eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output"; then
+                #     cache_add "$fname"
+                # else
+                #     echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
+                #     cat "$f_linter_output"
+                #     handle_linting_error
+                #     continue
+                # fi
             done
-            $handler_found && {
+            if $handler_found; then
                 dbg_print "processed by ext handler - $fname"
                 continue
-            }
+            else
+                dbg_print "Unsupported extension - $extension" 9
+            fi
         }
 
         # error_msg "linters for ${linter_file_types['Bourne-Again shell script*']}"
         IFS='|' read -r -a file_types <<<"$(file -b "$fname" | sed 's#, #|#g')"
 
         for file_type in "${file_types[@]}"; do
-            # echo "examing file_type [$file_type]"
-            for lf_type in "${!linter_file_types[@]}"; do
-                # shellcheck disable=SC2053
-                [[ "$file_type" == $lf_type ]] && {
-                    dbg_print "matching lf_type [$lf_type]" 3
-                    for linter in ${linter_file_types["$lf_type"]}; do
-                        handler_found=true
-                        # echo "$fname  - $linter"
-                        # Print using printf with fixed-width formatting
-                        show_linter_action "$fname" "$linter"
+            dbg_print "examing file_type [$file_type]" 2
 
-                        # echo "><> -----   handling it using [$linter]"
-                        # echo "using '${linter_cmd["$linter"]}' : $fname"
-                        eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output" || {
-                            echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
-                            cat "$f_linter_output"
-                            handle_linting_error
-                            continue 4
-                        }
-                        # [[ -s "$f_linter_output" ]] && {
-                        #     echo
-                        #     echo "><> output without error"
-                        #     cat "$f_linter_output"
-                        #     echo
-                        # }
-                    done
-                }
-                $handler_found && {
-                    dbg_print "processed as '$lf_type' - $fname"
-                    # echo "processed by ext handler - $fname"
+            for lf_type in "${!linter_file_types[@]}"; do
+                consider_lf_type "$fname" "$lf_type" && {
+                    dbg_print "processed as '$lf_type' - $fname" 2
                     continue 3
                 }
+                # dbg_print "Unsupported lf_type - $lf_type" 0
             done
             # $handler_found && {
             #     echo "[2] processed file_type [$file_type] - $fname"
             #     continue 2
             # }
-            dbg_print "Unsupported file type - $fname" 0
+            dbg_print "Unsupported file_type - $file_type" 9
         done
         # $handler_found && {
         #     echo "processed by some file_type handler - $fname"
@@ -836,12 +895,12 @@ dbg_indent=1 # used to indent printoutd in dbg_print
 #
 dbglvl_cache_events_basic=3
 dbglvl_cache_events_more="$((dbglvl_cache_events_basic + 1))"
-# dbglvl_linting_basic=2
-# dbglvl_linting_details="$((dbglvl_linting_basic + 1))"
+dbglvl_lintscan_basic=3
+dbglvl_lintscan_details="$((dbglvl_lintscan_basic + 1))"
 dbglvl_data_types=8
 
 # Will only be updated if cache format is changed
-olint_cache_version="olint cache vers: 0.2.4"
+olint_cache_version="olint cache vers: 0.3.0"
 cache_is_changed=false
 f_cache_file=".cache.olint" # mtime|date|fname
 declare -A cache_old        # What is read from cache file
@@ -850,6 +909,7 @@ declare -A cache_new        # What will be written to cache file
 f_linter_output=/tmp/olint["$$"]-linter-output
 
 declare -A linter_cmd
+declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
 
@@ -874,7 +934,7 @@ while [[ -n "$1" ]]; do
     -c | --continue) lint_continue=true ;;
 
     -C) # Suport for ./deploy - prints out the config dir
-        select_config_dir
+        get_config
         echo "$olint_cfg_dir"
         env_cleanup 0
         ;;
@@ -907,7 +967,6 @@ done
 
 [[ "$debug_level" -gt 0 ]] && echo "Debug lvl is: $debug_level"
 
-select_config_dir
 get_config
 check_linter_plugins
 

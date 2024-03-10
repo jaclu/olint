@@ -1,7 +1,9 @@
-#!/bin/false
+#!/bin/bash
+# shellcheck disable=SC2034
 
 plugin_name="vale"
 plugin_cmd="vale"
+plugin_priority=99 # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(
@@ -10,9 +12,8 @@ plugin_extensions=(
 
 # file-types this plugin handles
 plugin_file_types=(
-    "ASCII text"*
     "UTF-8 Unicode text"*
-    "Unicode text, UTF-8 text"*
-    "UTF-8 Unicode text, with escape"*
-    "Unicode text, UTF-8 text, with escape"*
+    "UTF-8 text"
+    "Unicode text"
+    "ASCII text"*
 )
