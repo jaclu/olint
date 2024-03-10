@@ -1,7 +1,7 @@
 #!/bin/false
 
 plugin_name="flake8"
-plugin_cmd="flake8"
+plugin_cmd="flake8 --color=always"
 
 # file extensions this plugin handles
 plugin_extensions=(
