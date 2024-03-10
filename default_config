@@ -1,12 +1,6 @@
 #!/bin/bash
 # This is sourced. Fake bang-path to help editors and linters
-
-#
-#  Here you can add global linting options
-#  This file is read first, then the project .olint.conf is processed
-#
-# export linter_shellcheck="shellcheck -o all -a -x -e SC2250,SC2312"
-# export linter_checkbashisms="checkbashisms -n -x"
+# shellcheck disable=SC2034
 
 #
 #  If you use '+='' you will add new items to the existing list
@@ -14,6 +8,19 @@
 #  config if the global conf lists a lot of stuff normally not of interest
 #  but it should be checked in a specific project
 #
+
+#
+#  Use skip_plugins in a per-project config (.olint.conf) to skip one
+#  or more linters. Use this as a template, and uncomment linters that
+#  should not to be used
+#
+skip_plugins=(
+    # checkbashisms
+    # flake8
+    # markdownlint
+    # shellcheck
+    # vale
+)
 
 # Explicit excludes, give entire filename as listed by olint
 excludes+=(

@@ -72,6 +72,7 @@ get_config() {
     #
     #  Defaults that can be overriden in config files
     #
+    skip_plugins=() # plugins to skip in this project
     excludes=(
         .cache.olint
     )           #  Specifix excludes
@@ -99,6 +100,7 @@ get_config() {
     fi
 
     dbg_print "---  Configuration used  ---" 2
+    [[ ${#skip_plugins[@]} -gt 0 ]] && dbg_print "skip_plugins ${skip_plugins[*]}" 2
     dbg_print "prefixes ${prefixes[*]}" 2
     dbg_print "suffixes ${suffixes[*]}" 2
     dbg_print "excludes ${excludes[*]}" 2
@@ -470,6 +472,10 @@ parse_plugin_file() {
         dbg_print "Plugin $plugin_def - missing: plugin_name" 0
         return 1 # False
     }
+    # Iterate through the array
+    for item in "${skip_plugins[@]}"; do
+        [[ "$item" = "$plugin_name" ]] && return 1 # False
+    done
     #  plugin_cmd  not empty
     [[ -z "$plugin_cmd" ]] && {
         dbg_print "Plugin $plugin_def - missing: plugin_cmd" 0
