@@ -1,0 +1,11 @@
+#!/bin/bash
+# shellcheck disable=SC2034
+
+plugin_name="markdownlint"
+plugin_cmd="markdownlint"
+plugin_priority=6 # suggested order when multiple plugins can handle a file
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .md
+)

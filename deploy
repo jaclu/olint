@@ -35,6 +35,36 @@ deploy_app() {
     rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental'
 }
 
+deploy_default_config() {
+    d_default_conf="$("$CURRENT_DIR"/olint -C)"
+    f_default_conf="$d_default_conf/config"
+    echo
+    if [ -f "$f_default_conf" ]; then
+        echo "Global config already pressent: $f_default_conf"
+    else
+        cp "$CURRENT_DIR"/default_config "$f_default_conf"
+
+        echo "A default config has been copied to $f_default_conf"
+        echo "You should inspect it to ensure it matches your preferences."
+        echo "As long as it is present, it will not be overwritten."
+
+    fi
+}
+
+deploy_plugins() {
+    d_default_conf="$("$CURRENT_DIR"/olint -C)"
+    d_plugins="$d_default_conf"/plugins
+    mkdir -p "$d_plugins"
+    [ -n "$(ls -A "$d_plugins")" ] && {
+        echo
+        echo "Plugin folder: $d_plugins not empty"
+        echo "No automatic instsall of plugins, current ones are in plugins/"
+        return
+    }
+    rsync -ahP --exclude="*~" plugins/* "$d_plugins"
+
+}
+
 #===============================================================
 #
 #   Main
@@ -43,24 +73,9 @@ deploy_app() {
 
 CURRENT_DIR="$(dirname -- "$0")"
 
-deploy_default_config() {
-    d_default_conf="$("$CURRENT_DIR"/olint -C)"
-    f_default_conf="$d_default_conf/config"
-    if [ -f "$f_default_conf" ]; then
-        echo "Global config already pressent: $f_default_conf"
-    else
-        cp "$CURRENT_DIR"/default_config "$f_default_conf"
-
-        echo
-        echo "A default config has been copied to $f_default_conf"
-        echo "You should inspect it to ensure it matches your preferences."
-        echo "As long as it is present, it will not be overwritten."
-
-    fi
-}
-
 echo
 echo "-----   Deploying olint   -----"
 
-deploy_default_config
 deploy_app
+deploy_default_config
+deploy_plugins

@@ -1,0 +1,23 @@
+#!/bin/bash
+# shellcheck disable=SC2034
+
+plugin_name="shellcheck"
+plugin_cmd="shellcheck -a -x --color=always -o all -e SC2250,SC2312"
+plugin_priority=1 # suggested order when multiple plugins can handle a file
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .sh
+    .bash
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+    "POSIX shell script*"
+    "Bourne-Again shell script*"
+)
+
+# Files this plugin should not handle
+#plugin_excludes=(
+#    ./tmp/foo.sh
+#)
