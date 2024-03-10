@@ -779,7 +779,7 @@ process_file_tree() {
             #     echo "[2] processed file_type [$file_type] - $fname"
             #     continue 2
             # }
-            error_msg "Unsupported file type - $fname"
+            dbg_print "Unsupported file type - $fname" 0
         done
         # $handler_found && {
         #     echo "processed by some file_type handler - $fname"
