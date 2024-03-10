@@ -2,7 +2,7 @@
 
 ## plugin sample
 
-``` bash
+```bash
 
 plugin_name="shellcheck"
 plugin_cmd="shellcheck"
@@ -13,8 +13,8 @@ plugin_extentions=(
     .bash
 )
 
-# mime-types this plugin handles
-plugin_mimetypes=(
+# file-types this plugin handles
+plugin_file_types=(
     "*POSIX shell script*"
     "*Bourne-Again shell script*"
 )
@@ -28,5 +28,5 @@ plugin_mimetypes=(
 
 linter_cmd[$plugin_name]="$plugin_cmd"
 linter_extentions[".sh"]=("supported" "linter")
-linter_mimetypes[$plugin_mimetype]=("supported" "linter") # list of plugin_name
+linter_file_types[$plugin_file_type]=("supported" "linter") # list of plugin_name
 linter_excludes[README.md]=(vale)

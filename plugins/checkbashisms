@@ -1,0 +1,26 @@
+#!/bin/false
+
+plugin_name="checkbashisms"
+
+# plugin_cmd="checkbashisms -n -x "
+plugin_cmd=do_checkbashisms # never trigger error, just display issues
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .sh
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+    "POSIX shell script*"
+)
+
+#
+#  Instead of aborting on error, just display output to /dev/stderr
+#  and always return true
+#
+do_checkbashisms() {
+    local fname="$1"
+    checkbashisms -n -x "$fname" || echo >/dev/stderr
+    true # override potential error
+}

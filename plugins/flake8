@@ -1,0 +1,15 @@
+#!/bin/false
+
+plugin_name="flake8"
+plugin_cmd="flake8"
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .py
+    .py3
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+    "Python script*"
+)

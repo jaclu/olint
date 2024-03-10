@@ -35,14 +35,6 @@ deploy_app() {
     rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental'
 }
 
-#===============================================================
-#
-#   Main
-#
-#===============================================================
-
-CURRENT_DIR="$(dirname -- "$0")"
-
 deploy_default_config() {
     d_default_conf="$("$CURRENT_DIR"/olint -C)"
     f_default_conf="$d_default_conf/config"
@@ -58,6 +50,14 @@ deploy_default_config() {
 
     fi
 }
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+CURRENT_DIR="$(dirname -- "$0")"
 
 echo
 echo "-----   Deploying olint   -----"

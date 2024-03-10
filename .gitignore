@@ -8,16 +8,13 @@
 # Exclude files with '#' in their names anywhere in the repository
 **/*#*
 
-# olint cache
-.cache.olint
-
-.olint.conf
-.shellcheckrc
-
 # defines where deploy will install olint
 .destination
 
-base.py
-nested_abort.sh
-xterm.js
-tmp/
+# olint cache
+.cache.olint
+.olint.conf
+
+.shellcheckrc
+
+files_to_check/

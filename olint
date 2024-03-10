@@ -25,10 +25,10 @@ error_msg() {
     if [[ -z "$msg" ]]; then
         echo
         echo "error_msg() no param"
-        exit 9
+        env_cleanup 9
     fi
     printf "\\n\\nERROR: %s\\n\\n" "$msg" >&2
-    [[ "$exit_code" -gt -1 ]] && exit "$exit_code"
+    [[ "$exit_code" -gt -1 ]] && env_cleanup "$exit_code"
 }
 
 dbg_print() {
@@ -39,6 +39,15 @@ dbg_print() {
     local this_debug_level="${2:-1}"
     [[ "$debug_level" -ge "$this_debug_level" ]] || return
     printf "v%s>%*s%s\\n" "$this_debug_level" "$dbg_indent" "" "$msg" >&2
+}
+
+env_cleanup() {
+    ex_code="${1:-1}"
+    #
+    #  Call this instead of exit, to ensure any cleanup will happen
+    #
+    rm -f "$f_linter_output"
+    exit "$ex_code"
 }
 
 select_config_dir() {
@@ -53,25 +62,6 @@ select_config_dir() {
     mkdir -p "$olint_cfg_dir" || {
         error_msg "Failed to create folder: $olint_cfg_dir"
     }
-}
-
-display_time_elapsed() {
-    # echo "=V= tools/utils display_time_elapsed($1, $2) $(date)"
-    local duration="$1"
-    local label="$2"
-    local minutes
-    local seconds
-
-    minutes="$((duration / 60))"
-    seconds="$((duration - minutes * 60))"
-
-    #  Add zero prefix when < 10
-    [[ "$minutes" -gt 0 ]] && [[ "$minutes" -lt 10 ]] && minutes="0$minutes"
-    [[ "$seconds" -lt 10 ]] && seconds="0$seconds"
-
-    echo
-    echo "display_time_elapsed - Time elapsed: $minutes:$seconds - $label"
-    echo
 }
 
 get_config() {
@@ -130,27 +120,6 @@ get_config() {
 #   Data Types
 #
 #===============================================================
-
-string_in_array() {
-    #
-    #  Function to check if a string is in an array
-    #
-    local target="$1"
-    local array
-    local element
-
-    dbg_print "string_in_array()" "$dbglvl_data_types"
-    shift
-    array=("$@")
-
-    for element in "${array[@]}"; do
-        if [[ "$element" == "$target" ]]; then
-            return 0 # Found the string in the array
-        fi
-    done
-
-    return 1 # String not found in the array
-}
 
 is_integer() {
     dbg_print "is_integer($1)" "$dbglvl_data_types"
@@ -415,41 +384,42 @@ add_plugin_extension() {
     local ext="$2"
     local item
 
-    dbg_print "add_plugin_extension($plugin, $ext)" 0
+    dbg_print "add_plugin_extension($plugin, $ext)"
     if [[ -z "${linter_extensions[$ext]}" ]]; then
-        echo "><> created $ext =$plugin"
+        # echo "><> created $ext =$plugin"
         linter_extensions[$ext]="$plugin"
     else
         for item in ${linter_extensions[$ext]}; do
             [[ "$item" = "$plugin" ]] && return 0
         done
-        echo "><> appended: $ext $plugin"
+        # echo "><> appended: $ext $plugin"
         linter_extensions[$ext]+=" $plugin"
     fi
 }
 
-add_plugin_mimetype() {
+add_plugin_file_type() {
     local plugin="$1"
-    local mime="$2"
+    local file_type="$2"
     local item
 
-    dbg_print "add_plugin_mimetype($plugin, $mime)" 0
+    dbg_print "add_plugin_file_type($plugin, $file_type)"
 
-    if [[ -z "${linter_mimetypes[$mime]}" ]]; then
-        echo "><> created $mime =$plugin"
-        linter_mimetypes[$mime]="$plugin"
+    if [[ -z "${linter_file_types[$file_type]}" ]]; then
+        # echo "><> created '$file_type' = $plugin"
+        linter_file_types[$file_type]="$plugin"
     else
-        for item in ${linter_mimetypes[$mime]}; do
+        for item in ${linter_file_types[$file_type]}; do
             [[ "$item" = "$plugin" ]] && return 0
         done
-        echo "><> appended: $mime $plugin"
-        linter_mimetypes[$mime]+=" $plugin"
+        # echo "><> appended: $file_type $plugin"
+        linter_file_types[$file_type]+=" $plugin"
     fi
 }
 
 check_linter_plugins() {
     local dbg_indent=$dbg_indent
     local plugin_dir="$olint_cfg_dir"/plugins
+    local file_type
 
     dbg_print "check_linter_plugins()"
     ((dbg_indent++)) # increase indent until this returns
@@ -465,7 +435,7 @@ check_linter_plugins() {
             unset plugin_name
             unset plugin_cmd
             unset plugin_extensions
-            unset plugin_mimetypes
+            unset plugin_file_types
 
             # shellcheck disable=SC1090
             source "$plugin_def"
@@ -484,10 +454,10 @@ check_linter_plugins() {
             }
             # shellcheck disable=SC2154
             [[ ${#plugin_extensions[@]} -eq 0 ]] &&
-                [[ ${#plugin_mimetypes[@]} -eq 0 ]] && {
+                [[ ${#plugin_file_types[@]} -eq 0 ]] && {
 
                 error_msg "Plugin $plugin_def - neither " \
-                    "plugin_extensions nor plugin_mimetypes defined"
+                    "plugin_extensions nor plugin_file_types defined"
             }
 
             #  plugin_cmd begins with a callable
@@ -498,8 +468,8 @@ check_linter_plugins() {
                 add_plugin_extension "$plugin_name" "$ext"
             done
 
-            for mimetype in "${plugin_mimetypes[@]}"; do
-                add_plugin_mimetype "$plugin_name" "$mimetype"
+            for file_type in "${plugin_file_types[@]}"; do
+                add_plugin_file_type "$plugin_name" "$file_type"
             done
 
             # Perform actions on the file here
@@ -508,6 +478,8 @@ check_linter_plugins() {
 }
 
 display_linters() {
+    local file_type
+
     dbg_print "new_display_linters()"
 
     echo
@@ -529,9 +501,9 @@ display_linters() {
     done
     echo
 
-    echo "mimet-types detected: "
-    for mime in "${!linter_mimetypes[@]}"; do
-        echo " '$mime'  - ${linter_mimetypes[$mime]}"
+    echo "file_types detected: "
+    for file_type in "${!linter_file_types[@]}"; do
+        echo " '$file_type'  - ${linter_file_types[$file_type]}"
     done
     echo
 
@@ -613,113 +585,18 @@ handle_linting_error() {
     #
     $lint_continue && return
     cache_write
-    exit 1
+    env_cleanup 1
 }
 
-#
-#  The do_ functions runs one specific linter
-#
-do_shellcheck() {
-    local fname=$1
-    local file_type="$2" # optional param describing file type
-
-    dbg_print "do_shellcheck($fname)" "$dbglvl_linting_basic"
-    [[ -z "$fname" ]] && error_msg "do_shellcheck() - no paran given!" 1
-
-    use_linter "$linter_shellcheck" || return 1
-    show_linter_action "$fname" "$file_type" shellcheck
-
-    eval "$linter_shellcheck" "$fname" || {
-        handle_linting_error
-        return 1 # False
-    }
-    return 0 # True
-}
-
-do_checkbashisms() {
-    local fname="$1"
-    local file_type="$2" # optional param describing file type
-
-    dbg_print "do_checkbashisms($fname)" "$dbglvl_linting_details"
-    [[ -z "$fname" ]] && error_msg "do_checkbashisms() - no paran given!" 1
-
-    use_linter "$linter_checkbashisms" || return 1
-    show_linter_action "$fname" "$file_type" checkbashisms
+show_linter_action() {
     #
-    #  Dont exit for checkbasims issues, just display them
-    #  and do a LF to make the warning stand out
-    #
-    eval "$linter_checkbashisms" "$fname" || echo
-}
-
-do_flake8() {
-    local fname="$1"
-    local file_type="$2" # optional param describing file type
-
-    dbg_print "do_flake8($fname)" "$dbglvl_linting_details"
-    [[ -z "$fname" ]] && error_msg "do_flake8() - no paran given!" 1
-
-    use_linter "$linter_flake8" || return 1 # False
-    show_linter_action "$fname" "$file_type" flake8
-    eval "$linter_flake8" "$fname" || {
-        handle_linting_error
-        return 1 # False
-    }
-    return 0 # True
-}
-
-do_vale() {
-    local fname="$1"
-    local file_type="$2" # optional param describing file type
-    local vale_tmp="/tmp/shlchk-vale"
-
-    dbg_print "do_vale($fname) vale[$linter_vale]"
-    [[ -z "$fname" ]] && error_msg "do_vale() - no paran given!" 1
-
-    use_linter "$linter_vale" || return 1 # False
-    show_linter_action "$fname" "$file_type" vale
-
-    eval "$linter_vale" "$fname" >"$vale_tmp" || {
-        cat "$vale_tmp"
-        handle_linting_error
-        exit 1 # False
-    }
-    return 0 # True
-}
-
-#
-#  The lint_ functions processes a specific file type, might use multiple
-#  linters, like for posix shells both shellcheck and checkbashisms
-#
-lint_posix() {
-    #
-    #  This one uses two linters, but since the 2nd checkbashisms is just
-    #  additional info, so if shellcheck is not present abort
+    #  Display what linter is used and what file is processed
     #
     local fname="$1"
+    local linter="$2"
 
-    [[ -z "$fname" ]] && error_msg "lint_posix() - no paran given!" 1
-
-    dbg_print "lint_posix($fname)" "$dbglvl_linting_details"
-
-    use_linter "$linter_shellcheck" && {
-        do_shellcheck "$fname" "posix" || return 1 # False
-    }
-    use_linter "$linter_checkbashisms" && {
-        do_checkbashisms "$fname" "posix" || return 1 # False
-    }
-    return 0 # True
-}
-
-lint_bash() {
-    local fname="$1"
-
-    [[ -z "$fname" ]] && error_msg "lint_bash() - no paran given!" 1
-    use_linter "$linter_shellcheck" || return 1 # False
-    dbg_print "lint_bash($fname)" "$dbglvl_linting_details"
-    echo "using bash: $fname"
-    eval "$linter_shellcheck" "$fname" || return 1 # False
-    return 0                                       # True
+    # Print using printf with fixed-width formatting
+    printf "%-14s: %s\\n" "$linter" "$fname"
 }
 
 #===============================================================
@@ -749,6 +626,7 @@ should_fname_be_excluded() {
     return 1
 }
 
+# shellcheck disable=SC2317
 handle_ctrl_c() {
     trap '' INT # abort capturing Ctrl-C
     echo
@@ -756,20 +634,30 @@ handle_ctrl_c() {
     echo
     echo "Saving allready checked files to cache"
     cache_write
-    exit 1
+    env_cleanup 1
 }
 
 process_file_tree() {
     local dbg_indent=$dbg_indent
     local all_files
     local fname
-    local exclude
-    local prefix
-    local suffix
-    local f_type
+    local handler_found
+    local previous_fname
+    local linter
+
+    # extention handling
+    # local extension
+    # local ext_handlers
+
+    # file type handling
+    local file_types
+    local file_type
+    local lf_type
 
     dbg_print "process_file_tree()" 0
     ((dbg_indent++)) # increase indent until this returns
+
+    trap 'handle_ctrl_c INT' INT
 
     #
     #  Loop over al files, sorted by file age, newest firtst.
@@ -796,8 +684,6 @@ process_file_tree() {
         fi
     fi
 
-    trap 'handle_ctrl_c INT' INT
-
     for fname in "${all_files[@]}"; do
         handler_found=false
         # abort after this file
@@ -809,7 +695,7 @@ process_file_tree() {
 
         should_fname_be_excluded "$fname" && continue
 
-        dbg_print "Examining: $fname" 0
+        dbg_print "Examining file: $fname" 1
 
         # abort if a time limit was set
         recent_enough "$fname" || {
@@ -824,74 +710,85 @@ process_file_tree() {
             continue
         }
 
-        # extension="${fname##*.}"
-        # if [ "$extension" != "$fname" ]; then
-        #     extension=".$extension"
-        # else
-        #     extension=""
-        # fi
+        extension="${fname##*.}"
+        if [[ "$extension" != "$fname" ]]; then
+            extension=".$extension"
+        else
+            extension=""
+        fi
 
-        # [[ -n "$extension" ]] && {
-        #     echo "><> extension is: [$extension]"
-        #     ext_handlers="${linter_extensions[$extension]}"
-        #     # [[ -n "$ext_handlers" ]] && error_msg "><> ext_handlers [$ext_handlers]"
-        #     for linter in $ext_handlers; do
-        #         echo "><> ext handled by: $linter"
-        #         handler_found=true
-        #         echo "><> -----   handling it"
-        #         echo "using '${linter_cmd["$linter"]}' : $fname"
-        #         linter_output="$(eval "${linter_cmd["$linter"]}" "$fname")" || {
-        #             echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
-        #             echo "$linter_output"
-        #             handle_linting_error
-        #             continue
-        #         }
-        #     done
-        #     $handler_found && {
-        #         echo "processed by ext handler - $fname"
-        #         continue
-        #     }
-        # }
-
-        f_type="$(file -b "$fname")"
-        echo "><> considering $fname - mimetype [$f_type]"
-        mimetype_handlers="${linter_extensions[$extension]}"
-        for word in $mimetype_handlers; do
-            [[ "$word" != "$f_type" ]] && continue
-            handler_found=true
-            echo "><> -----   handling it"
-            eval "${linter_cmd["$word"]}" "$fname" || {
-                handle_linting_error
+        [[ -n "$extension" ]] && {
+            # echo "><> extension is: [$extension]"
+            ext_handlers="${linter_extensions[$extension]}"
+            # [[ -n "$ext_handlers" ]] && error_msg "><> ext_handlers [$ext_handlers]"
+            for linter in $ext_handlers; do
+                handler_found=true
+                show_linter_action "$fname" "$linter"
+                # echo "using '${linter_cmd["$linter"]}' : $fname"
+                eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output" || {
+                    echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
+                    cat "$f_linter_output"
+                    handle_linting_error
+                    continue
+                }
+            done
+            $handler_found && {
+                dbg_print "processed by ext handler - $fname"
                 continue
             }
-        done
-
-        $handler_found && {
-            echo "processed by ext mimetype handler - $fname"
-            continue
         }
 
-        dbg_print "Unsupported file type [$f_type] - $fname" 0
+        # error_msg "linters for ${linter_file_types['Bourne-Again shell script*']}"
+        IFS='|' read -r -a file_types <<<"$(file -b "$fname" | sed 's#, #|#g')"
+
+        for file_type in "${file_types[@]}"; do
+            # echo "examing file_type [$file_type]"
+            for lf_type in "${!linter_file_types[@]}"; do
+                # shellcheck disable=SC2053
+                [[ "$file_type" == $lf_type ]] && {
+                    dbg_print "matching lf_type [$lf_type]" 3
+                    for linter in ${linter_file_types["$lf_type"]}; do
+                        handler_found=true
+                        # echo "$fname  - $linter"
+                        # Print using printf with fixed-width formatting
+                        show_linter_action "$fname" "$linter"
+
+                        # echo "><> -----   handling it using [$linter]"
+                        # echo "using '${linter_cmd["$linter"]}' : $fname"
+                        eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output" || {
+                            echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
+                            cat "$f_linter_output"
+                            handle_linting_error
+                            continue 4
+                        }
+                        # [[ -s "$f_linter_output" ]] && {
+                        #     echo
+                        #     echo "><> output without error"
+                        #     cat "$f_linter_output"
+                        #     echo
+                        # }
+                    done
+                }
+                $handler_found && {
+                    dbg_print "processed as '$lf_type' - $fname"
+                    # echo "processed by ext handler - $fname"
+                    continue 3
+                }
+            done
+            # $handler_found && {
+            #     echo "[2] processed file_type [$file_type] - $fname"
+            #     continue 2
+            # }
+            error_msg "Unsupported file type - $fname"
+        done
+        # $handler_found && {
+        #     echo "processed by some file_type handler - $fname"
+        #     continue
+        # }
     done
 
     trap '' INT # abort capturing Ctrl-C
     cache_write
-}
-
-list_item_group() {
-    local lbl="$1"
-    local items
-    local item
-
-    shift
-    items=("$@")
-    [[ ${#items[@]} -eq 0 ]] && return
-    echo
-    echo "---  $lbl  ---"
-    #  Entirely skip sorting for now
-    for item in "${items[@]}"; do
-        echo "$item"
-    done
 }
 
 show_help() {
@@ -920,7 +817,7 @@ The .olint.conf file can be used to define which linters should be used and
 optionally set specific parameters for them. This file can also define which
 files should be ignored. See README.md for more information about this file.
 "
-    exit 0
+    env_cleanup 0
 }
 
 #===============================================================
@@ -939,8 +836,8 @@ dbg_indent=1 # used to indent printoutd in dbg_print
 #
 dbglvl_cache_events_basic=3
 dbglvl_cache_events_more="$((dbglvl_cache_events_basic + 1))"
-dbglvl_linting_basic=2
-dbglvl_linting_details="$((dbglvl_linting_basic + 1))"
+# dbglvl_linting_basic=2
+# dbglvl_linting_details="$((dbglvl_linting_basic + 1))"
 dbglvl_data_types=8
 
 # Will only be updated if cache format is changed
@@ -950,17 +847,19 @@ f_cache_file=".cache.olint" # mtime|date|fname
 declare -A cache_old        # What is read from cache file
 declare -A cache_new        # What will be written to cache file
 
+f_linter_output=/tmp/olint["$$"]-linter-output
+
 declare -A linter_cmd
 declare -A linter_extensions
-declare -A linter_mimetypes
+declare -A linter_file_types
 
 abort_after=false       # (unofficial olint dev) option: -a
 lint_continue=false     # option: -c
 b_display_linters=false # option: -l
 use_cache=true          # option: -n
-show_stats=false        # (unofficial olint dev) option: -s
-debug_level=0           # option: -v
-h_max_age=0             # no max file age for items to be processed
+# show_stats=false        # (unofficial olint dev) option: -s
+debug_level=0 # option: -v
+h_max_age=0   # no max file age for items to be processed
 
 while [[ -n "$1" ]]; do
     case $1 in
@@ -977,7 +876,7 @@ while [[ -n "$1" ]]; do
     -C) # Suport for ./deploy - prints out the config dir
         select_config_dir
         echo "$olint_cfg_dir"
-        exit 0
+        env_cleanup 0
         ;;
 
     -l | --linters) b_display_linters=true ;;
@@ -990,13 +889,7 @@ while [[ -n "$1" ]]; do
         else
             echo "No cache found: $f_cache_file"
         fi
-        exit 0
-        ;;
-
-    -s) # This option is not ready to be used, thus not mentioned in the help
-        echo "Will skip any linting, only list files by type"
-        h_max_age=-1
-        show_stats=true
+        env_cleanup 0
         ;;
 
     -v | --verbose) ((debug_level++)) ;;
@@ -1024,8 +917,9 @@ echo
 
 $b_display_linters && {
     display_linters
-    exit 0
+    env_cleanup 0
 }
 
 cache_read
 process_file_tree
+env_cleanup 0

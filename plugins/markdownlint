@@ -1,0 +1,9 @@
+#!/bin/false
+
+plugin_name="markdownlint"
+plugin_cmd="markdownlint"
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .md
+)

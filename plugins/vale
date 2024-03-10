@@ -1,0 +1,18 @@
+#!/bin/false
+
+plugin_name="vale"
+plugin_cmd="vale"
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .md
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+    "ASCII text"*
+    "UTF-8 Unicode text"*
+    "Unicode text, UTF-8 text"*
+    "UTF-8 Unicode text, with escape"*
+    "Unicode text, UTF-8 text, with escape"*
+)
