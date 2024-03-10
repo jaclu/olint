@@ -369,11 +369,23 @@ sort_linters() {
 
     dbg_print "sort_linters(${linters_array[*]}" "$dbglvl_lintscan_details"
 
-    mapfile -t sorted_linters < <(
-        for linter in "${linters_array[@]}"; do
-            echo "$linter ${linter_priorities[$linter]}"
-        done | sort -k2n | awk '{print $1}'
-    )
+    if test -d /proc/ish; then
+        #
+        #  iSH kernel doesnt support enough of /proc to make mapfile work
+        #
+        # shellcheck disable=SC2207
+        sorted_linters=($(
+            for linter in "${linters_array[@]}"; do
+                echo "$linter ${linter_priorities[$linter]}"
+            done | sort -k2n | awk '{print $1}'
+        ))
+    else
+        mapfile -t sorted_linters < <(
+            for linter in "${linters_array[@]}"; do
+                echo "$linter ${linter_priorities[$linter]}"
+            done | sort -k2n | awk '{print $1}'
+        )
+    fi
     # dbg_print "sort_linters() - sorted [${sorted_linters[*]}]" 0
     echo "${sorted_linters[@]}"
 }
