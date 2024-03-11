@@ -3,7 +3,7 @@
 
 plugin_name="vale"
 plugin_cmd="vale"
-plugin_priority=99 # suggested order when multiple plugins can handle a file
+plugin_priority=90 # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(

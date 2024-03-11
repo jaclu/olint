@@ -23,7 +23,6 @@ plugin_file_types=(
 #
 do_checkbashisms() {
     local fname="$1"
-    dbg_print "get_config() XXXXX"
     checkbashisms -n -x "$fname" || echo >/dev/stderr
     true # override potential error
 }
