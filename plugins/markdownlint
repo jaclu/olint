@@ -2,8 +2,13 @@
 # shellcheck disable=SC2034
 
 plugin_name="markdownlint"
-plugin_cmd="markdownlint"
-plugin_priority=6 # suggested order when multiple plugins can handle a file
+
+plugin_cmd="markdownlint --disable MD013 MD033 --"
+
+# For markdownlint-cli2 use this instead
+#plugin_cmd="markdownlint-cli2 -p"
+
+plugin_priority=5 # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(
