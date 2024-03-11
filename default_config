@@ -17,6 +17,7 @@
 skip_plugins=(
     # checkbashisms
     # flake8
+    # jsonlint
     # markdownlint
     # shellcheck
     # vale
