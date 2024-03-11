@@ -46,6 +46,7 @@ env_cleanup() {
     #  Call this instead of exit, to ensure any cleanup will happen
     #
     ex_code="${1:-1}"
+    cache_write
     rm -f "$f_linter_output"
     exit "$ex_code"
 }
@@ -147,9 +148,6 @@ cache_write() {
         value="${cache_new[$key]}"
         echo "$value|$key"
     done >>"$f_cache_file"
-
-    echo
-    echo "Saved cache: $f_cache_file"
 }
 
 cache_read() {
@@ -429,13 +427,11 @@ add_plugin_file_type() {
     ((dbg_indent++)) # increase indent until this returns
 
     if [[ -z "${linter_file_types[$file_type]}" ]]; then
-        # echo "><> created '$file_type' = $plugin"
         linter_file_types[$file_type]="$plugin"
     else
         for item in ${linter_file_types[$file_type]}; do
             [[ "$item" = "$plugin" ]] && return 0
         done
-        # echo "><> appended: $file_type $plugin"
         linter_file_types[$file_type]+=" $plugin"
 
         unsorted=()
@@ -621,8 +617,8 @@ handle_linting_error() {
     #  Either write out allready processed files to cache and then exit
     #  or continue based upon
     #
+    dbg_print "handle_linting_error()"
     $lint_continue && return
-    cache_write
     env_cleanup 1
 }
 
@@ -642,10 +638,8 @@ lint_file() {
     local fname="$2"
 
     if eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output"; then
-        cache_add "$fname"
         return 0 # True
     else
-        # echo "=====  linter found issues: '${linter_cmd["$linter"]}'  ====="
         cat "$f_linter_output"
         handle_linting_error
     fi
@@ -686,52 +680,94 @@ handle_ctrl_c() {
     echo "Ctrl-C captured, terminating olint"
     echo
     echo "Saving allready checked files to cache"
-    cache_write
     env_cleanup 1
 }
 
-consider_lf_type() {
-    local fname="$1"
-    local lf_type="$2"
-    local linter
-
-    # shellcheck disable=SC2053
-    [[ "$file_type" == $lf_type ]] && {
-        dbg_print "matching lf_type [$lf_type]" 3
-        for linter in ${linter_file_types["$lf_type"]}; do
-            show_linter_action "$fname" "$linter"
-            lint_file "$linter" "$fname" || return 1 # False
-            return 0                                 # True
-        done
-        return 1 # False
-    }
-
-}
-process_file_tree() {
-    #
-    #  Loop over al files, sorted by file age, newest firtst.
-    #  Then identifying filetype using: file -b
-    #  grouping by type, and linting files suitable for such
-    #  as they come up. Thereby minimizing pointless wait time, since
-    #  the file tree is globally sorted by age
-    #
+lint_by_ext() {
     local dbg_indent=$dbg_indent
-    local all_files
-    local fname
-    local handler_found
-    local linter
+    local fname="$1"
+    local extension linter_found linter_found_issue linter
 
-    # extention handling
-    local extension ext_handlers
-
-    # file type handling
-    local file_types file_type lf_type
-
-    dbg_print "process_file_tree()"
+    dbg_print "lint_by_ext($fname)"
     ((dbg_indent++)) # increase indent until this returns
 
-    trap 'handle_ctrl_c INT' INT
+    extension="${fname##*.}"
+    if [[ "$extension" != "$fname" ]]; then
+        extension=".$extension"
+    else
+        return 1 # False
+    fi
+    case "$extension" in
+    *"/"*) return 1 ;; # . was in part of path
+    *) ;;
+    esac
 
+    linter_found=false
+    [[ -n "$extension" ]] && {
+        #
+        #  Processing by extension
+        #
+        linter_found_issue=false
+        for linter in ${linter_extensions[$extension]}; do
+            linter_found=true
+            show_linter_action "$fname" "$linter"
+            lint_file "$linter" "$fname" || linter_found_issue=true
+        done
+        if $linter_found; then
+            dbg_print "processed by ext handler - $fname" 2
+            $linter_found_issue || {
+                cache_add "$fname"
+            }
+            return 0 # True
+        fi
+    }
+    dbg_print "><> Unsupported extension - $extension"
+    return 1 # False
+}
+
+lint_by_file_type() {
+    local dbg_indent=$dbg_indent
+    local fname="$1"
+    local file_type="$2"
+    local linter_found_issue linter_found lf_type linter
+
+    dbg_print "Examing fname file_type [$file_type]" 2
+    ((dbg_indent++)) # increase indent until this returns
+
+    linter_found_issue=false
+    linter_found=false
+    for lf_type in "${!linter_file_types[@]}"; do
+        # shellcheck disable=SC2053
+        [[ "$file_type" == $lf_type ]] || {
+            continue
+        }
+        # iterate over linters matching lf_type
+        for linter in ${linter_file_types[$lf_type]}; do
+            linter_found=true
+            show_linter_action "$fname" "$linter"
+            lint_file "$linter" "$fname" || linter_found_issue=true
+
+            # not needed for visual inspection, but might be handy for
+            # log analysis to get both lf_type and linter in one line
+            dbg_print "processed as '$lf_type' - $linter" 9
+        done
+    done
+    if $linter_found; then
+        $linter_found_issue || {
+            cache_add "$fname"
+        }
+        return 0 # True - next file
+    fi
+    dbg_print "Unsupported file_type - $file_type" 3
+    return 1 # False - next file_type
+
+}
+
+generate_list_of_files_to_process() {
+    #
+    #  Sets all_files to be a reverse chronological order list
+    #  of all files in the current file tree
+    #
     if [[ $this_uname == "Darwin" ]]; then
         # macOS version
         # shellcheck disable=SC2312
@@ -749,14 +785,39 @@ process_file_tree() {
             mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
         fi
     fi
+}
 
+process_file_tree() {
+    #
+    #  Loop over al files, sorted by file age, newest firtst.
+    #  Then identifying filetype using: file -b
+    #  grouping by type, and linting files suitable for such
+    #  as they come up. Thereby minimizing pointless wait time, since
+    #  the file tree is globally sorted by age
+    #
+    local dbg_indent=$dbg_indent
+    local all_files fname linter_found
+
+    # extention handling
+    # local extension ext_handlers
+
+    # file type handling
+    local file_types file_type
+
+    dbg_print "process_file_tree()"
+    ((dbg_indent++)) # increase indent until this returns
+
+    trap 'handle_ctrl_c INT' INT
+
+    generate_list_of_files_to_process
+
+    orig_dbg_indent=$dbg_indent
+    # only_check="files_to_check/profile"
     for fname in "${all_files[@]}"; do
-        handler_found=false
-        # debug help
-        # $abort_after && {
-        #     [[ "$previous_fname" = "./bin_shared/dev/pip-hierarchy2" ]] && break
-        #     previous_fname="$fname"
-        # }
+        # [[ "$fname" != "$only_check" ]] && error_msg "><> file is not: $only_check"
+        dbg_indent=$orig_dbg_indent
+
+        linter_found=false
         [[ -d "$fname" ]] && continue
 
         # [[ "$fname" = "files_to_check/base.py" ]] || continue
@@ -764,6 +825,7 @@ process_file_tree() {
         should_fname_be_excluded "$fname" && continue
 
         dbg_print "Examining file: $fname" 1
+        ((dbg_indent++)) # increase indent until this returns
 
         # abort if a time limit was set
         recent_enough "$fname" || {
@@ -778,47 +840,30 @@ process_file_tree() {
             continue
         }
 
-        extension="${fname##*.}"
-        if [[ "$extension" != "$fname" ]]; then
-            extension=".$extension"
-        else
-            extension=""
-        fi
-
-        [[ -n "$extension" ]] && {
-            # echo "><> extension is: [$extension]"
-            ext_handlers="${linter_extensions[$extension]}"
-            # [[ -n "$ext_handlers" ]] && error_msg "><> ext_handlers [$ext_handlers]"
-            for linter in $ext_handlers; do
-                handler_found=true
-                show_linter_action "$fname" "$linter"
-                lint_file "$linter" "$fname"
-            done
-            if $handler_found; then
-                dbg_print "processed by ext handler - $fname"
-                continue
-            else
-                dbg_print "Unsupported extension - $extension" 9
-            fi
+        lint_by_ext "$fname" && { #  Processing by file extension
+            linter_found=true
+            continue
         }
 
+        #
+        #  Processing by file type
+        #
         IFS='|' read -r -a file_types <<<"$(file -b "$fname" | sed 's#, #|#g')"
-
         for file_type in "${file_types[@]}"; do
-            dbg_print "examing file_type [$file_type]" 2
-
-            for lf_type in "${!linter_file_types[@]}"; do
-                consider_lf_type "$fname" "$lf_type" && {
-                    dbg_print "processed as '$lf_type' - $fname" 1
-                    continue 3
-                }
-            done
-            dbg_print "Unsupported file_type - $file_type" 9
+            lint_by_file_type "$fname" "$file_type" && {
+                linter_found=true
+                break
+            }
         done
+
+        $linter_found || {
+            # dbg_print "No linters for file: $fname" 0
+            # echo "= No linter = : $fname"
+            show_linter_action "$fname" "= No linter ="
+        }
     done
 
     trap '' INT # abort capturing Ctrl-C
-    cache_write
 }
 
 show_help() {
@@ -871,7 +916,7 @@ dbglvl_lintscan_details="$((dbglvl_lintscan_basic + 1))"
 dbglvl_data_types=8
 
 # Will only be updated if cache format is changed
-olint_cache_version="olint cache vers: 0.3.0"
+olint_cache_version="olint cache vers: 0.3.1"
 cache_is_changed=false
 f_cache_file=".cache.olint" # mtime|date|fname
 declare -A cache_old        # What is read from cache file
