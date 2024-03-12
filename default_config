@@ -3,10 +3,24 @@
 # shellcheck disable=SC2034
 
 #
+#  Use this to override location of plugins.
+#  Usefull if some project config needs to use alternate options
+#  for plugins, or trying out a new plugin definition.
+#  In the normal case leave it empty, and the default will be used.
+#
+# plugin_dir="$olint_cfg_dir"/plugins
+
+#
 #  If you use '+='' you will add new items to the existing list
 #  using '=' you will replace the previous list, could be handy in a project
 #  config if the global conf lists a lot of stuff normally not of interest
 #  but it should be checked in a specific project
+#
+
+#
+#  Use skip_plugins in a per-project config (.olint.conf) to skip one
+#  or more linters. Use this as a template, and uncomment linters that
+#  should not to be used
 #
 
 #
@@ -19,11 +33,16 @@ skip_plugins=(
     # flake8
     # jsonlint
     # markdownlint
+    # rslint
     # shellcheck
     # vale
 )
 
-# Explicit excludes, give entire filename as listed by olint
+#
+#  Handling what files should be skipped by olint
+#
+
+# Explicit excludes, give entire filepath as listed by olint
 excludes+=(
 )
 

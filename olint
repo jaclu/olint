@@ -71,6 +71,7 @@ get_config() {
     #
     #  Defaults that can be overriden in config files
     #
+    plugin_dir="$olint_cfg_dir"/plugins
     skip_plugins=() # plugins to skip in this project
     excludes=(
         .cache.olint
@@ -93,6 +94,8 @@ get_config() {
         # shellcheck source=/dev/null
         source "$f_config" || error_msg "Failed to source project config: $f_config"
     fi
+
+    check_linter_plugins "$plugin_dir"
 
     dbg_print "---  Configuration used  ---" 2
     [[ ${#skip_plugins[@]} -gt 0 ]] && dbg_print "skip_plugins ${skip_plugins[*]}" 2
@@ -509,10 +512,14 @@ parse_plugin_file() {
 
 check_linter_plugins() {
     local dbg_indent=$dbg_indent
-    local plugin_dir="$olint_cfg_dir"/plugins
+    local plugin_dir="$1"
     local file_type
 
-    dbg_print "check_linter_plugins()"
+    [[ -z "$plugin_dir" ]] && {
+        error_msg "check_linter_plugins() - called with no plugin_dir param"
+    }
+
+    dbg_print "check_linter_plugins($plugin_dir)"
     ((dbg_indent++)) # increase indent until this returns
 
     for plugin_def in "$plugin_dir"/*; do
@@ -990,7 +997,6 @@ done
 [[ "$debug_level" -gt 0 ]] && echo "Debug lvl is: $debug_level"
 
 get_config
-check_linter_plugins
 
 $lint_continue && echo "Will contine with next file if linter found issues"
 $use_cache || echo "Will not use cache for checked files"
