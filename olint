@@ -148,6 +148,8 @@ cache_write() {
         value="${cache_new[$key]}"
         echo "$value|$key"
     done >>"$f_cache_file"
+    echo
+    echo "Cache of successfully linted files saved in: $f_cache_file"
 }
 
 cache_read() {
@@ -768,6 +770,9 @@ generate_list_of_files_to_process() {
     #  Sets all_files to be a reverse chronological order list
     #  of all files in the current file tree
     #
+    dbg_print "generate_list_of_files_to_process()"
+
+    printf "Generating sorted tree of all files..."
     if [[ $this_uname == "Darwin" ]]; then
         # macOS version
         # shellcheck disable=SC2312
@@ -785,6 +790,7 @@ generate_list_of_files_to_process() {
             mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
         fi
     fi
+    echo "done!"
 }
 
 process_file_tree() {
