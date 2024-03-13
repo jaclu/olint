@@ -152,7 +152,7 @@ cache_write() {
         echo "$value|$key"
     done >>"$f_cache_file"
     echo
-    echo "Cache for ${#cache_new[@]} successfully linted files: $f_cache_file"
+    echo "${#cache_new[@]} successfully linted files cached: $f_cache_file"
 }
 
 cache_read() {
