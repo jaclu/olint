@@ -549,7 +549,7 @@ parse_plugin_file() {
 
     cmd_ok="$(verify_lint_cmd "$plugin_cmd")"
     [[ -z "$cmd_ok" ]] && {
-        dbg_print "Bad command for $plugin_name: [$plugin_cmd]"
+        # command not found - linter not installed/available
         return 1 # False
     }
     linter_cmd["$plugin_name"]="$cmd_ok"
