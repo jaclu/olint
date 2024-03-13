@@ -97,11 +97,77 @@ get_config() {
 
     check_linter_plugins "$plugin_dir"
 
-    dbg_print "---  Configuration used  ---" 2
-    [[ ${#skip_plugins[@]} -gt 0 ]] && dbg_print "skip_plugins ${skip_plugins[*]}" 2
-    dbg_print "prefixes ${prefixes[*]}" 2
-    dbg_print "suffixes ${suffixes[*]}" 2
-    dbg_print "excludes ${excludes[*]}" 2
+    # Remove dupes
+    mapfile -t skip_plugins < <(printf "%s\n" "${skip_plugins[@]}" | sort -u)
+    mapfile -t prefixes < <(printf "%s\n" "${prefixes[@]}" | sort -u)
+    mapfile -t suffixes < <(printf "%s\n" "${suffixes[@]}" | sort -u)
+}
+
+display_config() {
+    local linter_name
+    local keys
+    local ext
+    local file_type
+    local lst
+    local item
+
+    dbg_print "display_config()" "$dbglvl_lintscan_basic"
+
+    echo "---  Display olint configuration  ---"
+    echo
+    echo "Linters defined:"
+    for linter_name in "${!linter_cmd[@]}"; do
+        echo " $linter_name  - ${linter_cmd[$linter_name]}"
+    done
+    echo
+
+    echo "Supported extensions:"
+    keys=$(for ext in "${!linter_extensions[@]}"; do echo "$ext"; done | sort)
+    for ext in $keys; do
+        echo " $ext  -  ${linter_extensions[$ext]}"
+    done
+    echo
+
+    echo "Supported File types: (lower cased for compatability)"
+    for file_type in "${!linter_file_types[@]}"; do
+        echo " '$file_type'  -  ${linter_file_types[$file_type]}"
+    done
+
+    lst="${skip_plugins[*]}"
+    [[ -n "$lst" ]] && {
+        echo
+        echo "Plugins skipped in .olint.conf:"
+        for item in $lst; do
+            echo "  $item"
+        done
+    }
+
+    lst="${excludes[*]}"
+    [[ -n "$lst" ]] && {
+        echo
+        echo "Excluded items in .olint.conf:"
+        for item in $lst; do
+            echo "  $item"
+        done
+    }
+
+    lst="${prefixes[*]}"
+    [[ -n "$lst" ]] && {
+        echo
+        echo "Excluded prefixes in .olint.conf:"
+        for item in $lst; do
+            echo "  $item"
+        done
+    }
+
+    lst="${suffixes[*]}"
+    [[ -n "$lst" ]] && {
+        echo
+        echo "Excluded suffixes in .olint.conf:"
+        for item in $lst; do
+            echo "  $item"
+        done
+    }
 }
 
 #===============================================================
@@ -442,10 +508,8 @@ add_plugin_file_type() {
             unsorted+=("$itm")
         done
 
-        # echo "><> before sorting: [${unsorted[*]}]"
         sorted_items="$(sort_linters unsorted)"
         linter_file_types[$lc_file_type]="$sorted_items"
-        # echo "sorted linter_file_types: ${linter_extensions[$file_type]}"
     fi
 }
 
@@ -455,6 +519,7 @@ parse_plugin_file() {
     local plugin_priority
     local plugin_name
     local plugin_cmd
+    local item
     local plugin_extensions
     local plugin_file_types
     local cmd_ok
@@ -530,33 +595,6 @@ check_linter_plugins() {
     done
 }
 
-display_linters() {
-    local linter_name keys ext file_type
-
-    dbg_print "new_display_linters()" "$dbglvl_lintscan_basic"
-
-    echo
-    echo "Linters defined: "
-    for linter_name in "${!linter_cmd[@]}"; do
-        echo " $linter_name  - ${linter_cmd[$linter_name]}"
-    done
-    echo
-
-    echo "Supported extensions:"
-    keys=$(for ext in "${!linter_extensions[@]}"; do echo "$ext"; done | sort)
-    for ext in $keys; do
-        echo " $ext  -  ${linter_extensions[$ext]}"
-    done
-    echo
-
-    echo "Supported File types: (lower cased for compatability)"
-    for file_type in "${!linter_file_types[@]}"; do
-        echo " '$file_type'  -  ${linter_file_types[$file_type]}"
-    done
-    echo
-
-}
-
 do_parse_linter_def() {
     #
     #  Handles the different notations
@@ -566,7 +604,9 @@ do_parse_linter_def() {
     #
     local dbg_indent=$dbg_indent
     local lint_cmd="$1"
-    local cmd options verif_cmd
+    local cmd
+    local options
+    local verif_cmd
 
     dbg_print "do_parse_linter_def($lint_cmd)" "$dbglvl_lintscan_details"
     ((dbg_indent++)) # increase indent until this returns
@@ -704,7 +744,10 @@ handle_ctrl_c() {
 lint_by_ext() {
     local dbg_indent=$dbg_indent
     local fname="$1"
-    local extension linter_found linter_found_issue linter
+    local extension
+    local linter_found
+    local linter_found_issue
+    local linter
 
     dbg_print "lint_by_ext($fname)"
     ((dbg_indent++)) # increase indent until this returns
@@ -739,7 +782,6 @@ lint_by_ext() {
             return 0 # True
         fi
     }
-    dbg_print "><> Unsupported extension - $extension"
     return 1 # False
 }
 
@@ -747,7 +789,10 @@ lint_by_file_type() {
     local dbg_indent=$dbg_indent
     local fname="$1"
     local file_type="$2"
-    local linter_found_issue linter_found lf_type linter
+    local linter_found_issue
+    local linter_found
+    local lf_type
+    local linter
 
     dbg_print "Examing fname file_type [$file_type]" 2
     ((dbg_indent++)) # increase indent until this returns
@@ -818,13 +863,11 @@ process_file_tree() {
     #  the file tree is globally sorted by age
     #
     local dbg_indent=$dbg_indent
-    local all_files fname linter_found
-
-    # extention handling
-    # local extension ext_handlers
-
-    # file type handling
-    local file_types file_type
+    local all_files
+    local fname
+    local linter_found
+    local file_types
+    local file_type
 
     dbg_print "process_file_tree()"
     ((dbg_indent++)) # increase indent until this returns
@@ -836,7 +879,6 @@ process_file_tree() {
     orig_dbg_indent=$dbg_indent
     # only_check="files_to_check/profile"
     for fname in "${all_files[@]}"; do
-        # [[ "$fname" != "$only_check" ]] && error_msg "><> file is not: $only_check"
         dbg_indent=$orig_dbg_indent
 
         linter_found=false
@@ -951,10 +993,9 @@ declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
 
-# abort_after=false       # (unofficial olint dev) option: -a
-lint_continue=false     # option: -c
-b_display_linters=false # option: -l
-use_cache=true          # option: -n
+lint_continue=false # option: -c
+show_config=false   # option: -l
+use_cache=true      # option: -n
 # show_stats=false        # (unofficial olint dev) option: -s
 debug_level=0 # option: -v
 h_max_age=0   # no max file age for items to be processed
@@ -1009,8 +1050,8 @@ $lint_continue && echo "Will contine with next file if linter found issues"
 $use_cache || echo "Will not use cache for checked files"
 echo
 
-$b_display_linters && {
-    display_linters
+$show_config && {
+    display_config
     env_cleanup 0
 }
 
