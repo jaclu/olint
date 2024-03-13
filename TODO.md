@@ -1,9 +1,5 @@
 # ToDo
 
-## AOK
-
-olint fails in /opt/AOK
-
 ## quicker file tree generation
 
 When generating file tree try to exclude all items in
