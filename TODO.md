@@ -1,5 +1,9 @@
 # ToDo
 
+## CtrlC
+
+the ctrl-c hook doesnt get enabled
+
 ## ansible-lint
 
 capture its output if no issues are reported, such as:
