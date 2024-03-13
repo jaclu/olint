@@ -40,11 +40,29 @@ or in the default config file (see below).
 
 ## Supported Linters
 
+Unwanted linters can be excluded, either by simply deleting the plugin file,
+or by skipping it in the global or the project config.
+
+New linters can be added by creating a definition file in the plugins
+folder, use an existing as template.
+
+- Defining what command to run, and any options that should be used
+- What extensions and file-types it can handle
+- What priority this linter has. Priority is entirely optional.
+The purpose is to decide in what order linters should be used in case
+multiple can handle the same extension/file-type. If more than one
+has the same priority, the order is left to olint to select.
+For example shellcheck has lower priority than checkbashisms, since if
+a script fails shellcheck, those issues should be addressed first.
+
 Olint supports the following linters out of the box:
 
-- shellcheck
 - checkbashisms
 - flake8
+- jsonlint
+- markdownlint
+- rslint
+- shellcheck
 - vale
 
 ## Configuration
