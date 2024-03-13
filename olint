@@ -425,25 +425,26 @@ add_plugin_file_type() {
     local file_type="$2"
     local item
 
-    dbg_print "add_plugin_file_type($plugin, $file_type)" "$dbglvl_lintscan_basic"
+    lc_file_type="${file_type,,}"
+    dbg_print "add_plugin_file_type($plugin, $lc_file_type)" "$dbglvl_lintscan_basic"
     ((dbg_indent++)) # increase indent until this returns
 
-    if [[ -z "${linter_file_types[$file_type]}" ]]; then
-        linter_file_types[$file_type]="$plugin"
+    if [[ -z "${linter_file_types[$lc_file_type]}" ]]; then
+        linter_file_types[$lc_file_type]="$plugin"
     else
-        for item in ${linter_file_types[$file_type]}; do
+        for item in ${linter_file_types[$lc_file_type]}; do
             [[ "$item" = "$plugin" ]] && return 0
         done
-        linter_file_types[$file_type]+=" $plugin"
+        linter_file_types[$lc_file_type]+=" $plugin"
 
         unsorted=()
-        for itm in ${linter_file_types[$file_type]}; do
+        for itm in ${linter_file_types[$lc_file_type]}; do
             unsorted+=("$itm")
         done
 
         # echo "><> before sorting: [${unsorted[*]}]"
         sorted_items="$(sort_linters unsorted)"
-        linter_file_types[$file_type]="$sorted_items"
+        linter_file_types[$lc_file_type]="$sorted_items"
         # echo "sorted linter_file_types: ${linter_extensions[$file_type]}"
     fi
 }
@@ -502,7 +503,8 @@ parse_plugin_file() {
     done
 
     for file_type in "${plugin_file_types[@]}"; do
-        add_plugin_file_type "$plugin_name" "$file_type"
+        lowercase_plugin_name="${plugin_name,,}"
+        add_plugin_file_type "$lowercase_plugin_name" "$file_type"
     done
     return 0 # True
 }
@@ -547,7 +549,7 @@ display_linters() {
     done
     echo
 
-    echo "Supported File types: "
+    echo "Supported File types: (lower cased for compatability)"
     for file_type in "${!linter_file_types[@]}"; do
         echo " '$file_type'  -  ${linter_file_types[$file_type]}"
     done
@@ -868,7 +870,8 @@ process_file_tree() {
         #
         #  Processing by file type
         #
-        IFS='|' read -r -a file_types <<<"$(file -b "$fname" | sed 's#, #|#g')"
+        IFS='|' read -r -a file_types <<<"$(file -b "$fname" |
+            tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
         for file_type in "${file_types[@]}"; do
             lint_by_file_type "$fname" "$file_type" && {
                 linter_found=true
@@ -877,8 +880,6 @@ process_file_tree() {
         done
 
         $linter_found || {
-            # dbg_print "No linters for file: $fname" 0
-            # echo "= No linter = : $fname"
             show_linter_action "$fname" "= No linter ="
         }
     done
