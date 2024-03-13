@@ -834,21 +834,23 @@ generate_list_of_files_to_process() {
     dbg_print "generate_list_of_files_to_process()"
 
     printf "Generating sorted tree of all files..."
+
     if [[ $this_uname == "Darwin" ]]; then
         # macOS version
         # shellcheck disable=SC2312
-        mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+        # mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+        mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
     else
         if test -d /proc/ish; then
             #
             #  iSH kernel doesnt support enough of /proc to make mapfile work
             #
             # shellcheck disable=SC2207
-            all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##'))
+            #all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##'))
+            all_files=($(find . -type f -printf '%T@ %P\n' | sort -n -r -k1,1 | cut -d' ' -f2-))
         else
-            # all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2))
-            # shell  check disable=SC2312
-            mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+            # mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+            mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' | sort -n -r -k1,1 | cut -d' ' -f2-)
         fi
     fi
     echo "done!"
