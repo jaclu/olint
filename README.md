@@ -63,6 +63,7 @@ Olint supports the following linters out of the box:
 - markdownlint
 - rslint
 - shellcheck
+- yamllint
 - vale
 
 ## Configuration
