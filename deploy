@@ -36,7 +36,7 @@ deploy_app() {
 }
 
 deploy_default_config() {
-    d_default_conf="$("$CURRENT_DIR"/olint -C)"
+    d_default_conf="$("$CURRENT_DIR"/olint --config-dir)"
     f_default_conf="$d_default_conf/config"
     echo
     if [ -f "$f_default_conf" ]; then
@@ -52,7 +52,7 @@ deploy_default_config() {
 }
 
 deploy_plugins() {
-    d_default_conf="$("$CURRENT_DIR"/olint -C)"
+    d_default_conf="$("$CURRENT_DIR"/olint --config-dir)"
     d_plugins="$d_default_conf"/plugins
     mkdir -p "$d_plugins"
     [ -n "$(ls -A "$d_plugins")" ] && {

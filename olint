@@ -888,20 +888,21 @@ process_file_tree() {
 }
 
 show_help() {
-    echo "Usage: $prog_name [-h] [-c] [-l] [-n] [-v] [number]
+    echo "Usage: $prog_name [-h] [-c] [-C] [--config-dir] [-n] [-N] [-v] [number]
 
 Lint all files recursively in reverse chronological order.
 
 Available options:
 
 -h, --help        Print this help and exit
--c, --continue    Continue with the next file after linter issues are found.
--l, --linters     List supported and used linters and excluded file patterns.
--n, --nocache     Don't use caching for successfully linted files.
--N, --clearcache  Remove cache file if present.
+-c, --config      List supported and used linters and excluded file patterns
+-C, --continue    Continue with the next file after linter issues are found
+--config-dir        Prints out where global config files are located
+-n, --nocache     Don't use caching for successfully linted files
+-N, --clearcache  Remove cache file if present
 -v, --verbose     Increase verbosity. Multiple -v flags can be used to
                   increase verbosity level.
-number            Only check files changed in the last number hours.
+number            Only check files changed in the last number hours
 
 Supported linters: shellcheck, checkbashisms, flake8, vale
 
@@ -966,17 +967,15 @@ while [[ -n "$1" ]]; do
         show_help || error_msg "show_help() failure"
         ;;
 
-    # -a) abort_after=true ;; # Unofficial option for olint dev
+    -c | --config) show_config=true ;;
+    -C | --continue) lint_continue=true ;;
 
-    -c | --continue) lint_continue=true ;;
-
-    -C) # Suport for ./deploy - prints out the config dir
+    --config-dir) # Suport for ./deploy - prints out the config dir
         get_config
         echo "$olint_cfg_dir"
         env_cleanup 0
         ;;
 
-    -l | --linters) b_display_linters=true ;;
     -n | --nocache) use_cache=false ;;
 
     -N | --clearcache)
