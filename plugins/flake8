@@ -4,7 +4,7 @@
 
 plugin_name="flake8"
 plugin_cmd="flake8 --color=always"
-plugin_priority=2 # suggested order when multiple plugins can handle a file
+plugin_priority=10 # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(

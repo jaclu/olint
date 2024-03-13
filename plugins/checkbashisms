@@ -6,7 +6,7 @@ plugin_name="checkbashisms"
 
 # plugin_cmd="checkbashisms -n -x "
 plugin_cmd=do_checkbashisms # never trigger error, just display issues
-plugin_priority=5           # suggested order when multiple plugins can handle a file
+plugin_priority=90          # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(
