@@ -152,7 +152,7 @@ cache_write() {
         echo "$value|$key"
     done >>"$f_cache_file"
     echo
-    echo "Cache of successfully linted files saved in: $f_cache_file"
+    echo "Cache for ${#cache_new[@]} successfully linted files: $f_cache_file"
 }
 
 cache_read() {
@@ -646,7 +646,7 @@ lint_file() {
     local linter="$1"
     local fname="$2"
 
-    if eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output"; then
+    if eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output" 2>&1; then
         return 0 # True
     else
         cat "$f_linter_output"
