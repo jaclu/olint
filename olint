@@ -939,7 +939,7 @@ Available options:
 -h, --help        Print this help and exit
 -c, --config      List supported and used linters and excluded file patterns
 -C, --continue    Continue with the next file after linter issues are found
---config-dir        Prints out where global config files are located
+--config-dir      Prints out where global config files are located
 -n, --nocache     Don't use caching for successfully linted files
 -N, --clearcache  Remove cache file if present
 -v, --verbose     Increase verbosity. Multiple -v flags can be used to
