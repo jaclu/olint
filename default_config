@@ -36,6 +36,7 @@ skip_plugins=(
     # rslint
     # shellcheck
     # vale
+    # yamllint
 )
 
 #
