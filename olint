@@ -415,10 +415,7 @@ add_plugin_extension() {
         for itm in ${linter_extensions[$ext]}; do
             unsorted+=("$itm")
         done
-        # echo "><> before sorting: [${unsorted[*]}]"
-        sorted_items="$(sort_linters unsorted)"
-        linter_extensions[$ext]="$sorted_items"
-        # echo "sorted linter_extensions: ${linter_extensions[$ext]}"
+        linter_extensions[$ext]="$(sort_linters unsorted)"
     fi
 }
 
