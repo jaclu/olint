@@ -2,17 +2,8 @@
 
 ## CtrlC
 
-the ctrl-c hook doesnt get enabled
-
-## ansible-lint
-
-capture its output if no issues are reported, such as:
-
-ansible-lint  : ansible-for-devops/lamp-infrastructure/playbooks/varnish/templates/default.vcl.j2
-
-```ansible-lint
-Passed: 0 failure(s), 0 warning(s) on 1 files. Last profile that met the validation criteria was 'production'.
-```
+- jsonlint ignores ctrl c
+- rslint  ignores ctrl c
 
 ## FileTypes
 

@@ -1,6 +1,8 @@
 #!/bin/bash
 # shellcheck disable=SC2034
 
+# This linter ignores Ctrl-C and I havent figured out how to solve this...
+
 plugin_name="rslint"
 plugin_cmd="rslint"
 plugin_priority=10 # suggested order when multiple plugins can handle a file
