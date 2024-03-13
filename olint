@@ -97,10 +97,10 @@ get_config() {
 
     check_linter_plugins "$plugin_dir"
 
-    # Remove dupes
-    mapfile -t skip_plugins < <(printf "%s\n" "${skip_plugins[@]}" | sort -u)
-    mapfile -t prefixes < <(printf "%s\n" "${prefixes[@]}" | sort -u)
-    mapfile -t suffixes < <(printf "%s\n" "${suffixes[@]}" | sort -u)
+    # Remove dupes if there are any items
+    [[ ${#skip_plugins[@]} -gt 0 ]] && mapfile -t skip_plugins < <(printf "%s\n" "${skip_plugins[@]}" | sort -u)
+    [[ ${#prefixes[@]} -gt 0 ]] && mapfile -t prefixes < <(printf "%s\n" "${prefixes[@]}" | sort -u)
+    [[ ${#suffixes[@]} -gt 0 ]] && mapfile -t suffixes < <(printf "%s\n" "${suffixes[@]}" | sort -u)
 }
 
 display_config() {
@@ -715,20 +715,21 @@ should_fname_be_excluded() {
     #  Check if fname matches exclusion rules
     #
     local fname="$1"
+    local item
 
-    for exclude in "${excludes[@]}"; do
-        [[ "$fname" == "$exclude" ]] && return 0
+    for item in "${excludes[@]}"; do
+        [[ "$fname" == "$item" ]] && return 0 # True
     done
 
-    for prefix in "${prefixes[@]}"; do
-        [[ "$fname" == "$prefix"* ]] && return 0
+    for item in "${prefixes[@]}"; do
+        [[ "$fname" == "$item"* ]] && return 0 # True
     done
 
-    for suffix in "${suffixes[@]}"; do
-        [[ "$fname" == *"$suffix" ]] && return 0
+    for item in "${suffixes[@]}"; do
+        [[ "$fname" == *"$item" ]] && return 0 # True
     done
 
-    return 1
+    return 1 # False
 }
 
 # shellcheck disable=SC2317
@@ -887,7 +888,6 @@ process_file_tree() {
         [[ -d "$fname" ]] && continue
 
         # [[ "$fname" = "files_to_check/base.py" ]] || continue
-
         should_fname_be_excluded "$fname" && continue
 
         dbg_print "Examining file: $fname" 1
