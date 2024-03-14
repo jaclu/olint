@@ -37,7 +37,7 @@ deploy_app() {
 
 deploy_default_config() {
     d_default_conf="$("$CURRENT_DIR"/olint --config-dir)"
-    f_default_conf="$d_default_conf/config"
+    f_default_conf="$d_default_conf/olint.conf"
     echo
     if [ -f "$f_default_conf" ]; then
         echo "Global config already pressent: $f_default_conf"
