@@ -102,7 +102,7 @@ display_config() {
 
     dbg_print "display_config()" "$dbglvl_lintscan_basic"
 
-    echo "---  Display olint configuration  ---"
+    echo "---  Display configuration  ---"
     echo
     echo "Linters defined:"
     for linter_name in "${!linter_cmd[@]}"; do
@@ -121,41 +121,42 @@ display_config() {
     for file_type in "${!linter_file_types[@]}"; do
         echo " '$file_type'  -  ${linter_file_types[$file_type]}"
     done
+    echo
 
     lst="${skip_plugins[*]}"
     [[ -n "$lst" ]] && {
-        echo
         echo "Plugins skipped in .olint.conf:"
         for item in $lst; do
             echo "  $item"
         done
+        echo
     }
 
     lst="${excludes[*]}"
     [[ -n "$lst" ]] && {
-        echo
         echo "Excluded items in .olint.conf:"
         for item in $lst; do
             echo "  $item"
         done
+        echo
     }
 
     lst="${prefixes[*]}"
     [[ -n "$lst" ]] && {
-        echo
         echo "Excluded prefixes in .olint.conf:"
         for item in $lst; do
             echo "  $item"
         done
+        echo
     }
 
     lst="${suffixes[*]}"
     [[ -n "$lst" ]] && {
-        echo
         echo "Excluded suffixes in .olint.conf:"
         for item in $lst; do
             echo "  $item"
         done
+        echo
     }
 }
 
