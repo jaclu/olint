@@ -213,6 +213,11 @@ cache_write() {
     dbg_print "cache_write()"
     ((dbg_indent++)) # increase indent until this returns
 
+    $do_lint_files || {
+        dbg_print "$not_linting_msg"
+        return
+    }
+	
     # abort if not using cache
     $use_cache || {
         dbg_print "skipped task due to not using cache"
@@ -251,6 +256,11 @@ cache_read() {
     dbg_print "cache_read()"
     ((dbg_indent++)) # increase indent until this returns
 
+    $do_lint_files || {
+        dbg_print "$not_linting_msg"
+        return
+    }
+	
     # abort if not using cache
     $use_cache || {
         dbg_print "skipped task due to not using cache"
@@ -764,14 +774,14 @@ lint_by_ext() {
     local linter_found_issue
     local linter
 
-    dbg_print "lint_by_ext($fname)"
+    dbg_print "lint_by_ext($fname)" 2
     ((dbg_indent++)) # increase indent until this returns
 
     extension="${fname##*.}"
     if [[ "$extension" != "$fname" ]]; then
         extension=".$extension"
     else
-        return 1 # False
+        return 1 # False - next linter
     fi
     case "$extension" in
     *"/"*) return 1 ;; # . was in part of path
@@ -786,6 +796,10 @@ lint_by_ext() {
         linter_found_issue=false
         for linter in ${linter_extensions[$extension]}; do
             linter_found=true
+	    $do_lint_files || {
+		dbg_print "$not_linting_msg" 3
+		return 0 # True - next file
+	    }
             show_linter_action "$fname" "$linter"
             lint_file "$linter" "$fname" || linter_found_issue=true
         done
@@ -794,10 +808,10 @@ lint_by_ext() {
             $linter_found_issue || {
                 cache_add "$fname"
             }
-            return 0 # True
+	    return 0 # True - next file
         fi
     }
-    return 1 # False
+    return 1 # False - next linter
 }
 
 lint_by_file_type() {
@@ -809,7 +823,7 @@ lint_by_file_type() {
     local lf_type
     local linter
 
-    dbg_print "Examing fname file_type [$file_type]" 2
+    dbg_print "lint_by_file_type($file_type)" 2
     ((dbg_indent++)) # increase indent until this returns
 
     linter_found_issue=false
@@ -822,6 +836,10 @@ lint_by_file_type() {
         # iterate over linters matching lf_type
         for linter in ${linter_file_types[$lf_type]}; do
             linter_found=true
+	    $do_lint_files || {
+		dbg_print "$not_linting_msg" 3
+		return 0 # True - next file
+	    }
             show_linter_action "$fname" "$linter"
             lint_file "$linter" "$fname" || linter_found_issue=true
 
@@ -915,29 +933,32 @@ process_file_tree() {
             continue
         }
 
-        filename_is_cached "$fname" && {
-            echo "no changes: $fname"
-            continue
+	filename_is_cached "$fname" && {
+	    $do_lint_files && echo "no changes: $fname"
+	    continue
         }
 
-        lint_by_ext "$fname" && { #  Processing by file extension
-            linter_found=true
-            continue
+	#
+	#  Processing by file extension
+	#
+        lint_by_ext "$fname" && {
+	    linter_found=true
+	    continue
         }
 
         #
         #  Processing by file type
         #
         IFS='|' read -r -a file_types <<<"$(file -b "$fname" |
-            tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
+		tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
         for file_type in "${file_types[@]}"; do
-            lint_by_file_type "$fname" "$file_type" && {
+	    lint_by_file_type "$fname" "$file_type" && {
                 linter_found=true
                 break
-            }
+	    }
         done
 
-        $display_no_linter && {
+	$do_lint_files || {
             $linter_found || {
                 show_linter_action "$fname" "= No linter ="
             }
@@ -959,7 +980,8 @@ Available options:
 -C, --continue    Continue with the next file after linter issues are found
 --config-dir      Prints out where global config files are located
 -l, --no-linter   Display '= No linter =' when there is no matching linter
-                  for a file
+                  for a file. This will not do any linting, it will just list
+ 		  all files without a matching linter.
 -n, --nocache     Don't use caching for successfully linted files
 -N, --clearcache  Remove cache file if present
 -v, --verbose     Increase verbosity. Multiple -v flags can be used to
@@ -1006,6 +1028,7 @@ f_cache_file=".cache.olint" # mtime|date|fname
 declare -A cache_old        # What is read from cache file
 declare -A cache_new        # What will be written to cache file
 
+not_linting_msg="skipped task due to no-linters display beeing selected"
 f_linter_output=/tmp/olint["$$"]-linter-output
 
 declare -A linter_cmd
@@ -1015,7 +1038,7 @@ declare -A linter_file_types
 
 show_config=false       # option: -c
 lint_continue=false     # option: -C
-display_no_linter=false # option -l
+do_lint_files=true      # option -l
 use_cache=true          # option: -n
 # show_stats=false        # (unofficial olint dev) option: -s
 debug_level=0 # option: -v
@@ -1038,7 +1061,7 @@ while [[ -n "$1" ]]; do
         env_cleanup 0
         ;;
 
-    -l | --no-linter) display_no_linter=true ;;
+    -l | --no-linter) do_lint_files=false ;;
     -n | --nocache) use_cache=false ;;
 
     -N | --clearcache)
