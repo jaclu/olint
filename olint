@@ -48,6 +48,7 @@ env_cleanup() {
     ex_code="${1:-1}"
     cache_write
     rm -f "$f_linter_output"
+    [[ $ex_code -ne 0 ]] && echo "olint exited with an error"
     exit "$ex_code"
 }
 
@@ -217,7 +218,7 @@ cache_write() {
         dbg_print "$not_linting_msg"
         return
     }
-	
+
     # abort if not using cache
     $use_cache || {
         dbg_print "skipped task due to not using cache"
@@ -260,7 +261,7 @@ cache_read() {
         dbg_print "$not_linting_msg"
         return
     }
-	
+
     # abort if not using cache
     $use_cache || {
         dbg_print "skipped task due to not using cache"
@@ -718,7 +719,6 @@ lint_file() {
     wait "$lint_pid"
     lint_exit_status=$?
 
-    # shellch eck disable=SC2181
     if [[ "$lint_exit_status" -eq 0 ]]; then
         return 0 # True
     else
@@ -796,10 +796,10 @@ lint_by_ext() {
         linter_found_issue=false
         for linter in ${linter_extensions[$extension]}; do
             linter_found=true
-	    $do_lint_files || {
-		dbg_print "$not_linting_msg" 3
-		return 0 # True - next file
-	    }
+            $do_lint_files || {
+                dbg_print "$not_linting_msg" 3
+                return 0 # True - next file
+            }
             show_linter_action "$fname" "$linter"
             lint_file "$linter" "$fname" || linter_found_issue=true
         done
@@ -808,7 +808,7 @@ lint_by_ext() {
             $linter_found_issue || {
                 cache_add "$fname"
             }
-	    return 0 # True - next file
+            return 0 # True - next file
         fi
     }
     return 1 # False - next linter
@@ -836,10 +836,10 @@ lint_by_file_type() {
         # iterate over linters matching lf_type
         for linter in ${linter_file_types[$lf_type]}; do
             linter_found=true
-	    $do_lint_files || {
-		dbg_print "$not_linting_msg" 3
-		return 0 # True - next file
-	    }
+            $do_lint_files || {
+                dbg_print "$not_linting_msg" 3
+                return 0 # True - next file
+            }
             show_linter_action "$fname" "$linter"
             lint_file "$linter" "$fname" || linter_found_issue=true
 
@@ -909,10 +909,8 @@ process_file_tree() {
 
     generate_list_of_files_to_process
 
-    trap 'handle_ctrl_c INT' INT
-
     orig_dbg_indent=$dbg_indent
-    # only_check="files_to_check/profile"
+    trap 'handle_ctrl_c INT' INT
     for fname in "${all_files[@]}"; do
         dbg_indent=$orig_dbg_indent
 
@@ -933,39 +931,44 @@ process_file_tree() {
             continue
         }
 
-	filename_is_cached "$fname" && {
-	    $do_lint_files && echo "no changes: $fname"
-	    continue
+        filename_is_cached "$fname" && {
+            $do_lint_files && echo "no changes: $fname"
+            continue
         }
 
-	#
-	#  Processing by file extension
-	#
+        #
+        #  Processing by file extension
+        #
         lint_by_ext "$fname" && {
-	    linter_found=true
-	    continue
+            linter_found=true
+            continue
         }
 
         #
         #  Processing by file type
         #
         IFS='|' read -r -a file_types <<<"$(file -b "$fname" |
-		tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
+            tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
         for file_type in "${file_types[@]}"; do
-	    lint_by_file_type "$fname" "$file_type" && {
+            lint_by_file_type "$fname" "$file_type" && {
                 linter_found=true
                 break
-	    }
+            }
         done
 
-	$do_lint_files || {
+        $do_lint_files || {
             $linter_found || {
+                ((files_without_matching_linter++))
                 show_linter_action "$fname" "= No linter ="
             }
         }
     done
+    trap '' INT # abort capturing Ctrl-C
 
-    # trap '' INT # abort capturing Ctrl-C
+    [[ $files_without_matching_linter -gt 0 ]] && {
+        echo
+        echo "Found $files_without_matching_linter files with no linter defined"
+    }
 }
 
 show_help() {
@@ -1028,7 +1031,9 @@ f_cache_file=".cache.olint" # mtime|date|fname
 declare -A cache_old        # What is read from cache file
 declare -A cache_new        # What will be written to cache file
 
+files_without_matching_linter=0
 not_linting_msg="skipped task due to no-linters display beeing selected"
+
 f_linter_output=/tmp/olint["$$"]-linter-output
 
 declare -A linter_cmd
@@ -1036,10 +1041,10 @@ declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
 
-show_config=false       # option: -c
-lint_continue=false     # option: -C
-do_lint_files=true      # option -l
-use_cache=true          # option: -n
+show_config=false   # option: -c
+lint_continue=false # option: -C
+do_lint_files=true  # option -l
+use_cache=true      # option: -n
 # show_stats=false        # (unofficial olint dev) option: -s
 debug_level=0 # option: -v
 h_max_age=0   # no max file age for items to be processed
@@ -1080,7 +1085,7 @@ while [[ -n "$1" ]]; do
 
     *) # only remaining param type is an int
         h_max_age="$1"
-        echo "Will only check files changed in the last $h_max_age"
+        echo "Will only check files changed in the last $h_max_age hours"
         ;;
 
     esac
