@@ -35,7 +35,7 @@ skip_plugins=(
     # markdownlint
     # rslint
     # shellcheck
-    # vale
+    vale # disabled by default
     # yamllint
 )
 
