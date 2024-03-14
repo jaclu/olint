@@ -82,12 +82,7 @@ get_config() {
     source_file "$olint_cfg_dir"/olint.conf
 
     #  handling project configuration
-    f_config=".olint.conf"
-    if [[ -f "$f_config" ]]; then
-        dbg_print "project configuration: $f_config"
-        # shellcheck source=/dev/null
-        source "$f_config" || error_msg "Failed to source project config: $f_config"
-    fi
+    source_file .olint.conf
 
     check_linter_plugins "$plugin_dir"
 
@@ -162,6 +157,17 @@ display_config() {
             echo "  $item"
         done
     }
+}
+
+source_file() {
+    local fname="$1"
+
+    dbg_print "source_file($fname)"
+    [[ -f "$fname" ]] && {
+        # shellcheck source=/dev/null
+        source "$fname" || error_msg "Failed to source: $fname"
+    }
+
 }
 
 #===============================================================
@@ -523,9 +529,7 @@ parse_plugin_file() {
 
     plugin_priority=10 # set a default priority
 
-    # shellcheck disable=SC1090
-    source "$plugin_def"
-    dbg_print "sourced: $plugin_def" 3
+    source_file "$plugin_def"
 
     [[ -z "$plugin_name" ]] && {
         dbg_print "Plugin $plugin_def - missing: plugin_name" 0
