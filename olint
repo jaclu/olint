@@ -86,10 +86,10 @@ get_config() {
 
     check_linter_plugins "$plugin_dir"
 
-    # Remove dupes if there are any items
-    [[ ${#skip_plugins[@]} -gt 0 ]] && mapfile -t skip_plugins < <(printf "%s\n" "${skip_plugins[@]}" | sort -u)
-    [[ ${#prefixes[@]} -gt 0 ]] && mapfile -t prefixes < <(printf "%s\n" "${prefixes[@]}" | sort -u)
-    [[ ${#suffixes[@]} -gt 0 ]] && mapfile -t suffixes < <(printf "%s\n" "${suffixes[@]}" | sort -u)
+    # Remove dupes
+    read -r -d '' -a skip_plugins <<<"$(remove_duplicates "${skip_plugins[@]}")"
+    read -r -d '' -a prefixes <<<"$(remove_duplicates "${prefixes[@]}")"
+    read -r -d '' -a suffixes <<<"$(remove_duplicates "${suffixes[@]}")"
 }
 
 display_config() {
@@ -183,6 +183,21 @@ is_integer() {
     else
         return 1 # It's not an integer
     fi
+}
+
+remove_duplicates() {
+    local item
+    local result
+
+    result=("$@") # cant send $@ as a param
+    dbg_print "remove_duplicates(${result[*]})"
+    result=()
+    for item in "$@"; do
+        if [[ ! " ${result[*]} " =~ $item ]]; then
+            result+=("$item")
+        fi
+    done
+    echo "${result[@]}"
 }
 
 #===============================================================
@@ -1046,14 +1061,14 @@ done
 
 get_config
 
-$lint_continue && echo "Will contine with next file if linter found issues"
-$use_cache || echo "Will not use cache for checked files"
-echo
-
 $show_config && {
     display_config
     env_cleanup 0
 }
+
+$lint_continue && echo "Will contine with next file if linter found issues"
+$use_cache || echo "Will not use cache for checked files"
+echo
 
 cache_read
 process_file_tree
