@@ -32,7 +32,7 @@ deploy_app() {
         exit 1
     fi
 
-    rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental'
+    sudo rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental'
 }
 
 deploy_default_config() {
