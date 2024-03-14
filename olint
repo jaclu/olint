@@ -937,8 +937,10 @@ process_file_tree() {
             }
         done
 
-        $linter_found || {
-            show_linter_action "$fname" "= No linter ="
+        $display_no_linter && {
+            $linter_found || {
+                show_linter_action "$fname" "= No linter ="
+            }
         }
     done
 
@@ -956,6 +958,8 @@ Available options:
 -c, --config      List supported and used linters and excluded file patterns
 -C, --continue    Continue with the next file after linter issues are found
 --config-dir      Prints out where global config files are located
+-l, --no-linter   Display '= No linter =' when there is no matching linter
+                  for a file
 -n, --nocache     Don't use caching for successfully linted files
 -N, --clearcache  Remove cache file if present
 -v, --verbose     Increase verbosity. Multiple -v flags can be used to
@@ -1009,9 +1013,10 @@ declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
 
-lint_continue=false # option: -c
-show_config=false   # option: -l
-use_cache=true      # option: -n
+show_config=false       # option: -c
+lint_continue=false     # option: -C
+display_no_linter=false # option -l
+use_cache=true          # option: -n
 # show_stats=false        # (unofficial olint dev) option: -s
 debug_level=0 # option: -v
 h_max_age=0   # no max file age for items to be processed
@@ -1033,6 +1038,7 @@ while [[ -n "$1" ]]; do
         env_cleanup 0
         ;;
 
+    -l | --no-linter) display_no_linter=true ;;
     -n | --nocache) use_cache=false ;;
 
     -N | --clearcache)
