@@ -742,15 +742,15 @@ should_fname_be_excluded() {
     local item
 
     for item in "${excludes[@]}"; do
-        [[ "$fname" == "$item" ]] && return 0 # True
+        [[ "$fname" =~ $item ]] && return 0 # True
     done
 
     for item in "${prefixes[@]}"; do
-        [[ "$fname" == "$item"* ]] && return 0 # True
+        [[ "$fname" = "$item"* ]] && return 0 # True
     done
 
     for item in "${suffixes[@]}"; do
-        [[ "$fname" == *"$item" ]] && return 0 # True
+        [[ "$fname" = *"$item" ]] && return 0 # True
     done
 
     return 1 # False

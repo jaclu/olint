@@ -45,12 +45,14 @@ skip_plugins=(
 
 # Explicit excludes, give entire filepath as listed by olint
 excludes+=(
+    .git/*  # use if subfolders might contain repos
 )
 
 # Filter by prefix, as listed by olint
 prefixes+=(
-    .git/
+    # .git/  # use if only checking one repo
     .vscode
+    .venv/
 )
 
 # Filter by suffix
