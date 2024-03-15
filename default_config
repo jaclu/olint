@@ -51,7 +51,7 @@ excludes+=(
 # Filter by prefix, as listed by olint
 prefixes+=(
     # .git/  # use if only checking one repo
-    .vscode
+    .vscode/
     .venv/
 )
 
