@@ -45,7 +45,7 @@ skip_plugins=(
 
 # Explicit excludes, give entire filepath as listed by olint
 excludes+=(
-    .git/*  # use if subfolders might contain repos
+    .git/  # use if subfolders might contain repos
 )
 
 # Filter by prefix, as listed by olint
