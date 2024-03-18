@@ -2,9 +2,9 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
-plugin_name="flake8"
-plugin_cmd="flake8 --color=always"
-plugin_priority=5 # suggested order when multiple plugins can handle a file
+plugin_name="bandit"
+plugin_cmd="bandit"  # -q"
+plugin_priority=10 # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(
