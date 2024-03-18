@@ -8,6 +8,8 @@
 # Exclude files with '#' in their names anywhere in the repository
 **/*#*
 
+__pycache__/
+
 # defines where deploy will install olint
 .destination
 
