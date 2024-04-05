@@ -1,10 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2034
 
-plugin_name="yamllint"
-
 plugin_cmd="yamllint -s" # never trigger error, just display issues
-plugin_priority=10           # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(

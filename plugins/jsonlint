@@ -4,9 +4,7 @@
 
 # This linter ignores Ctrl-C and I havent figured out how to solve this...
 
-plugin_name="jsonlint"
 plugin_cmd="jsonlint -p"
-plugin_priority=10 # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(

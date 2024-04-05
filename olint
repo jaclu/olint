@@ -106,7 +106,7 @@ display_config() {
     echo "---  Display configuration  ---"
     echo
     echo "Linters defined:"
-    for linter_name in "${!linter_cmd[@]}"; do
+    for linter_name in "${linter_order[@]}"; do
         echo " $linter_name  - ${linter_cmd[$linter_name]}"
     done
     echo
@@ -135,7 +135,7 @@ display_config() {
 
     lst="${excludes[*]}"
     [[ -n "$lst" ]] && {
-        echo "Excluded items in .olint.conf:"
+        echo "Excluded items:"
         for item in $lst; do
             echo "  $item"
         done
@@ -144,7 +144,7 @@ display_config() {
 
     lst="${prefixes[*]}"
     [[ -n "$lst" ]] && {
-        echo "Excluded prefixes in .olint.conf:"
+        echo "Excluded prefixes:"
         for item in $lst; do
             echo "  $item"
         done
@@ -153,7 +153,7 @@ display_config() {
 
     lst="${suffixes[*]}"
     [[ -n "$lst" ]] && {
-        echo "Excluded suffixes in .olint.conf:"
+        echo "Excluded suffixes:"
         for item in $lst; do
             echo "  $item"
         done
@@ -473,13 +473,13 @@ sort_linters() {
         sorted_linters=($(
             for linter in "${linters_array[@]}"; do
                 echo "$linter ${linter_priorities[$linter]}"
-            done | sort -k2n | awk '{print $1}'
+            done | sort -k2nr | awk '{print $1}'
         ))
     else
         mapfile -t sorted_linters < <(
             for linter in "${linters_array[@]}"; do
                 echo "$linter ${linter_priorities[$linter]}"
-            done | sort -k2n | awk '{print $1}'
+            done | sort -k2nr | awk '{print $1}'
         )
     fi
     # dbg_print "sort_linters() - sorted [${sorted_linters[*]}]" 0
@@ -554,14 +554,10 @@ parse_plugin_file() {
     dbg_print "parse_plugin_file($plugin_def)" "$dbglvl_lintscan_basic"
     ((dbg_indent++)) # increase indent until this returns
 
+    plugin_name=$(basename "$plugin_def") # defaults to fname of plugin
     plugin_priority=10 # set a default priority
 
     source_file "$plugin_def"
-
-    [[ -z "$plugin_name" ]] && {
-        dbg_print "Plugin $plugin_def - missing: plugin_name" 0
-        return 1 # False
-    }
 
     [[ -z "$plugin_cmd" ]] && {
         dbg_print "Plugin $plugin_def - missing: plugin_cmd" 0
@@ -578,6 +574,7 @@ parse_plugin_file() {
         return 1 # False
     }
     linter_cmd["$plugin_name"]="$cmd_ok"
+    linter_order+=("$plugin_name")
 
     linter_priorities["$plugin_name"]="$plugin_priority"
 
@@ -611,13 +608,20 @@ check_linter_plugins() {
     dbg_print "check_linter_plugins($plugin_dir)"
     ((dbg_indent++)) # increase indent until this returns
 
-    for plugin_def in "$plugin_dir"/*; do
-        if [[ -f "$plugin_def" ]]; then
-            # skip files ending with ~
-            [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
-            parse_plugin_file "$plugin_def"
-        fi
-    done
+    if [[ -d "$plugin_dir" ]]; then
+	# Loop through each file in alphabetical order
+	for plugin_def in "$plugin_dir"/*; do
+            # Check if the item is a file (not a plugin_dir)
+            if [[ -f "$plugin_def" ]]; then
+		# skip files ending with ~
+		[[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
+		# Process the file here
+		parse_plugin_file "$plugin_def"
+            fi
+	done
+    else
+	mkdir -p "$plugin_dir"
+    fi
 }
 
 do_parse_linter_def() {
@@ -1040,7 +1044,7 @@ declare -A linter_cmd
 declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
-
+linter_order=()  # used to display them in alphabetical order
 show_config=false   # option: -c
 lint_continue=false # option: -C
 do_lint_files=true  # option -l

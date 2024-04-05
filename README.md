@@ -5,6 +5,9 @@ cycles. It detects available linting tools and scans the entire file tree,
 starting from the current working directory, to process recently changed
 files first, regardless of their location.
 
+Ideally suited when examining an already checked out project, or some local
+code, not in any repository.
+
 If a file is successfully linted, Olint saves its filename and the time of
 its latest change in a cache. On subsequent runs, Olint skips files that
 haven't changed.
@@ -24,99 +27,147 @@ To use Olint, simply run the `olint` command followed by any options or
 arguments you want to pass. For example:
 
 ```shell
-olint -c 4
+olint -C 4
 ```
 
 This command checks files changed in the last 4 hours and continues with the
 next file after linting issues are found.
 
 ```shell
-olint -l
+olint -c
 ```
 
 This command lists detected linters and filters.
-You can change this per project in a .olint.conf file
-or in the default config file (see below).
 
 ## Supported Linters
 
-Unwanted linters can be excluded, either by simply deleting the plugin file,
-or by skipping it in the global or the project config.
-
-New linters can be added by creating a definition file in the plugins
-folder, use an existing as template.
-
-- Defining what command to run, and any options that should be used
-- What extensions and file-types it can handle
-- What priority this linter has. Priority is entirely optional.
-The purpose is to decide in what order linters should be used in case
-multiple can handle the same extension/file-type. If more than one
-has the same priority, the order is left to olint to select.
-For example shellcheck has lower priority than checkbashisms, since if
-a script fails shellcheck, those issues should be addressed first.
-
 Olint supports the following linters out of the box:
 
+- bandit
 - checkbashisms
 - flake8
 - jsonlint
 - markdownlint
+- pycodestyle
+- pylint
 - rslint
 - shellcheck
 - yamllint
-- vale
+
+Unwanted linters can be excluded, either by simply deleting the plugin file,
+or by skipping it in the global or the project config.
+
+If the cmd for a linter is not found, that linter will be skipped.
+
+New linters can be added by creating a definition file in the plugins
+folder, located where the global config file is, see below for details.
 
 ## Configuration
 
 olint first checks for a configuration file in the base configuration
 directory.
 If `$XDG_CONFIG_HOME` is defined, olint looks for the configuration file at
-`$XDG_CONFIG_HOME/olint/config`; otherwise, it checks
-`~/.config/olint/config`.
-Once this base configuration is parsed, olint examines the local project
-configuration file, `.olint.conf`.
+`$XDG_CONFIG_HOME/olint/olint.conf`; otherwise, it checks
+`~/.config/olint/olint.conf`.
 
-Here's an example configuration:
+Once this base configuration is parsed, olint examines the local project
+configuration file, `.olint.conf`, so this file overrides what is in the
+global config file.
+
+Here's an example project configuration:
 
 ```bash
 #!/bin/bash
 # This is sourced. Fake bang-path to help editors and linters
 
-# specific file excluded
-excludes=(
-    .cache.olint
+skip_plugins+=(
+    pycodestyle
+    pylint
 )
 
-# Excludes by prefix/suffix
-prefixes+=(
-    .git/
-    .venv/
-)
-suffixes+=(
-    .cfg
-    .doc
-)
-
-# Specific excludes, use the file name displayed by Olint
+# Explicit excludes, give entire filename as listed by olint
 excludes+=(
-    test_db.sqlite
+    services/sshd/ssh_defs/Deb10/etc_init.d_ssh
+    #TODO.md
 )
 
-# Define linter commands and options, if you wan't to override the defaults.
-# ending it with `=` is a special case and means that this linter will not
-be used.
-export linter_shellcheck="shellcheck -o all"
-export linter_checkbashisms="/odd/path/checkbashisms"
-export linter_flake8="/odd/path/flake8"
-export linter_vale=
+# Filter by prefix, as listed by olint
+prefixes+=(
+    local_tmux_conf/
+    .pytest_cache/
+)
+```
+
+## Plugins
+
+For each linter one plugin file must be defined, this should contain
+Bash style variable definitions and be saved in the folder `plugins` located
+in the same folder as the global config file.
+
+Obligatory: plugin_cmd - what cmd to run
+
+Sample:
+
+```shell
+plugin_cmd="checkbashisms -n -x"
+```
+
+### Optionals
+
+#### plugin_priority (default is 10)
+
+If multiple plugins can handle the same file, they will be processed starting
+with the one with highest priority.
+
+For example shellcheck has higher priority than checkbashisms, since if
+a script fails shellcheck, those issues should be addressed first.
+
+If more than one plugin has the same priority, the order is left to olint.
+
+Sample:
+
+```shell
+plugin_priority=20
+```
+
+#### plugin_extensions
+
+Listing all file extensions the plugin can handle
+
+Sample:
+
+```shell
+plugin_extensions=(
+    .sh
+    .bash
+)
+```
+
+#### plugin_file_types
+
+Lists all file types the plugin handles, defined as in the output of
+`file -b filename`. When processed this is comma-separated, so dont use
+the entire output in the definition!
+
+Since some Operating Systems use only lowercase for this, the definitions
+are converted to lowercase for comparisons, and thus are case insensitive.
+Wildcards can be used.
+
+Sample:
+
+```shell
+plugin_file_types=(
+    "POSIX shell script*"
+    "Bourne-Again shell script*"
+)
 ```
 
 ## .olint.cache
 
-The `.olint.cache` file stores information about recently changed files
+The `.olint.cache` file stores information about already linted files
 to optimize Olint's performance, each line in the cache file contains the
-file's modification time, date,
-and relative filepath, sorted in reverse chronological order.
+file's modification time, date, and relative filepath,
+This means that after a first run, only changed files will be linted.
 
 ## Contributing
 

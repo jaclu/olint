@@ -3,9 +3,7 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 
-plugin_name="vale"
 plugin_cmd="vale"
-plugin_priority=95 # suggested order when multiple plugins can handle a file
 
 # file extensions this plugin handles
 plugin_extensions=(

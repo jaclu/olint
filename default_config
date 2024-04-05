@@ -34,7 +34,6 @@ skip_plugins=(
     # flake8
     # jsonlint
     # markdownlint
-    # not_used
     # pycodestyle
     # pylint
     # rslint
@@ -49,12 +48,11 @@ skip_plugins=(
 
 # Explicit excludes, give entire filepath as listed by olint
 excludes+=(
-    .git/  # use if subfolders might contain repos
 )
 
 # Filter by prefix, as listed by olint
 prefixes+=(
-    # .git/  # use if only checking one repo
+    .git/
     .vscode/
     .venv/
 )
