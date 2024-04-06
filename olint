@@ -82,10 +82,12 @@ get_config() {
     #  handling base configuration
     source_file "$olint_cfg_dir"/olint.conf
 
+    check_linter_plugins "$plugin_dir"
+
     #  handling project configuration
     source_file .olint.conf
 
-    check_linter_plugins "$plugin_dir"
+    # check_linter_plugins "$plugin_dir"
 
     # Remove dupes
     read -r -d '' -a skip_plugins <<<"$(remove_duplicates "${skip_plugins[@]}")"
@@ -555,7 +557,7 @@ parse_plugin_file() {
     ((dbg_indent++)) # increase indent until this returns
 
     plugin_name=$(basename "$plugin_def") # defaults to fname of plugin
-    plugin_priority=10 # set a default priority
+    plugin_priority=10                    # set a default priority
 
     source_file "$plugin_def"
 
@@ -609,18 +611,18 @@ check_linter_plugins() {
     ((dbg_indent++)) # increase indent until this returns
 
     if [[ -d "$plugin_dir" ]]; then
-	# Loop through each file in alphabetical order
-	for plugin_def in "$plugin_dir"/*; do
+        # Loop through each file in alphabetical order
+        for plugin_def in "$plugin_dir"/*; do
             # Check if the item is a file (not a plugin_dir)
             if [[ -f "$plugin_def" ]]; then
-		# skip files ending with ~
-		[[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
-		# Process the file here
-		parse_plugin_file "$plugin_def"
+                # skip files ending with ~
+                [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
+                # Process the file here
+                parse_plugin_file "$plugin_def"
             fi
-	done
+        done
     else
-	mkdir -p "$plugin_dir"
+        mkdir -p "$plugin_dir"
     fi
 }
 
@@ -713,6 +715,8 @@ lint_file() {
     local linter="$1"
     local fname="$2"
 
+    dbg_print "lint_file($linter, $fname)" 3
+    dbg_print " running: ${linter_cmd["$linter"]} $fname" 7
     #
     #  In order to avoid some linters untrapping Ctrl-C
     #  they are run in the background. Then some code to ensure the
@@ -1044,7 +1048,7 @@ declare -A linter_cmd
 declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
-linter_order=()  # used to display them in alphabetical order
+linter_order=()     # used to display them in alphabetical order
 show_config=false   # option: -c
 lint_continue=false # option: -C
 do_lint_files=true  # option -l
