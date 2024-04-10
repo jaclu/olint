@@ -36,7 +36,10 @@ deploy_app() {
 }
 
 deploy_default_config() {
-    d_default_conf="$("$CURRENT_DIR"/olint --config-dir)"
+    d_default_conf="$("$CURRENT_DIR"/olint --config-dir)" || {
+        echo "ERROR: Failed to extract config-dir"
+        exit 1
+    }
     f_default_conf="$d_default_conf/olint.conf"
     echo
     if [ -f "$f_default_conf" ]; then

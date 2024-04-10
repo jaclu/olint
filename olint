@@ -82,12 +82,23 @@ get_config() {
     #  handling base configuration
     source_file "$olint_cfg_dir"/olint.conf
 
-    check_linter_plugins "$plugin_dir"
+    declare -A override_linter_cmd
 
     #  handling project configuration
     source_file .olint.conf
 
-    # check_linter_plugins "$plugin_dir"
+    check_linter_plugins "$plugin_dir"
+
+    for linter_override in "${!override_linter_cmd[@]}"; do
+        if [[ -z "${linter_cmd[$linter_override]}" ]]; then
+            error_msg "Linter Not defined, can't be changed in .olint.conf: $linter_override " 2
+        fi
+        dbg_print "Modifying linter: $linter_override" 0
+        dbg_print " replacing cmd: ${linter_cmd[$linter_override]}" 0
+        linter_cmd["$linter_override"]="${override_linter_cmd[$linter_override]}"
+        dbg_print " with:          ${linter_cmd[$linter_override]}" 0
+    done
+    unset override_linter_cmd
 
     # Remove dupes
     read -r -d '' -a skip_plugins <<<"$(remove_duplicates "${skip_plugins[@]}")"
