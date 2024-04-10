@@ -19,6 +19,4 @@ __pycache__/
 
 .vscode/
 
-.shellcheckrc
-
 files_to_check/
