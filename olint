@@ -582,11 +582,25 @@ parse_plugin_file() {
         [[ "$item" = "$plugin_name" ]] && return 1 # False
     done
 
-    cmd_ok="$(verify_lint_cmd "$plugin_cmd")"
+    if [[ -n "$plugin_cmd_actual" ]]; then
+        check_cmd="$plugin_cmd_actual"
+    else
+        check_cmd="$plugin_cmd"
+    fi
+    cmd_ok="$(verify_lint_cmd "$check_cmd")"
     [[ -z "$cmd_ok" ]] && {
         # command not found - linter not installed/available
         return 1 # False
     }
+    if [[ -n "$plugin_cmd_actual" ]]; then
+        # use the intended cmd - potentially a function
+        cmd_ok="$(verify_lint_cmd "$plugin_cmd")"
+        [[ -z "$cmd_ok" ]] && {
+            # command not found - linter not installed/available
+            return 1 # False
+        }
+    fi
+
     linter_cmd["$plugin_name"]="$cmd_ok"
     linter_order+=("$plugin_name")
 
