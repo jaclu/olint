@@ -93,10 +93,10 @@ get_config() {
         if [[ -z "${linter_cmd[$linter_override]}" ]]; then
             error_msg "Linter Not defined, can't be changed in .olint.conf: $linter_override " 2
         fi
-        dbg_print "Modifying linter: $linter_override" 0
-        dbg_print " replacing cmd: ${linter_cmd[$linter_override]}" 0
+        echo "Modifying linter: $linter_override"
+        echo " replacing: ${linter_cmd[$linter_override]}"
         linter_cmd["$linter_override"]="${override_linter_cmd[$linter_override]}"
-        dbg_print " with:          ${linter_cmd[$linter_override]}" 0
+        echo "      with: ${linter_cmd[$linter_override]}"
     done
     unset override_linter_cmd
 

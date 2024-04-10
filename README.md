@@ -96,6 +96,9 @@ prefixes+=(
     local_tmux_conf/
     .pytest_cache/
 )
+
+# modify a linter's command line for this project
+override_linter_cmd["bandit"]="bandit --skip B101"
 ```
 
 ## Plugins
