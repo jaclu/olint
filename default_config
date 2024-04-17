@@ -65,8 +65,18 @@ suffixes+=(
 )
 
 #
-#  Other settings
+# Sample linter overrides, would if some projects need alternate linter cmds
 #
-# export lint_continue=true
-# export use_cache=false
-# export debug_level=9
+# override_linter_cmd["shellcheck"]="shellcheck -a -x --color=always -o all"
+
+#
+#  Disable linter in this project
+#
+# override_linter_cmd["shellcheck"]=""
+
+#
+#  Some options that can be pre-defined
+#
+# lint_continue=true
+# use_cache=false
+# debug_level=9

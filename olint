@@ -97,6 +97,13 @@ get_config() {
         if [[ -z "${linter_cmd[$linter_override]}" ]]; then
             error_msg "Linter Not defined, can't be changed in .olint.conf: $linter_override " 2
         fi
+        new_cmd="${override_linter_cmd[$linter_override]}"
+        [[ -z "$new_cmd" ]] && {
+
+            unset "linter_cmd[$linter_override]"
+            #echo "lintercmd: ${!linter_cmd[*]}"
+            continue
+        }
         echo "Modifying linter: $linter_override"
         echo " replacing: ${linter_cmd[$linter_override]}"
         linter_cmd["$linter_override"]="${override_linter_cmd[$linter_override]}"
@@ -836,6 +843,10 @@ lint_by_ext() {
         #
         linter_found_issue=false
         for linter in ${linter_extensions[$extension]}; do
+            [[ -z ${linter_cmd["$linter"]} ]] && {
+                # linter has been disabled
+                continue
+            }
             linter_found=true
             $do_lint_files || {
                 dbg_print "$not_linting_msg" 3
@@ -876,6 +887,10 @@ lint_by_file_type() {
         }
         # iterate over linters matching lf_type
         for linter in ${linter_file_types[$lf_type]}; do
+            [[ -z ${linter_cmd["$linter"]} ]] && {
+                # linter has been disabled
+                continue
+            }
             linter_found=true
             $do_lint_files || {
                 dbg_print "$not_linting_msg" 3
