@@ -53,8 +53,8 @@ excludes+=(
 # Filter by prefix, as listed by olint
 prefixes+=(
     .git/
-    .vscode/
     .venv/
+    .vscode/
 )
 
 # Filter by suffix

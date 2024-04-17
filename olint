@@ -76,6 +76,9 @@ get_config() {
     skip_plugins=() # plugins to skip in this project
     excludes=(
         .cache.olint
+        .flake8
+        .gitignore
+        .shellcheckrc
     )           #  Specifix excludes
     prefixes=() # Excludes by prefix
     suffixes=() # Excludes by suffix
