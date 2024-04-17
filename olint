@@ -1016,28 +1016,25 @@ Lint all files recursively in reverse chronological order.
 
 Available options:
 
--h, --help        Print this help and exit
--c, --config      List supported and used linters and excluded file patterns
--C, --continue    Continue with the next file after linter issues are found
---config-dir      Prints out where global config files are located
--l, --no-linter   Display '= No linter =' when there is no matching linter
-                  for a file. This will not do any linting, it will just list
- 		  all files without a matching linter.
--n, --nocache     Don't use caching for successfully linted files
--N, --clearcache  Remove cache file if present
+-h, --help        Print this help and exit.
+-c, --config      List supported and used linters and excluded file patterns.
+-C, --continue    Continue with the next file after linter issues are found.
+--config-dir      Prints out where global config files are located.
+-n, --no-linter   Lists all files without a matching linter.
+-N, --nocache     Don't use caching for successfully linted files.
+-z, --zapcache    Remove cache file if present.
 -v, --verbose     Increase verbosity. Multiple -v flags can be used to
                   increase verbosity level.
-number            Only check files changed in the last number hours
-
-Supported linters: shellcheck, checkbashisms, flake8, vale
+number            Only check files changed in the last number hours.
 
 If a file is successfully linted, the filename and time of the latest change
 are saved in a cache (.cache.olint). Next time olint is run, files that have
 not been changed are skipped.
 
-The .olint.conf file can be used to define which linters should be used and
-optionally set specific parameters for them. This file can also define which
-files should be ignored. See README.md for more information about this file.
+If an .olint.conf is found, it is read after the global config file.
+This can be used to define filenames, prefixes and suffixes that should be
+excluded for this project.
+See README.md for more information about this file.
 "
     env_cleanup 0
 }
@@ -1104,10 +1101,10 @@ while [[ -n "$1" ]]; do
         env_cleanup 0
         ;;
 
-    -l | --no-linter) do_lint_files=false ;;
-    -n | --nocache) use_cache=false ;;
+    -n | --no-linter) do_lint_files=false ;;
+    -N | --nocache) use_cache=false ;;
 
-    -N | --clearcache)
+    -z | --zapcache)
         if [[ -f "$f_cache_file" ]]; then
             echo "Removing $f_cache_file"
             rm -f "$f_cache_file"
