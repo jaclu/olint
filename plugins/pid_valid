@@ -1,0 +1,31 @@
+#!/bin/bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # dont warn about unused variables
+
+#
+#  Examins pid-files, alerts if a pid-file points to a non-existing
+#  process.
+#
+plugin_cmd=is_pid_file_valid
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .pid
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+)
+
+is_pid_file_valid() {
+    local filename="$1"
+    proc_id="$(cat "$filename")"
+    # shell check disable=SC2009
+    if ! ps -x "$proc_id" | grep -q "$proc_id"; then
+        echo
+        echo "Dead pidfile! - process [$proc_id] does not exist"
+        echo
+        # return 1
+        exit 1
+    fi
+}
