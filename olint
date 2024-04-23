@@ -790,15 +790,24 @@ should_fname_be_excluded() {
     local item
 
     for item in "${excludes[@]}"; do
-        [[ "$fname" =~ $item ]] && return 0 # True
+        [[ "$fname" =~ $item ]] && {
+            $show_excluded && show_linter_action "$fname" "excluded"
+            return 0 # True
+        }
     done
 
     for item in "${prefixes[@]}"; do
-        [[ "$fname" = "$item"* ]] && return 0 # True
+        [[ "$fname" = "$item"* ]] && {
+            $show_excluded && show_linter_action "$fname" "excluded"
+            return 0 # True
+        }
     done
 
     for item in "${suffixes[@]}"; do
-        [[ "$fname" = *"$item" ]] && return 0 # True
+        [[ "$fname" = *"$item" ]] && {
+            $show_excluded && show_linter_action "$fname" "excluded"
+            return 0 # True
+        }
     done
 
     return 1 # False
@@ -975,6 +984,7 @@ process_file_tree() {
 
         # [[ "$fname" = "files_to_check/base.py" ]] || continue
         should_fname_be_excluded "$fname" && continue
+        $show_excluded && continue
 
         dbg_print "Examining file: $fname" 1
         ((dbg_indent++)) # increase indent until this returns
@@ -1038,6 +1048,7 @@ Available options:
 -c, --config      List supported and used linters and excluded file patterns.
 -C, --continue    Continue with the next file after linter issues are found.
 --config-dir      Prints out where global config files are located.
+-e  --excluded    List all files that are excluded.
 -n, --no-linter   Lists all files without a matching linter.
 -N, --nocache     Don't use caching for successfully linted files.
 -z, --zapcache    Remove cache file if present.
@@ -1096,8 +1107,9 @@ declare -A linter_file_types
 linter_order=()     # used to display them in alphabetical order
 show_config=false   # option: -c
 lint_continue=false # option: -C
-do_lint_files=true  # option -l
-use_cache=true      # option: -n
+show_excluded=false # option: -e
+do_lint_files=true  # option: -n
+use_cache=true      # option: -N
 # show_stats=false        # (unofficial olint dev) option: -s
 debug_level=0 # option: -v
 h_max_age=0   # no max file age for items to be processed
@@ -1119,6 +1131,7 @@ while [[ -n "$1" ]]; do
         env_cleanup 0
         ;;
 
+    -e | --excluded) show_excluded=true ;;
     -n | --no-linter) do_lint_files=false ;;
     -N | --nocache) use_cache=false ;;
 
