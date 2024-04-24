@@ -798,7 +798,10 @@ should_fname_be_excluded() {
 
     for item in "${prefixes[@]}"; do
         [[ "$fname" = "$item"* ]] && {
-            $show_excluded && show_linter_action "$fname" "excluded"
+            $show_excluded && {
+                $skip_dot_git && [[ "$fname" = .git/* ]] && return 0
+                show_linter_action "$fname" "excluded"
+            }
             return 0 # True
         }
     done
@@ -1044,17 +1047,18 @@ Lint all files recursively in reverse chronological order.
 
 Available options:
 
--h, --help        Print this help and exit.
--c, --config      List supported and used linters and excluded file patterns.
--C, --continue    Continue with the next file after linter issues are found.
---config-dir      Prints out where global config files are located.
--e  --excluded    List all files that are excluded.
--n, --no-linter   Lists all files without a matching linter.
--N, --nocache     Don't use caching for successfully linted files.
--z, --zapcache    Remove cache file if present.
--v, --verbose     Increase verbosity. Multiple -v flags can be used to
-                  increase verbosity level.
-number            Only check files changed in the last number hours.
+-h, --help          Print this help and exit
+-c, --config        List supported and used linters and excluded file patterns
+-C, --continue      Continue with the next file after linter issues are found
+--config-dir        Prints out where global config files are located
+-e  --excluded      List all files that are excluded (except .git/)
+-E  --excluded-all  Reallly list all files that are excluded
+-n, --no-linter     Lists all files without a matching linter
+-N, --nocache       Don't use caching for successfully linted files
+-z, --zapcache      Remove cache file if present
+-v, --verbose       Increase verbosity. Multiple -v flags can be used to
+                    increase verbosity level
+number              Only check files changed in the last number hours
 
 If a file is successfully linted, the filename and time of the latest change
 are saved in a cache (.cache.olint). Next time olint is run, files that have
@@ -1107,7 +1111,8 @@ declare -A linter_file_types
 linter_order=()     # used to display them in alphabetical order
 show_config=false   # option: -c
 lint_continue=false # option: -C
-show_excluded=false # option: -e
+show_excluded=false # option: -e / -E
+skip_dot_git=false  # extra setting for: -e / -E
 do_lint_files=true  # option: -n
 use_cache=true      # option: -N
 # show_stats=false        # (unofficial olint dev) option: -s
@@ -1131,7 +1136,14 @@ while [[ -n "$1" ]]; do
         env_cleanup 0
         ;;
 
-    -e | --excluded) show_excluded=true ;;
+    -e | --excluded)
+        show_excluded=true
+        skip_dot_git=true
+        ;;
+    -E | --excluded-all)
+        show_excluded=true
+        skip_dot_git=false
+        ;;
     -n | --no-linter) do_lint_files=false ;;
     -N | --nocache) use_cache=false ;;
 
