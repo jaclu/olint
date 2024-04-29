@@ -1,0 +1,13 @@
+#!/bin/bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # dont warn about unused variables
+
+#
+#  Special case for checking .pylintrc files
+#
+plugin_cmd="pylint --help"
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .pylintrc
+)
