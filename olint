@@ -1006,14 +1006,6 @@ process_file_tree() {
         }
 
         #
-        #  Processing by file extension
-        #
-        lint_by_ext "$fname" && {
-            linter_found=true
-            continue
-        }
-
-        #
         #  Processing by file type
         #
         IFS='|' read -r -a file_types <<<"$(file -b "$fname" |
@@ -1024,6 +1016,15 @@ process_file_tree() {
                 break
             }
         done
+        $linter_found && continue
+
+        #
+        #  Processing by file extension
+        #
+        lint_by_ext "$fname" && {
+            linter_found=true
+            continue
+        }
 
         $do_lint_files || {
             $linter_found || {
