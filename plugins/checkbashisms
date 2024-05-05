@@ -14,11 +14,6 @@ plugin_cmd_actual="checkbashisms"
 
 plugin_priority=5 #  suggested order when multiple plugins can handle a file
 
-#  file extensions this plugin handles
-plugin_extensions=(
-    .sh
-)
-
 #  file-types this plugin handles
 plugin_file_types=(
     "POSIX shell script*"
