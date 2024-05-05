@@ -42,15 +42,15 @@ deploy_default_config() {
     }
     f_default_conf="$d_default_conf/olint.conf"
     echo
-    if [ -f "$f_default_conf" ]; then
-        echo "Global config already pressent: $f_default_conf"
-    else
+    if [ ! -f "$f_default_conf" ] || $force_deploy; then
         cp "$CURRENT_DIR"/default_config "$f_default_conf"
 
         echo "A default config has been copied to $f_default_conf"
         echo "You should inspect it to ensure it matches your preferences."
         echo "As long as it is present, it will not be overwritten."
 
+    else
+        echo "Global config already pressent: $f_default_conf"
     fi
 }
 
@@ -58,12 +58,15 @@ deploy_plugins() {
     d_default_conf="$("$CURRENT_DIR"/olint --config-dir)"
     d_plugins="$d_default_conf"/plugins
     mkdir -p "$d_plugins"
-    [ -n "$(ls -A "$d_plugins")" ] && {
+
+    ! $force_deploy && [ -n "$(ls -A "$d_plugins")" ] && {
         echo
         echo "Plugin folder: $d_plugins not empty"
         echo "No automatic instsall of plugins, current ones are in plugins/"
         return
     }
+    echo
+    echo "Deploying plugins"
     rsync -ahP --exclude="*~" plugins/* "$d_plugins"
 
 }
@@ -78,6 +81,11 @@ CURRENT_DIR="$(dirname -- "$0")"
 
 echo
 echo "-----   Deploying olint   -----"
+force_deploy=false
+[ "$1" = force ] && {
+    echo "Will force deploy"
+    force_deploy=true
+}
 
 deploy_app
 deploy_default_config
