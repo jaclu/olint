@@ -1155,7 +1155,6 @@ while [[ -n "$1" ]]; do
         else
             echo "No cache found: $f_cache_file"
         fi
-        env_cleanup 0
         ;;
 
     -v | --verbose) ((debug_level++)) ;;
