@@ -56,7 +56,7 @@ env_cleanup() {
 get_config() {
     local dbg_indent=$dbg_indent
 
-    dbg_print "get_config()"
+    dbg_print "get_config()" 2
     ((dbg_indent++)) # increase indent until this returns
 
     #  Selects config location
@@ -125,7 +125,7 @@ display_config() {
     local lst
     local item
 
-    dbg_print "display_config()" "$dbglvl_lintscan_basic"
+    dbg_print "display_config()" "$dbglvl_lintscan_basic" 2
 
     echo "---  Display configuration  ---"
     echo
@@ -188,7 +188,7 @@ display_config() {
 source_file() {
     local fname="$1"
 
-    dbg_print "source_file($fname)"
+    dbg_print "source_file($fname)" 3
     [[ -f "$fname" ]] && {
         # shellcheck source=/dev/null
         source "$fname" || error_msg "Failed to source: $fname"
@@ -216,7 +216,7 @@ remove_duplicates() {
     local result
 
     result=("$@") # cant send $@ as a param
-    dbg_print "remove_duplicates(${result[*]})"
+    dbg_print "remove_duplicates(${result[*]})" 3
     result=()
     for item in "$@"; do
         if [[ ! " ${result[*]} " =~ $item ]]; then
@@ -235,23 +235,23 @@ remove_duplicates() {
 cache_write() {
     local dbg_indent=$dbg_indent
 
-    dbg_print "cache_write()"
+    dbg_print "cache_write()" 3
     ((dbg_indent++)) # increase indent until this returns
 
     $do_lint_files || {
-        dbg_print "$not_linting_msg"
+        dbg_print "$not_linting_msg" 3
         return
     }
 
     # abort if not using cache
     $use_cache || {
-        dbg_print "skipped task due to not using cache"
+        dbg_print "skipped task due to not using cache" 3
         return
     }
 
     # If no changes have happened, no need to save cache
     $cache_is_changed || {
-        dbg_print "skipped task due to no changes"
+        dbg_print "skipped task due to no changes" 3
         return
     }
 
@@ -264,7 +264,7 @@ cache_write() {
         echo "$value|$key"
     done >>"$f_cache_file"
     echo
-    echo "${#cache_new[@]} successfully linted files cached: $f_cache_file"
+    echo "${#cache_new[@]} successfully linted files cached: $f_cache_file - run with -v to see cached files"
 }
 
 cache_read() {
@@ -278,28 +278,28 @@ cache_read() {
     local f_date
     local f_mtime
 
-    dbg_print "cache_read()"
+    dbg_print "cache_read()" 2
     ((dbg_indent++)) # increase indent until this returns
 
     $do_lint_files || {
-        dbg_print "$not_linting_msg"
+        dbg_print "$not_linting_msg" 2
         return
     }
 
     # abort if not using cache
     $use_cache || {
-        dbg_print "skipped task due to not using cache"
+        dbg_print "skipped task due to not using cache" 2
         return
     }
 
     # Check if the file exists and is readable
     if [[ -r "$f_cache_file" ]]; then
-        dbg_print "found cache file: $f_cache_file" 3
+        dbg_print "found cache file: $f_cache_file" 4
 
         # Read each line of the file and add to the array
 
         while IFS= read -r cached_line; do
-            dbg_print "read line: $cached_line" 3
+            dbg_print "read line: $cached_line" 4
             if $waiting_for_header; then
                 [[ "$cached_line" = "$olint_cache_version" ]] || {
                     echo
@@ -312,7 +312,7 @@ cache_read() {
                     break
                 }
                 waiting_for_header=false
-                dbg_print "found correct header: $olint_cache_version" 3
+                dbg_print "found correct header: $olint_cache_version" 4
                 continue
             else
                 IFS='|' read -r f_mtime f_date f_name <<<"$cached_line"
@@ -335,7 +335,7 @@ get_cache_item() {
     local dbg_indent=$dbg_indent
     local cached_item
 
-    dbg_print "get_cache_item($f_to_check)" "$dbglvl_cache_events_more"
+    dbg_print "get_cache_item($f_to_check)" "$dbglvl_cache_events_more" 2
     ((dbg_indent++)) # increase indent until this returns
 
     #
@@ -344,7 +344,7 @@ get_cache_item() {
     #
     cached_item="${cache_old["$f_to_check"]}"
     [[ -n "$cached_item" ]] || {
-        dbg_print "item not found" "$((dbglvl_cache_events_more + 1))"
+        dbg_print "item not found" "$((dbglvl_cache_events_more + 1))" 2
         return 1 # false
     }
     f_name="$f_to_check"
@@ -415,7 +415,7 @@ recent_enough() {
     local current_time
     local span_in_seconds
 
-    dbg_print "recent_enough()" 8
+    dbg_print "recent_enough()" 9
     ((dbg_indent++)) # increase indent until this returns
 
     case "$h_max_age" in
@@ -647,7 +647,7 @@ check_linter_plugins() {
         error_msg "check_linter_plugins() - called with no plugin_dir param"
     }
 
-    dbg_print "check_linter_plugins($plugin_dir)"
+    dbg_print "check_linter_plugins($plugin_dir)" 2
     ((dbg_indent++)) # increase indent until this returns
 
     if [[ -d "$plugin_dir" ]]; then
@@ -727,7 +727,7 @@ verify_lint_cmd() {
     else
         error_msg "Failed to parse lint cmd: $lint_cmd"
     fi
-    # dbg_print "result [$cmd_parsed]"
+    # dbg_print "result [$cmd_parsed]" 2
 }
 
 handle_linting_error() {
@@ -735,7 +735,7 @@ handle_linting_error() {
     #  Either write out allready processed files to cache and then exit
     #  or continue based upon
     #
-    dbg_print "handle_linting_error()"
+    dbg_print "handle_linting_error()" 2
     $lint_continue && return
     env_cleanup 1
 }
@@ -755,8 +755,8 @@ lint_file() {
     local linter="$1"
     local fname="$2"
 
-    dbg_print "lint_file($linter, $fname)" 3
-    dbg_print " running: ${linter_cmd["$linter"]} $fname" 7
+    dbg_print "lint_file($linter, $fname)" 4
+    dbg_print " running: ${linter_cmd["$linter"]} $fname" 8
     #
     #  In order to avoid some linters untrapping Ctrl-C
     #  they are run in the background. Then some code to ensure the
@@ -834,7 +834,7 @@ lint_by_ext() {
     local linter_found_issue
     local linter
 
-    dbg_print "lint_by_ext($fname)" 2
+    dbg_print "lint_by_ext($fname)" 3
     ((dbg_indent++)) # increase indent until this returns
 
     extension="${fname##*.}"
@@ -861,14 +861,14 @@ lint_by_ext() {
             }
             linter_found=true
             $do_lint_files || {
-                dbg_print "$not_linting_msg" 3
+                dbg_print "$not_linting_msg" 4
                 return 0 # True - next file
             }
             show_linter_action "$fname" "$linter"
             lint_file "$linter" "$fname" || linter_found_issue=true
         done
         if $linter_found; then
-            dbg_print "processed by ext handler - $fname" 2
+            dbg_print "processed by ext handler - $fname" 3
             $linter_found_issue || {
                 cache_add "$fname"
             }
@@ -887,7 +887,7 @@ lint_by_file_type() {
     local lf_type
     local linter
 
-    dbg_print "lint_by_file_type($file_type)" 2
+    dbg_print "lint_by_file_type($file_type)" 3
     ((dbg_indent++)) # increase indent until this returns
 
     linter_found_issue=false
@@ -905,7 +905,7 @@ lint_by_file_type() {
             }
             linter_found=true
             $do_lint_files || {
-                dbg_print "$not_linting_msg" 3
+                dbg_print "$not_linting_msg" 4
                 return 0 # True - next file
             }
             show_linter_action "$fname" "$linter"
@@ -922,7 +922,7 @@ lint_by_file_type() {
         }
         return 0 # True - next file
     fi
-    dbg_print "Unsupported file_type - $file_type" 3
+    dbg_print "Unsupported file_type - $file_type" 4
     return 1 # False - next file_type
 
 }
@@ -932,7 +932,7 @@ generate_list_of_files_to_process() {
     #  Sets all_files to be a reverse chronological order list
     #  of all files in the current file tree
     #
-    dbg_print "generate_list_of_files_to_process()"
+    dbg_print "generate_list_of_files_to_process()" 2
 
     printf "Generating sorted tree of all files..."
 
@@ -972,7 +972,7 @@ process_file_tree() {
     local file_types
     local file_type
 
-    dbg_print "process_file_tree()"
+    dbg_print "process_file_tree()" 2
     ((dbg_indent++)) # increase indent until this returns
 
     generate_list_of_files_to_process
@@ -989,19 +989,19 @@ process_file_tree() {
         should_fname_be_excluded "$fname" && continue
         $show_excluded && continue
 
-        dbg_print "Examining file: $fname" 1
+        dbg_print "Examining file: $fname" 2
         ((dbg_indent++)) # increase indent until this returns
 
         # abort if a time limit was set
         recent_enough "$fname" || {
             # maintain cache items if this run is time limited
-            dbg_print "to old to be processed" 3
+            dbg_print "to old to be processed" 4
             filename_is_cached "$fname"
             continue
         }
 
         filename_is_cached "$fname" && {
-            $do_lint_files && echo "no changes: $fname"
+            $do_lint_files && dbg_print "no changes: $fname" 1
             continue
         }
 
@@ -1087,11 +1087,11 @@ dbg_indent=1 # used to indent printoutd in dbg_print
 #  Some debug level constants, to make it easier to limit what
 #  is displayed
 #
-dbglvl_cache_events_basic=3
+dbglvl_cache_events_basic=4
 dbglvl_cache_events_more="$((dbglvl_cache_events_basic + 1))"
-dbglvl_lintscan_basic=3
+dbglvl_lintscan_basic=4
 dbglvl_lintscan_details="$((dbglvl_lintscan_basic + 1))"
-dbglvl_data_types=8
+dbglvl_data_types=9
 
 # Will only be updated if cache format is changed
 olint_cache_version="olint cache vers: 0.3.1"
