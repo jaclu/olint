@@ -75,12 +75,11 @@ check_dependencies() {
     deps=""
     # apk add rsync bash coreutils findutils file
 
-    #command -v file || deps="$deps file"
     #command -v bash || deps="$deps coreutils"
 
     # verified
-    command -v rsync >/dev/null || deps="$deps rsync"
     command -v bash  >/dev/null || deps="$deps bash"
+    command -v file || deps="$deps file"
     _s="$(command -v find)"
     if [ -z "$_s" ]; then
 	deps="$deps findutils"
@@ -90,6 +89,7 @@ check_dependencies() {
 	    deps="$deps findutils"
 	}
     fi
+    command -v rsync >/dev/null || deps="$deps rsync"
 
     [ -n "$deps" ] && {
 	echo "WARNING: Missing Alpine dependencies, solve by running"
