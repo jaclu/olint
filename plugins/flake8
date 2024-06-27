@@ -2,6 +2,9 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
+# Dependencies:
+# Alpine: available via apk py3-flake8
+
 plugin_cmd="flake8 --color=always"
 plugin_priority=20 # suggested order when multiple plugins can handle a file
 

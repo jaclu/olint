@@ -3,6 +3,9 @@
 
 plugin_cmd="yamllint -s" # never trigger error, just display issues
 
+# Dependencies:
+# Alpine: available via apk yamllint
+
 # file extensions this plugin handles
 plugin_extensions=(
     .yml

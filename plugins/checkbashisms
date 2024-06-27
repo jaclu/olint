@@ -2,6 +2,9 @@
 #  This is sourced. Fake bang-path to help editors and linters
 #  shellcheck disable=SC2034  # dont warn about unused variables
 
+# Dependencies:
+# Alpine: available via apk checkbashisms
+
 # plugin_cmd="checkbashisms -n -x "
 plugin_cmd=do_checkbashisms # never trigger error, just display issues
 

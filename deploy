@@ -71,6 +71,34 @@ deploy_plugins() {
 
 }
 
+check_dependencies() {
+    deps=""
+    # apk add rsync bash coreutils findutils file
+
+    #command -v file || deps="$deps file"
+    #command -v bash || deps="$deps coreutils"
+
+    # verified
+    command -v rsync || deps="$deps rsync"
+    command -v bash || deps="$deps bash"
+    _s="$(command -v find)"
+    if [ -z "$_s" ]; then
+	deps="$deps findutils"
+    else
+	realpath "$_s" | grep -q busybox && {
+	    echo "><> was busybox find"
+	    deps="$deps findutils"
+	}
+    fi
+
+    [ -n "$deps" ] && {
+	echo "WARNING: Missing Alpine dependencies, solve by running"
+	echo "apk add $deps"
+	exit 1
+    }
+}
+
+
 #===============================================================
 #
 #   Main
@@ -78,6 +106,8 @@ deploy_plugins() {
 #===============================================================
 
 CURRENT_DIR="$(dirname -- "$0")"
+
+check_dependencies
 
 echo
 echo "-----   Deploying olint   -----"
