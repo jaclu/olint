@@ -79,8 +79,8 @@ check_dependencies() {
     #command -v bash || deps="$deps coreutils"
 
     # verified
-    command -v rsync || deps="$deps rsync"
-    command -v bash || deps="$deps bash"
+    command -v rsync >/dev/null || deps="$deps rsync"
+    command -v bash  >/dev/null || deps="$deps bash"
     _s="$(command -v find)"
     if [ -z "$_s" ]; then
 	deps="$deps findutils"
