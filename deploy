@@ -71,13 +71,10 @@ deploy_plugins() {
 
 }
 
-check_dependencies() {
+dependencies_alpine() {
     deps=""
-    # apk add rsync bash coreutils findutils file
 
-    #command -v bash || deps="$deps coreutils"
-
-    # verified
+    echo "><> dependencies_alpine()"
     command -v bash  >/dev/null || deps="$deps bash"
     command -v file || deps="$deps file"
     _s="$(command -v find)"
@@ -97,6 +94,11 @@ check_dependencies() {
 	exit 1
     }
 }
+
+check_dependencies() {
+    [ -d /etc/alpine-release ] && dependencies_alpine
+}
+
 
 
 #===============================================================
