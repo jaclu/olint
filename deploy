@@ -96,7 +96,7 @@ dependencies_alpine() {
 }
 
 check_dependencies() {
-    [ -d /etc/alpine-release ] && dependencies_alpine
+    [ -f /etc/alpine-release ] && dependencies_alpine
 }
 
 
