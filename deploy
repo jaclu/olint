@@ -71,6 +71,59 @@ deploy_plugins() {
 
 }
 
+dependencied_debian() {
+    install_procedure="apt install"
+}
+
+dependencies_alpine() {
+    install_procedure="apk add"
+
+    _s="$(command -v find)"
+    if [ -z "$_s" ]; then
+	deps="$deps findutils"
+    else
+	realpath "$_s" | grep -q busybox && {
+	    echo "><> was busybox find"
+	    deps="$deps findutils"
+	}
+    fi
+
+    [ -n "$deps" ] && {
+	echo "WARNING: Missing Alpine dependencies, solve by running"
+	echo "apk add $deps"
+	exit 1
+    }
+}
+
+check_dependencies() {
+    deps=""
+
+    #
+    #  Generic dependencies, with same names across distros
+    #
+    command -v bash  >/dev/null || deps="$deps bash"
+    command -v file  >/dev/null || deps="$deps file"
+    command -v rsync >/dev/null || deps="$deps rsync"
+
+    if [ -f /etc/debian_version ]; then
+	dependencied_debian
+    elif [ -f /etc/alpine-release ]; then
+	dependencies_alpine
+    fi
+
+    [ -n "$deps" ] && {
+	if [ -z "$install_procedure" ]; then
+	    echo
+	    echo "WARNING: tools missing: $deps"
+	    echo "Not able to suggest how to deploy"
+	else
+	    echo "WARNING: Missing dependencies, solve by running"
+	    echo "$install_procedure $deps"
+	fi
+	exit 1
+    }
+}
+
 #===============================================================
 #
 #   Main
@@ -78,6 +131,8 @@ deploy_plugins() {
 #===============================================================
 
 CURRENT_DIR="$(dirname -- "$0")"
+
+check_dependencies
 
 echo
 echo "-----   Deploying olint   -----"

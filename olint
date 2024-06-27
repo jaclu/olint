@@ -623,8 +623,7 @@ parse_plugin_file() {
     [[ ${#plugin_extensions[@]} -eq 0 ]] &&
         [[ ${#plugin_file_types[@]} -eq 0 ]] && {
 
-        error_msg "Plugin $plugin_def - neither " \
-            "plugin_extensions nor plugin_file_types defined"
+        error_msg "Plugin $plugin_def - neither plugin_extensions nor plugin_file_types defined"
     }
 
     for ext in "${plugin_extensions[@]}"; do

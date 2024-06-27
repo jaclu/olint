@@ -2,6 +2,9 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
+# Dependencies:
+# Alpine: available via apk py3-pycodestyle
+
 plugin_cmd="pycodestyle"
 
 # file extensions this plugin handles

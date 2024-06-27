@@ -18,7 +18,7 @@ To install Olint, follow these steps:
 
 1. Download the latest release or clone the repository.
 2. Run `./deploy` this is used both to install and to update.
-3. Execute `olint -l` to list available linters, and install any missing
+3. Execute `olint -c` to list available linters, and install any missing
 ones from the supported list that you plan to use.
 
 ## Usage
@@ -27,7 +27,7 @@ To use Olint, simply run the `olint` command followed by any options or
 arguments you want to pass. For example:
 
 ```shell
-olint -C 4
+olint 4 -C
 ```
 
 This command checks files changed in the last 4 hours and continues with the
@@ -71,7 +71,7 @@ If `$XDG_CONFIG_HOME` is defined, olint looks for the configuration file at
 `~/.config/olint/olint.conf`.
 
 Once this base configuration is parsed, olint examines the local project
-configuration file, `.olint.conf`, so this file overrides what is in the
+configuration file, `.olint.conf`, so this file can override what is in the
 global config file.
 
 Here's an example project configuration:
@@ -79,6 +79,9 @@ Here's an example project configuration:
 ```bash
 #!/bin/bash
 # This is sourced. Fake bang-path to help editors and linters
+
+# += means that local config is appended to global
+#    If global should be replace use = instead
 
 skip_plugins+=(
     pycodestyle
@@ -97,8 +100,21 @@ prefixes+=(
     .pytest_cache/
 )
 
+# Filter by suffix
+suffixes+=(
+    .md
+)
+
 # modify a linter's command line for this project
 override_linter_cmd["bandit"]="bandit --skip B101"
+
+#
+#  Some options that can be pre-defined
+#
+# lint_continue=true
+# use_cache=false
+# debug_level=9
+
 ```
 
 ## Plugins
@@ -109,11 +125,17 @@ in the same folder as the global config file.
 
 Obligatory: plugin_cmd - what cmd to run
 
+At least one of: plugin_extensions, plugin_file_types must be included,
+they are described below.
+
 Sample:
 
 ```shell
 plugin_cmd="checkbashisms -n -x"
 ```
+
+When it starts olint checks if it can run the first word in plugin_cmd, if it
+is not found, that plugin is ignored.
 
 ### Optionals
 
@@ -169,7 +191,7 @@ plugin_file_types=(
 
 The `.olint.cache` file stores information about already linted files
 to optimize Olint's performance, each line in the cache file contains the
-file's modification time, date, and relative filepath,
+file's modification time, human readable timestamp, and relative filepath,
 This means that after a first run, only changed files will be linted.
 
 ## Contributing
