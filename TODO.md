@@ -5,8 +5,6 @@
 - jsonlint ignores ctrl c
 - rslint  ignores ctrl c
 
-
-
 ## Linter pips
 
 bandit
