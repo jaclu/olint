@@ -10,7 +10,7 @@ if [ -n "$(command -v flake8)" ]; then
     # redundant if flake8 is found (and used)
     # pycodestyle is part of flake8
     #
-    plugin_cmd=""
+    plugin_cmd="/dev/null"
 else
     plugin_cmd="pycodestyle"
 fi
