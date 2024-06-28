@@ -34,8 +34,11 @@ skip_plugins=(
     # flake8
     # jsonlint
     # markdownlint
+    # mypy
+    # pid_valid
     # pycodestyle
     # pylint
+    # pylintrc
     # rslint
     # shellcheck
     # vale # in not_used by default

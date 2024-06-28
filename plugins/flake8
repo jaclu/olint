@@ -6,7 +6,8 @@
 # Alpine: available via apk py3-flake8
 
 plugin_cmd="flake8 --color=always"
-plugin_priority=20 # suggested order when multiple plugins can handle a file
+
+plugin_priority=60
 
 # file extensions this plugin handles
 plugin_extensions=(

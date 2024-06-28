@@ -4,6 +4,8 @@
 
 plugin_cmd="bandit"  # -q"
 
+plugin_priority=50
+
 # file extensions this plugin handles
 plugin_extensions=(
     .py

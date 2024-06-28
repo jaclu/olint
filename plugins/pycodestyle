@@ -5,7 +5,15 @@
 # Dependencies:
 # Alpine: available via apk py3-pycodestyle
 
-plugin_cmd="pycodestyle"
+if [ -n "$(command -v flake8)" ]; then
+    #
+    # redundant if flake8 is found (and used)
+    # pycodestyle is part of flake8
+    #
+    plugin_cmd=""
+else
+    plugin_cmd="pycodestyle"
+fi
 
 # file extensions this plugin handles
 plugin_extensions=(
