@@ -5,7 +5,7 @@
 # Dependencies:
 # Alpine: available via apk py3-pycodestyle
 
-if [ -n "$(command -v flake8)" ]; then
+if [[ -n "$(command -v flake8)" ]]; then
     #
     # redundant if flake8 is found (and used)
     # pycodestyle is part of flake8

@@ -49,7 +49,10 @@ env_cleanup() {
     ex_code="${1:-1}"
     cache_write
     rm -f "$f_linter_output"
-    [[ $ex_code -ne 0 ]] && echo "olint exited with an error"
+    [[ $ex_code -ne 0 ]] && {
+	echo
+	echo "*****  olint exited with an error  *****"
+    }
     exit "$ex_code"
 }
 
