@@ -45,11 +45,16 @@ dbg_print() {
 env_cleanup() {
     #
     #  Call this instead of exit, to ensure any cleanup will happen
+    #    0 - no errors
+    #    1 - did Ctrl-C
+    #    2 - linting error
+    #    9 - error_msg no param
+    #
     #
     ex_code="${1:-1}"
     cache_write
     rm -f "$f_linter_output"
-    [[ $ex_code -ne 0 ]] && {
+    [[ $ex_code -gt 1 ]] && {
 	echo
 	echo "*****  olint exited with an error  *****"
     }
@@ -237,6 +242,7 @@ remove_duplicates() {
 
 cache_write() {
     local dbg_indent=$dbg_indent
+    local key value
 
     dbg_print "cache_write()" 3
     ((dbg_indent++)) # increase indent until this returns
@@ -263,9 +269,22 @@ cache_write() {
 
     # Loop through the array and write all lines in one go
     for key in "${!cache_new[@]}"; do
+	if [[ -v "cache_old[$key]" ]]; then
+	    # Remove the item if it is present
+	    unset "cache_old[$key]"
+	fi
+
         value="${cache_new[$key]}"
         echo "$value|$key"
     done >>"$f_cache_file"
+
+    # in case caching was aborted, keep unprocessed items in cache
+    for key in "${!cache_old[@]}"; do
+        value="${cache_old[$key]}"
+        echo "$value|$key"
+        dbg_print "kept in cache: $key" 1
+    done >>"$f_cache_file"
+
     echo
     echo "${#cache_new[@]} successfully linted files cached: $f_cache_file - run with -v to see cached files"
 }
@@ -739,7 +758,7 @@ handle_linting_error() {
     #
     dbg_print "handle_linting_error()" 2
     $lint_continue && return
-    env_cleanup 1
+    env_cleanup 2
 }
 
 show_linter_action() {
