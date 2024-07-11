@@ -35,7 +35,7 @@ skip_plugins=(
     # jsonlint
     # markdownlint
     # mypy
-    # pid_valid
+    # pid_valid  # veifies that any pidfile found points to a running proc
     # pycodestyle
     # pylint
     # pylintrc
