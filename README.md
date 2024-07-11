@@ -187,10 +187,10 @@ plugin_file_types=(
 )
 ```
 
-## .cache.olint
+## Cache File
 
-The `.olint.cache` file stores information about already linted files
-to optimize Olint's performance, each line in the cache file contains the
+The `.cache.olint` file stores information about already linted files
+to optimize olint's performance, each line in the cache file contains the
 file's modification time, human readable timestamp, and relative filepath,
 This means that after a first run, only changed files will be linted.
 
