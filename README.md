@@ -81,7 +81,7 @@ Here's an example project configuration:
 # This is sourced. Fake bang-path to help editors and linters
 
 # += means that local config is appended to global
-#    If global should be replace use = instead
+#    If global should be replaced, use = instead
 
 skip_plugins+=(
     pycodestyle
@@ -187,7 +187,7 @@ plugin_file_types=(
 )
 ```
 
-## .olint.cache
+## .cache.olint
 
 The `.olint.cache` file stores information about already linted files
 to optimize Olint's performance, each line in the cache file contains the
