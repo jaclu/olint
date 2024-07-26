@@ -36,7 +36,7 @@ skip_plugins=(
     # markdownlint
     # mypy
     # pid_valid  # veifies that any pidfile found points to a running proc
-    # pycodestyle
+    # pycodestyle # flake8 does this, if flake8 is used this is redundant
     # pylint
     # pylintrc
     # rslint
