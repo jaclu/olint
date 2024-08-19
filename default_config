@@ -56,6 +56,7 @@ excludes+=(
 # Filter by prefix, as listed by olint
 prefixes+=(
     .git/
+    .mypy_cache/
     .venv/
     .vscode/
 )

@@ -6,8 +6,9 @@
 # so it would be redundant to also run them if you use Flake8
 #
 
-# Dependencies:
-# Alpine: available via apk py3-flake8
+# Installing methods;
+#  pip install flake8
+#  (Alpine) apk py3-flake8
 
 plugin_cmd="flake8 --color=always"
 

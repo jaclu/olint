@@ -4,6 +4,10 @@
 
 # This linter ignores Ctrl-C and I havent figured out how to solve this...
 
+# Installing methods;
+#   sudo apt install nodejs npm
+#   sudo npm install -g jsonlint
+
 plugin_cmd="jsonlint -p"
 
 # file extensions this plugin handles

@@ -2,7 +2,8 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
-# Dependencies:
+# Installing methods;
+#   pip install mypu
 # Alpine: available via apk py3-pylint
 
 plugin_cmd="mypy"

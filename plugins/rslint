@@ -3,6 +3,10 @@
 
 # This linter ignores Ctrl-C and I havent figured out how to solve this...
 
+# Installing methods;
+#  install rust: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+#  cargo install rslint
+
 plugin_cmd="rslint"
 
 # file extensions this plugin handles
