@@ -57,6 +57,7 @@ excludes+=(
 prefixes+=(
     .git/
     .mypy_cache/
+    .pytest_cache/
     .venv/
     .vscode/
 )
