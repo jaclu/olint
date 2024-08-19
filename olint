@@ -1201,7 +1201,13 @@ $show_config && {
 }
 
 $lint_continue && echo "Will contine with next file if linter found issues"
-$use_cache || echo "Will not use cache for checked files"
+$use_cache || {
+    echo "Will not use cache for checked files"
+    [[ -f "$f_cache_file" ]] && {
+        echo "Removing $f_cache_file"
+        rm -f "$f_cache_file"
+   }
+}
 echo
 
 cache_read
