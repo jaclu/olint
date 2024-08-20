@@ -2,6 +2,9 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
+# Installing methods;
+#  pip install bandit
+
 plugin_cmd="bandit"  # -q"
 
 plugin_priority=50

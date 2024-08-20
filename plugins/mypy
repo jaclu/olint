@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 # Installing methods;
-#   pip install mypu
+#   pip install mypy
 # Alpine: available via apk py3-pylint
 
 plugin_cmd="mypy"

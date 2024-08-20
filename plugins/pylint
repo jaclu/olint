@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 # Installing methods;
-#  pip install flake8
+#  pip install pylint
 #  Alpine: available via apk py3-pylint
 
 plugin_cmd="pylint"
