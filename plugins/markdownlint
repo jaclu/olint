@@ -2,8 +2,9 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
-# Installing methods;
-#  Ubuntu
+# Installation methods;
+#  brew install markdownlint-cli2
+#  (Ubuntu)
 #   ensure nodejs >= 18 if not:
 #     curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 #   sudo apt install nodejs npm

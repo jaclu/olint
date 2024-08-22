@@ -6,8 +6,10 @@
 # so it would be redundant to also run them if you use Flake8
 #
 
-# Installing methods;
+# Installation methods;
 #  pip install flake8
+#  brew install flake8
+#  (Ubuntu) python3-flake8
 #  (Alpine) apk py3-flake8
 
 plugin_cmd="flake8 --color=always"

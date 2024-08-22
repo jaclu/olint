@@ -2,9 +2,11 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
-# Installing methods;
-#   pip install mypy
-# Alpine: available via apk py3-pylint
+# Installation methods;
+#  pip install mypy
+#  brew install mypy
+#  (Ubuntu) apt install mypy
+#  (Alpine) apk add py3-mypy
 
 plugin_cmd="mypy"
 

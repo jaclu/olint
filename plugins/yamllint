@@ -1,9 +1,11 @@
 #!/bin/bash
 # shellcheck disable=SC2034
 
-# Installing methods;
+# Installation methods;
 #  pip install yamllint
-
+#  brew install yamllint
+#  (Ubuntu) apt install yamllint
+#  (Alpine) apk add yamllint
 
 plugin_cmd="yamllint -s" # never trigger error, just display issues
 

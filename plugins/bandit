@@ -2,8 +2,10 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
-# Installing methods;
+# Installation methods;
 #  pip install bandit
+#  brew install bandit
+#  (Ubunu) apt install bandit
 
 plugin_cmd="bandit"  # -q"
 

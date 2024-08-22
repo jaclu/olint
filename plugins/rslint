@@ -6,6 +6,9 @@
 # Installing methods;
 #  install rust: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 #  cargo install rslint
+#
+# Installation methods;
+#  brew install rslint
 
 plugin_cmd="rslint"
 
