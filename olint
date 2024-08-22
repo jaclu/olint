@@ -1029,7 +1029,7 @@ process_file_tree() {
         #
         #  Processing by file type
         #
-        IFS='|' read -r -a file_types <<<"$(file -b "$fname" |
+        IFS='|' read -r -a file_types <<<"$(file --mime-type -b "$fname" |
             tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
         for file_type in "${file_types[@]}"; do
             lint_by_file_type "$fname" "$file_type" && {

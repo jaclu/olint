@@ -34,9 +34,11 @@ skip_plugins+=(
     # flake8
     # jsonlint
     # markdownlint
+    # mccabe # flake8 does this, if flake8 is used this is redundant
     # mypy
     # pid_valid  # veifies that any pidfile found points to a running proc
     # pycodestyle # flake8 does this, if flake8 is used this is redundant
+    # pyflakes # flake8 does this, if flake8 is used this is redundant
     # pylint
     # pylintrc
     # rslint
