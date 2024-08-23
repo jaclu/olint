@@ -1241,7 +1241,7 @@ $show_config && {
 # shellcheck disable=SC2154
 case "$(echo "$ignore_project" | tr '[:upper:]' '[:lower:]')" in
 1 | "true" | "yes")
-    dbg_print "Project ignored due to ignore_project=$ignore_project" 1
+    echo "olint - Project ignored due to ignore_project=$ignore_project"
     env_cleanup 0
     ;;
 *) ;;
