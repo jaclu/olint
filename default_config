@@ -3,30 +3,19 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 #
-#  Use this to override location of plugins.
-#  Usefull if some project config needs to use alternate options
-#  for plugins, or trying out a new plugin definition.
-#  In the normal case leave it empty, and the default will be used.
-#
-# plugin_dir="$olint_cfg_dir"/plugins
-
-#
-#  If you use '+='' you will add new items to the existing list
-#  using '=' you will replace the previous list, could be handy in a project
-#  config if the global conf lists a lot of stuff normally not of interest
-#  but it should be checked in a specific project
+#  Using '+=' appends new items to the existing list.
+#  Using '=' replaces the entire list. This can be useful in project
+#  configurations where the global config includes many items that
+#  are usually irrelevant but need to be considered for a specific project.
+#  By default, 'olint' ignores some typical file patterns. You can override
+#  these defaults by using '=' in your global or project-specific config file.
+#  Running 'olint -c' will display the current settings, so if the defaults
+#  don't meet your needs, you can easily override them.
 #
 
 #
-#  Use skip_plugins in a per-project config (.olint.conf) to skip one
-#  or more linters. Use this as a template, and uncomment linters that
-#  should not to be used
-#
-
-#
-#  Use skip_plugins in a per-project config (.olint.conf) to skip one
-#  or more linters. Use this as a template, and uncomment linters that
-#  should not to be used
+#  Use 'skip_plugins' to skip one or more linters. Use this as a template,
+#  and uncomment the linters you want to exclude from this project.
 #
 skip_plugins+=(
     # bandit
@@ -34,16 +23,14 @@ skip_plugins+=(
     # flake8
     # jsonlint
     # markdownlint
-    # mccabe # flake8 does this, if flake8 is used this is redundant
     # mypy
-    # pid_valid  # veifies that any pidfile found points to a running proc
-    # pycodestyle # flake8 does this, if flake8 is used this is redundant
-    # pyflakes # flake8 does this, if flake8 is used this is redundant
+    # pid_valid  # verifies that any pidfile found points to a running process
+    # pycodestyle # flake8 handles this; redundant if flake8 is used
     # pylint
     # pylintrc
     # rslint
     # shellcheck
-    # vale # in not_used by default
+    # vale # not used by default
     # yamllint
 )
 
@@ -57,33 +44,29 @@ excludes+=(
 
 # Filter by prefix, as listed by olint
 prefixes+=(
-    .git/
-    .mypy_cache/
-    .pytest_cache/
-    .venv/
-    .vscode/
 )
 
 # Filter by suffix
 suffixes+=(
-    \~
-    \#
-    .pyc
 )
 
 #
-# Sample linter overrides, would if some projects need alternate linter cmds
+# Per-project linter command overrides
 #
 # override_linter_cmd["shellcheck"]="shellcheck -a -x --color=always -o all"
 
 #
-#  Disable linter in this project
-#
-# override_linter_cmd["shellcheck"]=""
-
-#
 #  Some options that can be pre-defined
 #
+# ignore_project=yes # Ignore this entire project from being processed
+# use_cache=false # Do not use cache
+# mime_type_limit=true # Only scan files based on mime-type
 # lint_continue=true
-# use_cache=false
 # debug_level=9
+#
+#  Use this to override the location of plugins.
+#  Useful if a project config needs to use alternate plugin options
+#  or when trying out a new plugin definition.
+#  In most cases, leave this empty to use the default location.
+#
+# plugin_dir="$olint_cfg_dir"/plugins

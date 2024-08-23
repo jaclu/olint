@@ -55,8 +55,8 @@ env_cleanup() {
     cache_write
     rm -f "$f_linter_output"
     [[ $ex_code -gt 1 ]] && {
-	echo
-	echo "*****  olint exited with an error  *****"
+        echo
+        echo "*****  olint exited with an error  *****"
     }
     exit "$ex_code"
 }
@@ -87,9 +87,19 @@ get_config() {
         .flake8
         .gitignore
         .shellcheckrc
-    )           #  Specifix excludes
-    prefixes=() # Excludes by prefix
-    suffixes=() # Excludes by suffix
+    ) #  Specifix excludes
+    prefixes=(
+        .git/
+        .mypy_cache/
+        .pytest_cache/
+        .venv/
+        .vscode/
+    ) # Excludes by prefix
+    suffixes=(
+        \~
+        \#
+        .pyc
+    ) # Excludes by suffix
 
     #  handling base configuration
     source_file "$olint_cfg_dir"/olint.conf
@@ -137,6 +147,13 @@ display_config() {
 
     echo "---  Display configuration  ---"
     echo
+    echo "State variables:"
+    echo " debug_level:     $debug_level"
+    echo " ignore_project:  $ignore_project"
+    echo " mime_type_limit: $mime_type_limit"
+    echo " lint_continue:   $lint_continue"
+    echo " plugin_dir:      $plugin_dir"
+    echo
     echo "Linters defined:"
     for linter_name in "${linter_order[@]}"; do
         echo " $linter_name  - ${linter_cmd[$linter_name]}"
@@ -156,41 +173,49 @@ display_config() {
     done
     echo
 
+    echo "Plugins skipped in .olint.conf:"
     lst="${skip_plugins[*]}"
-    [[ -n "$lst" ]] && {
-        echo "Plugins skipped in .olint.conf:"
+    if [[ -n "$lst" ]]; then
         for item in $lst; do
             echo "  $item"
         done
-        echo
-    }
+    else
+        echo "  None"
+    fi
+    echo
 
+    echo "Excluded items:"
     lst="${excludes[*]}"
-    [[ -n "$lst" ]] && {
-        echo "Excluded items:"
+    if [[ -n "$lst" ]]; then
         for item in $lst; do
             echo "  $item"
         done
-        echo
-    }
+    else
+        echo "  None"
+    fi
+    echo
 
+    echo "Excluded prefixes:"
     lst="${prefixes[*]}"
-    [[ -n "$lst" ]] && {
-        echo "Excluded prefixes:"
+    if [[ -n "$lst" ]]; then
         for item in $lst; do
             echo "  $item"
         done
-        echo
-    }
+    else
+        echo "  None"
+    fi
+    echo
 
+    echo "Excluded suffixes:"
     lst="${suffixes[*]}"
-    [[ -n "$lst" ]] && {
-        echo "Excluded suffixes:"
+    if [[ -n "$lst" ]]; then
         for item in $lst; do
             echo "  $item"
         done
-        echo
-    }
+    else
+        echo "  None"
+    fi
+    echo
 }
 
 source_file() {
@@ -269,10 +294,10 @@ cache_write() {
 
     # Loop through the array and write all lines in one go
     for key in "${!cache_new[@]}"; do
-	if [[ -v "cache_old[$key]" ]]; then
-	    # Remove the item if it is present
-	    unset "cache_old[$key]"
-	fi
+        if [[ -v "cache_old[$key]" ]]; then
+            # Remove the item if it is present
+            unset "cache_old[$key]"
+        fi
 
         value="${cache_new[$key]}"
         echo "$value|$key"
@@ -1029,7 +1054,12 @@ process_file_tree() {
         #
         #  Processing by file type
         #
-        IFS='|' read -r -a file_types <<<"$(file --mime-type -b "$fname" |
+        if $mime_type_limit; then
+            file_cmd="file --mime-type -b"
+        else
+            file_cmd="file -b"
+        fi
+        IFS='|' read -r -a file_types <<<"$($file_cmd "$fname" |
             tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
         for file_type in "${file_types[@]}"; do
             lint_by_file_type "$fname" "$file_type" && {
@@ -1063,6 +1093,7 @@ process_file_tree() {
 }
 
 show_help() {
+    #region help text
     echo "Usage: $prog_name [-h] [-c] [-C] [--config-dir] [-n] [-N] [-v] [number]
 
 Lint all files recursively in reverse chronological order.
@@ -1075,6 +1106,7 @@ Available options:
 --config-dir        Prints out where global config files are located
 -e  --excluded      List all files that are excluded (except .git/)
 -E  --excluded-all  Reallly list all files that are excluded
+-m  --mime-type     When scaning files, only identify by mime-type
 -n, --no-linter     Lists all files without a matching linter
 -N, --nocache       Don't use caching for successfully linted files
 -z, --zapcache      Remove cache file if present
@@ -1091,6 +1123,7 @@ This can be used to define filenames, prefixes and suffixes that should be
 excluded for this project.
 See README.md for more information about this file.
 "
+    #endregion
     env_cleanup 0
 }
 
@@ -1130,14 +1163,16 @@ declare -A linter_cmd
 declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
-linter_order=()     # used to display them in alphabetical order
-show_config=false   # option: -c
-lint_continue=false # option: -C
-show_excluded=false # option: -e / -E
-skip_dot_git=false  # extra setting for: -e / -E
-do_lint_files=true  # option: -n
-use_cache=true      # option: -N
+linter_order=()       # used to display them in alphabetical order
+show_config=false     # option: -c
+lint_continue=false   # option: -C
+show_excluded=false   # option: -e / -E
+skip_dot_git=false    # extra setting for: -e / -E
+mime_type_limit=false # -m
+do_lint_files=true    # option: -n
+use_cache=true        # option: -N
 # show_stats=false        # (unofficial olint dev) option: -s
+ignore_project=false
 debug_level=0 # option: -v
 h_max_age=0   # no max file age for items to be processed
 
@@ -1168,6 +1203,8 @@ while [[ -n "$1" ]]; do
         ;;
     -n | --no-linter) do_lint_files=false ;;
     -N | --nocache) use_cache=false ;;
+
+    -m | --mime-type) mime_type_limit=true ;;
 
     -z | --zapcache)
         if [[ -f "$f_cache_file" ]]; then
@@ -1200,13 +1237,23 @@ $show_config && {
     env_cleanup 0
 }
 
+#  Abort Check
+# shellcheck disable=SC2154
+case "$(echo "$ignore_project" | tr '[:upper:]' '[:lower:]')" in
+1 | "true" | "yes")
+    dbg_print "Project ignored due to ignore_project=$ignore_project" 1
+    env_cleanup 0
+    ;;
+*) ;;
+esac
+
 $lint_continue && echo "Will contine with next file if linter found issues"
 $use_cache || {
     echo "Will not use cache for checked files"
     [[ -f "$f_cache_file" ]] && {
         echo "Removing $f_cache_file"
         rm -f "$f_cache_file"
-   }
+    }
 }
 echo
 
