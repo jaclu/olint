@@ -124,6 +124,7 @@ get_config() {
         .venv/
         .vscode/
     )
+
     # basename check
     excluded_basenames=(
         .cache.olint
@@ -234,7 +235,7 @@ display_config() {
     fi
     echo
 
-    echo "Excluded patterns: (excluded_patterns)"
+    echo "Excluded patterns:"
     lst="${excluded_patterns[*]}"
     if [[ -n "$lst" ]]; then
         for item in $lst; do
@@ -245,7 +246,7 @@ display_config() {
     fi
     echo
 
-    echo "excludedrelative_file_names:"
+    echo "Excluded basenames file names (sans path):"
     lst="${excluded_basenames[*]}"
     if [[ -n "$lst" ]]; then
         for item in $lst; do
@@ -256,7 +257,7 @@ display_config() {
     fi
     echo
 
-    echo "Excluded prefixes:"
+    echo "Excluded prefixes (sans path):"
     lst="${prefixes[*]}"
     if [[ -n "$lst" ]]; then
         for item in $lst; do
@@ -896,10 +897,15 @@ should_fname_be_excluded() {
     local fname="$1"
     local item pattern rel_fname
 
+    $skip_commons && {
+        for item in "${hide_common_excludes[@]}"; do
+            [[ $fname =~ $item ]] && return 0
+        done
+    }
+
     # Check if the filename matches any pattern
     for pattern in "${excluded_patterns[@]}"; do
         [[ "$fname" =~ $pattern ]] && {
-            $skip_dot_git && [[ $pattern =~ .git ]] && return 0
             $show_excluded && show_linter_action "$fname" "patterns"
             return 0
         }
@@ -916,7 +922,6 @@ should_fname_be_excluded() {
     for item in "${prefixes[@]}"; do
         [[ "$rel_fname" = "$item"* ]] && {
             $show_excluded && {
-                $skip_dot_git && [[ "$fname" = .git/* ]] && return 0
                 show_linter_action "$fname" "prefix"
             }
             return 0 # True
@@ -1170,6 +1175,12 @@ process_file_tree() {
     }
 }
 
+display_hidden_excludes() {
+    local item
+    for item in "${hide_common_excludes[@]}"; do
+        echo "                      $item"
+    done
+}
 show_help() {
     #region help text
     echo "Usage: $prog_name [-h] [-c] [-C] [--config-dir] [-n] [-N] [-v] [number]
@@ -1182,7 +1193,9 @@ Available options:
 -c, --config        List supported and used linters and excluded file patterns
 -C, --continue      Continue with the next file after linter issues are found
     --config-dir    Prints out where global config files are located
--e  --excluded      List all files that are excluded (except .git/)
+-e  --excluded      List all files that are excluded, except typically
+                    uninteresting folders:
+$(display_hidden_excludes)
 -E  --excluded-all  Reallly list all files that are excluded
 -m  --mime-type     When scaning files, only identify by mime-type
 -n, --no-linter     Lists all files without a matching linter
@@ -1245,7 +1258,7 @@ linter_order=()       # used to display them in alphabetical order
 show_config=false     # option: -c
 lint_continue=false   # option: -C
 show_excluded=false   # option: -e / -E
-skip_dot_git=false    # extra setting for: -e / -E
+skip_commons=false    # extra setting for: -e / -E
 mime_type_limit=false # -m
 do_lint_files=true    # option: -n
 use_cache=true        # option: -N
@@ -1253,6 +1266,14 @@ use_cache=true        # option: -N
 ignore_project=false
 debug_level=0 # option: -v
 h_max_age=0   # no max file age for items to be processed
+
+hide_common_excludes=(
+    .git/
+    .mypy_cache/
+    .pytest_cache/
+    .venv/
+    .vscode/
+)
 
 while [[ -n "$1" ]]; do
     case $1 in
@@ -1273,11 +1294,11 @@ while [[ -n "$1" ]]; do
 
     -e | --excluded)
         show_excluded=true
-        skip_dot_git=true
+        skip_commons=true
         ;;
     -E | --excluded-all)
         show_excluded=true
-        skip_dot_git=false
+        skip_commons=false
         ;;
     -n | --no-linter) do_lint_files=false ;;
     -N | --nocache) use_cache=false ;;

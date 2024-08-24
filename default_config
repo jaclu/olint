@@ -43,12 +43,12 @@ excluded_patterns+=(
     # .git/  # sample
 )
 
-# Filter filename (sans folder)
+# Filter relative filename (sans path)
 excluded_basenames+=(
     # .gitignore  # sample
 )
 
-# Filter relative filename (sans folder) by prefix, as listed by olint
+# Filter relative filename (sans path) by prefix
 prefixes+=(
     # test_ # sample
 )
