@@ -38,16 +38,28 @@ skip_plugins+=(
 #  Handling what files should be skipped by olint
 #
 
-# Explicit excludes, give entire filepath as listed by olint
-excludes+=(
+# Filter anything containing this including relative path
+excluded_patterns+=(
+    # .git/  # sample
 )
 
-# Filter by prefix, as listed by olint
+# Filter filename (sans folder)
+excluded_basenames+=(
+    # .gitignore  # sample
+)
+
+# Filter relative filename (sans folder) by prefix, as listed by olint
 prefixes+=(
+    # test_ # sample
 )
 
 # Filter by suffix
 suffixes+=(
+    # .pyc  # sample
+)
+
+# Explicit excludes, give entire filepath as listed by olint
+excludes+=(
 )
 
 #

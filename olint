@@ -117,24 +117,31 @@ get_config() {
     #
     olint_plugin_dir="$olint_cfg_dir"/plugins
     skip_plugins=() # plugins to skip in this project
-    excludes=(
-        .cache.olint
-        .flake8
-        .gitignore
-        .shellcheckrc
-    ) #  Specifix excludes
-    prefixes=(
+    excluded_patterns=(
         .git/
         .mypy_cache/
         .pytest_cache/
         .venv/
         .vscode/
-    ) # Excludes by prefix
+    )
+    # basename check
+    excluded_basenames=(
+        .cache.olint
+        .flake8
+        .gitignore
+        .shellcheckrc
+    )
+    #  Specifix excludes
+    excludes=(
+
+    )
+    prefixes=(
+    ) # excludes by prefix
     suffixes=(
         \~
         \#
         .pyc
-    ) # Excludes by suffix
+    ) # excludes by suffix
 
     #  handling base configuration                                                                     │
     source_file "$olint_cfg_base" # || olint_cfg_base=""
@@ -227,8 +234,19 @@ display_config() {
     fi
     echo
 
-    echo "Excluded items:"
-    lst="${excludes[*]}"
+    echo "Excluded patterns: (excluded_patterns)"
+    lst="${excluded_patterns[*]}"
+    if [[ -n "$lst" ]]; then
+        for item in $lst; do
+            echo "  $item"
+        done
+    else
+        echo "  None"
+    fi
+    echo
+
+    echo "excludedrelative_file_names:"
+    lst="${excluded_basenames[*]}"
     if [[ -n "$lst" ]]; then
         for item in $lst; do
             echo "  $item"
@@ -251,6 +269,17 @@ display_config() {
 
     echo "Excluded suffixes:"
     lst="${suffixes[*]}"
+    if [[ -n "$lst" ]]; then
+        for item in $lst; do
+            echo "  $item"
+        done
+    else
+        echo "  None"
+    fi
+    echo
+
+    echo "Excluded items:"
+    lst="${excludes[*]}"
     if [[ -n "$lst" ]]; then
         for item in $lst; do
             echo "  $item"
@@ -865,28 +894,45 @@ should_fname_be_excluded() {
     #  Check if fname matches exclusion rules
     #
     local fname="$1"
-    local item
+    local item pattern rel_fname
 
-    for item in "${excludes[@]}"; do
-        [[ "$fname" =~ $item ]] && {
-            $show_excluded && show_linter_action "$fname" "excluded"
-            return 0 # True
+    # Check if the filename matches any pattern
+    for pattern in "${excluded_patterns[@]}"; do
+        [[ "$fname" =~ $pattern ]] && {
+            $skip_dot_git && [[ $pattern =~ .git ]] && return 0
+            $show_excluded && show_linter_action "$fname" "patterns"
+            return 0
+        }
+    done
+
+    rel_fname="$(basename "$fname")"
+    for item in "${excluded_basenames[@]}"; do
+        [[ "$rel_fname" = "$item" ]] && {
+            $show_excluded && show_linter_action "$fname" "rel fname"
+            return 0
         }
     done
 
     for item in "${prefixes[@]}"; do
-        [[ "$fname" = "$item"* ]] && {
+        [[ "$rel_fname" = "$item"* ]] && {
             $show_excluded && {
                 $skip_dot_git && [[ "$fname" = .git/* ]] && return 0
-                show_linter_action "$fname" "excluded"
+                show_linter_action "$fname" "prefix"
             }
             return 0 # True
         }
     done
 
     for item in "${suffixes[@]}"; do
-        [[ "$fname" = *"$item" ]] && {
-            $show_excluded && show_linter_action "$fname" "excluded"
+        [[ "$rel_fname" = *"$item" ]] && {
+            $show_excluded && show_linter_action "$fname" "suffix"
+            return 0 # True
+        }
+    done
+
+    for item in "${excludes[@]}"; do
+        [[ "$fname" = "$item" ]] && {
+            $show_excluded && show_linter_action "$fname" "excludes"
             return 0 # True
         }
     done
@@ -1274,6 +1320,7 @@ $show_config && {
 case "$(echo "$ignore_project" | tr '[:upper:]' '[:lower:]')" in
 1 | "true" | "yes")
     echo "olint - Project ignored due to ignore_project=$ignore_project"
+    echo "        Defined in: $olint_cfg_proj"
     env_cleanup 0
     ;;
 *) ;;
