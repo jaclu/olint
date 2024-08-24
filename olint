@@ -61,6 +61,40 @@ env_cleanup() {
     exit "$ex_code"
 }
 
+source_file() {
+    #  Source a file, exit with error on failure
+    local fname="$1"
+
+    dbg_print "source_file($fname)" 3
+    if [[ -f "$fname" ]]; then
+        # shellcheck source=/dev/null
+        source "$fname" || error_msg "Failed to source: $fname"
+        dbg_print "Sourced: $fname"
+        return 0
+    else
+        dbg_print "source_file() - File not found: $fname" 1
+    fi
+    return 1
+}
+
+get_project_config() {
+    # Traverse up until a project conf is found
+    olint_cfg_proj=""
+    dir=$(pwd)
+
+    # Traverse up the directory tree
+    while [[ "$dir" != "/" ]]; do
+        olint_cfg_proj="$dir"/.olint.conf
+        if [[ -f "$olint_cfg_proj" ]]; then
+            source_file "$olint_cfg_proj" || olint_cfg_proj=""
+            return
+        fi
+        dir=$(dirname "$dir")
+    done
+    olint_cfg_proj=""
+    dbg_print "get_project_config() - No project config found!" 1
+}
+
 get_config() {
     local dbg_indent=$dbg_indent
 
@@ -76,11 +110,12 @@ get_config() {
     mkdir -p "$olint_cfg_dir" || {
         error_msg "Failed to create folder: $olint_cfg_dir"
     }
+    olint_cfg_base="$olint_cfg_dir"/olint.conf
 
     #
     #  Defaults that can be overriden in config files
     #
-    plugin_dir="$olint_cfg_dir"/plugins
+    olint_plugin_dir="$olint_cfg_dir"/plugins
     skip_plugins=() # plugins to skip in this project
     excludes=(
         .cache.olint
@@ -101,15 +136,14 @@ get_config() {
         .pyc
     ) # Excludes by suffix
 
-    #  handling base configuration
-    source_file "$olint_cfg_dir"/olint.conf
+    #  handling base configuration                                                                     │
+    source_file "$olint_cfg_base" # || olint_cfg_base=""
 
     declare -A override_linter_cmd
 
-    #  handling project configuration
-    source_file .olint.conf
+    get_project_config
 
-    check_linter_plugins "$plugin_dir"
+    check_linter_plugins "$olint_plugin_dir"
 
     for linter_override in "${!override_linter_cmd[@]}"; do
         if [[ -z "${linter_cmd[$linter_override]}" ]]; then
@@ -145,6 +179,15 @@ display_config() {
 
     dbg_print "display_config()" "$dbglvl_lintscan_basic" 2
 
+    echo "---  Configuration files used  ---"
+    if [[ -n "$olint_cfg_base" ]] || [[ -n "$olint_cfg_proj" ]]; then
+        [[ -n "$olint_cfg_base" ]] && echo "Base conf:    $olint_cfg_base"
+        [[ -n "$olint_cfg_proj" ]] && echo "Project conf: $olint_cfg_proj"
+    else
+        echo "Neither base nor project config found!"
+    fi
+    echo
+
     echo "---  Display configuration  ---"
     echo
     echo "State variables:"
@@ -152,7 +195,7 @@ display_config() {
     echo " ignore_project:  $ignore_project"
     echo " mime_type_limit: $mime_type_limit"
     echo " lint_continue:   $lint_continue"
-    echo " plugin_dir:      $plugin_dir"
+    echo " olint_plugin_dir:      $olint_plugin_dir"
     echo
     echo "Linters defined:"
     for linter_name in "${linter_order[@]}"; do
@@ -216,17 +259,6 @@ display_config() {
         echo "  None"
     fi
     echo
-}
-
-source_file() {
-    local fname="$1"
-
-    dbg_print "source_file($fname)" 3
-    [[ -f "$fname" ]] && {
-        # shellcheck source=/dev/null
-        source "$fname" || error_msg "Failed to source: $fname"
-    }
-
 }
 
 #===============================================================
@@ -686,20 +718,20 @@ parse_plugin_file() {
 
 check_linter_plugins() {
     local dbg_indent=$dbg_indent
-    local plugin_dir="$1"
+    local olint_plugin_dir="$1"
     local file_type
 
-    [[ -z "$plugin_dir" ]] && {
-        error_msg "check_linter_plugins() - called with no plugin_dir param"
+    [[ -z "$olint_plugin_dir" ]] && {
+        error_msg "check_linter_plugins() - called with no olint_plugin_dir param"
     }
 
-    dbg_print "check_linter_plugins($plugin_dir)" 2
+    dbg_print "check_linter_plugins($olint_plugin_dir)" 2
     ((dbg_indent++)) # increase indent until this returns
 
-    if [[ -d "$plugin_dir" ]]; then
+    if [[ -d "$olint_plugin_dir" ]]; then
         # Loop through each file in alphabetical order
-        for plugin_def in "$plugin_dir"/*; do
-            # Check if the item is a file (not a plugin_dir)
+        for plugin_def in "$olint_plugin_dir"/*; do
+            # Check if the item is a file (not a olint_plugin_dir)
             if [[ -f "$plugin_def" ]]; then
                 # skip files ending with ~
                 [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
@@ -708,7 +740,7 @@ check_linter_plugins() {
             fi
         done
     else
-        mkdir -p "$plugin_dir"
+        mkdir -p "$olint_plugin_dir"
     fi
 }
 
@@ -1103,7 +1135,7 @@ Available options:
 -h, --help          Print this help and exit
 -c, --config        List supported and used linters and excluded file patterns
 -C, --continue      Continue with the next file after linter issues are found
---config-dir        Prints out where global config files are located
+    --config-dir    Prints out where global config files are located
 -e  --excluded      List all files that are excluded (except .git/)
 -E  --excluded-all  Reallly list all files that are excluded
 -m  --mime-type     When scaning files, only identify by mime-type
