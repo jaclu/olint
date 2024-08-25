@@ -85,8 +85,13 @@ get_project_config() {
     # Traverse up the directory tree
     while [[ "$dir" != "/" ]]; do
         olint_cfg_proj="$dir"/.olint.conf
+        dbg_print "Checking for config in: $dir" 2
         if [[ -f "$olint_cfg_proj" ]]; then
-            source_file "$olint_cfg_proj" || olint_cfg_proj=""
+            source_file "$olint_cfg_proj" || olint_cfg_proj="" || {
+                error_msg "Failed to source Project config: $olint_cfg_proj"
+            }
+            f_cache_file="$dir/$f_cache_file"
+            dbg_print "Using cache file: $f_cache_file" 1
             return
         fi
         dir=$(dirname "$dir")
@@ -256,10 +261,11 @@ display_config() {
 
     dbg_print "display_config()" "$dbglvl_lintscan_basic" 2
 
-    echo "---  Configuration files used  ---"
+    echo "---  File-level Configuration  ---"
     if [[ -n "$olint_cfg_base" ]] || [[ -n "$olint_cfg_proj" ]]; then
-        [[ -n "$olint_cfg_base" ]] && echo "Base conf:    $olint_cfg_base"
+        [[ -n "$olint_cfg_base" ]] && echo "Global conf:  $olint_cfg_base"
         [[ -n "$olint_cfg_proj" ]] && echo "Project conf: $olint_cfg_proj"
+        echo "Cache file:   $f_cache_file"
     else
         echo "Neither base nor project config found!"
     fi

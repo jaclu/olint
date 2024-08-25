@@ -101,6 +101,7 @@ excludes+=(
 # Additional configuration options that can be pre-defined:
 #
 # ignore_project=yes   # Ignore this entire project from being processed.
+#                         Essentially prevent olint from running in this project
 # use_cache=false      # Disable the use of cache for linting results.
 # mime_type_limit=true # Only scan files based on their MIME type.
 # lint_continue=true   # Continue linting even if errors are found.
