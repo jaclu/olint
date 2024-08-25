@@ -44,12 +44,12 @@ deploy_default_config() {
     if [ ! -f "$f_default_conf" ] || $force_deploy; then
         cp "$CURRENT_DIR"/default_config "$f_default_conf"
 
-        echo "A default config has been copied to $f_default_conf"
+        echo "A default config has been copied to [$f_default_conf]"
         echo "You should inspect it to ensure it matches your preferences."
         echo "As long as it is present, it will not be overwritten."
 
     else
-        echo "Global config already pressent: $f_default_conf"
+        echo "Global config already pressent: [$f_default_conf]"
     fi
     echo
 }

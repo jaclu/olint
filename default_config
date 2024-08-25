@@ -1,84 +1,115 @@
 #!/bin/bash
-# This is sourced. Fake bang-path to help editors and linters
-# shellcheck disable=SC2034  # dont warn about unused variables
+# This script is sourced. The fake shebang is included to help editors and linters.
+# shellcheck disable=SC2034  # Suppresses warnings about unused variables.
+#
+# This configuration file is typically set up once as your global default.
+# For each individual project, you only need to add overrides or additional
+# settings as necessary.
+#
+# By default, this file is installed to either ~/.config/olint/olint.cfg
+# or $XDG_CONFIG_HOME/olint/olint.cfg, depending on your environment.
+# Running ./deploy will not overwrite an existing configuration file.
+# If a config file already exists, you can either delete it or manually
+# incorporate the new settings into your existing configuration.
+#
+# Configuration Notes:
+# - Using '+=' appends new items to the existing list.
+# - Using '=' replaces the entire list. This can be useful for project-specific
+#   configurations where the global config includes many items that are
+#   irrelevant but need consideration for a specific project.
+#
+# By default, 'olint' ignores some common file patterns. You can override
+# these defaults by using '=' in your global or project-specific config file.
+# Running 'olint -c' will display the current settings. If the defaults
+# don't meet your needs, you can override them here.
 
-#
-#  Using '+=' appends new items to the existing list.
-#  Using '=' replaces the entire list. This can be useful in project
-#  configurations where the global config includes many items that
-#  are usually irrelevant but need to be considered for a specific project.
-#  By default, 'olint' ignores some typical file patterns. You can override
-#  these defaults by using '=' in your global or project-specific config file.
-#  Running 'olint -c' will display the current settings, so if the defaults
-#  don't meet your needs, you can easily override them.
-#
-
-#
-#  Use 'skip_plugins' to skip one or more linters. Use this as a template,
-#  and uncomment the linters you want to exclude from this project.
-#
+#  Use 'skip_plugins' to disable specific linters from your workflow or
+# for a specific project.
+#  Uncomment the linters you want to exclude from being run.
 skip_plugins+=(
-    # bandit
-    # checkbashisms
-    # flake8
-    # jsonlint
-    # markdownlint
-    # mypy
-    # pid_valid  # verifies that any pidfile found points to a running process
-    # pycodestyle # flake8 handles this; redundant if flake8 is used
-    # pylint
-    # pylintrc
-    # rslint
-    # shellcheck
-    # vale # not used by default
-    # yamllint
+    # bandit          # Security linter for Python code
+    # checkbashisms   # Checks for portability issues in shell scripts
+    # flake8          # Python linter; handles multiple PEP 8 violations
+    # jsonlint        # JSON file linter
+    # markdownlint    # Linter for Markdown files
+    # mypy            # Static type checker for Python
+    # pid_valid       # Verifies that any pidfile found points to a running process
+    # pycodestyle     # PEP 8 style checker; redundant if flake8 is used
+    # pylint          # Comprehensive Python code linter
+    # pylintrc        # Configuration file for pylint
+    # rslint          # Linter for Rust code
+    # shellcheck      # Linter for shell scripts
+    # vale            # Linter for prose; checks grammar and style
+    # yamllint        # Linter for YAML files
 )
 
-#
-#  Handling what files should be skipped by olint
-#
+#  =====  Handling which files should be skipped by 'olint'.  =====
 
-# Filter anything containing this including relative path
+# Patterns to exclude from linting, including their relative paths.
+# Add any paths or patterns here that should always be excluded.
 excluded_patterns+=(
-    # .git/  # sample
+    # .git/  # Example: Exclude the .git directory from linting.
 )
 
-# Filter relative filename (sans path)
-excluded_basenames+=(
-    # .gitignore  # sample
-)
-
-# Filter relative filename (sans path) by prefix
-prefixes+=(
-    # test_ # sample
-)
-
-# Filter by suffix
-suffixes+=(
-    # .pyc  # sample
-)
-
-# Explicit excludes, give entire filepath as listed by olint
-excludes+=(
-)
-
+# Patterns in this list, when matched with items in `excluded_patterns`,
+# will be hidden from the output when running 'olint' with the `-e` option.
+# This prevents the `-e` output from being cluttered with potentially
+# hundreds or thousands of lines for common patterns like .git/, which
+# are typically unnecessary to display.
 #
-# Per-project linter command overrides
+# When running 'olint' with the `-E` option, these patterns will be listed
+# as explicitly excluded files or directories, providing visibility into
+# what is being suppressed.
+hidden_patterns+=(
+    # .git/  # Example: Exclude the .git directory from being listed.
+)
+
+# Exclude specific files based on their basename (filename without the path).
+# Add any filenames here that should always be excluded.
+excluded_basenames+=(
+    # .gitignore  # Example: Exclude .gitignore files.
+)
+
+# Exclude files based on their filename prefix.
+# This is useful for skipping files that start with certain strings.
+prefixes+=(
+    # test_  # Example: Exclude files that start with 'test_'.
+)
+
+# Exclude files based on their filename suffix.
+# This is useful for skipping files with specific extensions or endings.
+suffixes+=(
+    # .pyc  # Example: Exclude compiled Python files.
+)
+
+# Explicitly exclude files by specifying their entire filepath as listed
+# by 'olint'.
+# This is useful for skipping specific files that don’t fit into the other
+# exclusion categories.
+excludes+=(
+    # path/to/file  # Example: Exclude a specific file.
+)
+
+# Per-project linter command overrides.
+# Use these overrides to customize how specific linters are executed for
+# this project.
 #
 # override_linter_cmd["shellcheck"]="shellcheck -a -x --color=always -o all"
+# The above example customizes the shellcheck command to include additional options.
 
 #
-#  Some options that can be pre-defined
+# Additional configuration options that can be pre-defined:
 #
-# ignore_project=yes # Ignore this entire project from being processed
-# use_cache=false # Do not use cache
-# mime_type_limit=true # Only scan files based on mime-type
-# lint_continue=true
-# debug_level=9
+# ignore_project=yes   # Ignore this entire project from being processed.
+# use_cache=false      # Disable the use of cache for linting results.
+# mime_type_limit=true # Only scan files based on their MIME type.
+# lint_continue=true   # Continue linting even if errors are found.
+# debug_level=9        # Set the verbosity of debug output.
+
 #
-#  Use this to override the location of plugins.
-#  Useful if a project config needs to use alternate plugin options
-#  or when trying out a new plugin definition.
-#  In most cases, leave this empty to use the default location.
+# Use this to override the location of plugins.
+# This is useful if a project config needs to use alternate plugin options,
+# or when trying out a new plugin definition.
+# In most cases, leave this empty to use the default plugin location.
 #
-# plugin_dir="$olint_cfg_dir"/plugins
+# plugin_dir="$olint_cfg_dir/plugins"

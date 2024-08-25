@@ -95,6 +95,57 @@ get_project_config() {
     dbg_print "get_project_config() - No project config found!" 1
 }
 
+filter_duplicates() {
+    # Take the input array as a parameter
+    local input_array=("$@")
+
+    # Declare an associative array to store unique elements
+    declare -A seen
+
+    # Declare a new array to hold the unique values
+    local unique_array=()
+
+    # Iterate over the input array
+    for value in "${input_array[@]}"; do
+        if [[ -z "${seen[$value]}" ]]; then
+            # If the value hasn't been seen yet, add it to the unique_array
+            unique_array+=("$value")
+            # Mark the value as seen
+            seen[$value]=1
+        fi
+    done
+
+    # Output the unique array
+    echo "${unique_array[@]}"
+}
+
+filter_hidden_vs_actually_excluded_patterns() {
+    local tmp_hidden lst_h item_h lst_e item_e
+
+    [[ ${#hidden_patterns[@]} -eq 0 ]] || [[ ${#excluded_patterns[@]} -eq 0 ]] && {
+        return # Either list was empty
+    }
+
+    # echo "><> Initial Hidden patterns:"
+    # lst="${hidden_patterns[*]}"
+    # for item in $lst; do
+    #     echo "  $item"
+    # done
+
+    tmp_hidden=("${hidden_patterns[@]}")
+    hidden_patterns=()
+    lst_h="${tmp_hidden[*]}"
+    for item_h in $lst_h; do
+        lst_e="${excluded_patterns[*]}"
+        for item_e in $lst_e; do
+            if [[ "$item_h" = "$item_e" ]]; then
+                hidden_patterns+=("$item_h")
+                break
+            fi
+        done
+    done
+}
+
 get_config() {
     local dbg_indent=$dbg_indent
 
@@ -118,31 +169,40 @@ get_config() {
     olint_plugin_dir="$olint_cfg_dir"/plugins
     skip_plugins=() # plugins to skip in this project
     excluded_patterns=(
+        __pycache__/
         .git/
         .mypy_cache/
         .pytest_cache/
         .venv/
         .vscode/
     )
-
-    # basename check
+    hidden_patterns=(
+        __pycache__/
+        .git/
+        .mypy_cache/
+        .pytest_cache/
+        .venv/
+        .vscode/
+    )
+    # basename excludes
     excluded_basenames=(
         .cache.olint
         .flake8
         .gitignore
         .shellcheckrc
     )
-    #  Specifix excludes
-    excludes=(
-
-    )
+    # excludes by prefix
     prefixes=(
-    ) # excludes by prefix
+    )
+    # excludes by suffix
     suffixes=(
         \~
         \#
         .pyc
-    ) # excludes by suffix
+    )
+    #  Specifix excludes
+    excludes=(
+    )
 
     #  handling base configuration                                                                     │
     source_file "$olint_cfg_base" # || olint_cfg_base=""
@@ -150,6 +210,15 @@ get_config() {
     declare -A override_linter_cmd
 
     get_project_config
+
+    read -r -a excluded_patterns <<<"$(filter_duplicates "${excluded_patterns[@]}")"
+    read -r -a hidden_patterns <<<"$(filter_duplicates "${hidden_patterns[@]}")"
+    read -r -a excluded_basenames <<<"$(filter_duplicates "${excluded_basenames[@]}")"
+    read -r -a excludes <<<"$(filter_duplicates "${excludes[@]}")"
+    read -r -a prefixes <<<"$(filter_duplicates "${prefixes[@]}")"
+    read -r -a suffixes <<<"$(filter_duplicates "${suffixes[@]}")"
+
+    filter_hidden_vs_actually_excluded_patterns
 
     check_linter_plugins "$olint_plugin_dir"
 
@@ -237,6 +306,17 @@ display_config() {
 
     echo "Excluded patterns:"
     lst="${excluded_patterns[*]}"
+    if [[ -n "$lst" ]]; then
+        for item in $lst; do
+            echo "  $item"
+        done
+    else
+        echo "  None"
+    fi
+    echo
+
+    echo "Hidden Excludes:"
+    lst="${hidden_patterns[*]}"
     if [[ -n "$lst" ]]; then
         for item in $lst; do
             echo "  $item"
@@ -897,8 +977,8 @@ should_fname_be_excluded() {
     local fname="$1"
     local item pattern rel_fname
 
-    $skip_commons && {
-        for item in "${hide_common_excludes[@]}"; do
+    $skip_common_excludes && {
+        for item in "${hidden_patterns[@]}"; do
             [[ $fname =~ $item ]] && return 0
         done
     }
@@ -1177,7 +1257,7 @@ process_file_tree() {
 
 display_hidden_excludes() {
     local item
-    for item in "${hide_common_excludes[@]}"; do
+    for item in "${hidden_patterns[@]}"; do
         echo "                      $item"
     done
 }
@@ -1194,7 +1274,7 @@ Available options:
 -C, --continue      Continue with the next file after linter issues are found
     --config-dir    Prints out where global config files are located
 -e  --excluded      List all files that are excluded, except typically
-                    uninteresting folders:
+                    uninteresting items, currently:
 $(display_hidden_excludes)
 -E  --excluded-all  Reallly list all files that are excluded
 -m  --mime-type     When scaning files, only identify by mime-type
@@ -1215,7 +1295,6 @@ excluded for this project.
 See README.md for more information about this file.
 "
     #endregion
-    env_cleanup 0
 }
 
 #===============================================================
@@ -1254,33 +1333,30 @@ declare -A linter_cmd
 declare -A linter_priorities
 declare -A linter_extensions
 declare -A linter_file_types
-linter_order=()       # used to display them in alphabetical order
-show_config=false     # option: -c
-lint_continue=false   # option: -C
-show_excluded=false   # option: -e / -E
-skip_commons=false    # extra setting for: -e / -E
-mime_type_limit=false # -m
-do_lint_files=true    # option: -n
-use_cache=true        # option: -N
+linter_order=()            # used to display them in alphabetical order
+show_config=false          # option: -c
+lint_continue=false        # option: -C
+show_excluded=false        # option: -e / -E
+skip_common_excludes=false # extra setting for: -e / -E
+do_show_help=false         # option: -h
+mime_type_limit=false      # -m
+do_lint_files=true         # option: -n
+use_cache=true             # option: -N
 # show_stats=false        # (unofficial olint dev) option: -s
 ignore_project=false
 debug_level=0 # option: -v
 h_max_age=0   # no max file age for items to be processed
 
-hide_common_excludes=(
-    .git/
-    .mypy_cache/
-    .pytest_cache/
-    .venv/
-    .vscode/
-)
-
 while [[ -n "$1" ]]; do
     case $1 in
 
     -h | --help)
+        #
+        # only toggle a switch now, help will be displayed after
+        # git_config is called
+        #
         # shellcheck disable=SC2317
-        show_help || error_msg "show_help() failure"
+        do_show_help=true
         ;;
 
     -c | --config) show_config=true ;;
@@ -1289,16 +1365,16 @@ while [[ -n "$1" ]]; do
     --config-dir) # Suport for ./deploy - prints out the config dir
         get_config
         echo "$olint_cfg_dir"
-        env_cleanup 0
+        exit 0
         ;;
 
     -e | --excluded)
         show_excluded=true
-        skip_commons=true
+        skip_common_excludes=true
         ;;
     -E | --excluded-all)
         show_excluded=true
-        skip_commons=false
+        skip_common_excludes=false
         ;;
     -n | --no-linter) do_lint_files=false ;;
     -N | --nocache) use_cache=false ;;
@@ -1331,6 +1407,11 @@ done
 
 get_config
 
+$do_show_help && {
+    show_help || error_msg "show_help() failure"
+    env_cleanup 0
+}
+
 $show_config && {
     display_config
     env_cleanup 0
@@ -1357,6 +1438,6 @@ $use_cache || {
 }
 echo
 
-cache_read
+cache_read ### R
 process_file_tree
 env_cleanup 0
