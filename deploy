@@ -171,8 +171,8 @@ get_app_destination
     echo "-----   Uninstall olint   -----"
     # if [
     rm -f "$d_app_dest"/olint || echo "no app installed"
-    rm -rf $HOME/.config/olint
-    rm -f $HOME/.olint.conf
+    rm -rf "$HOME"/.config/olint
+    rm -f "$HOME"/.olint.conf
     echo "Uninstall completed"
     exit 0
 }
