@@ -163,6 +163,7 @@ deploy_default_ignore() {
 #===============================================================
 
 REPO_DIR="$(dirname -- "$0")"
+REPO_DIR="$(dirname -- "$0")"
 
 check_dependencies
 get_app_destination
@@ -178,7 +179,22 @@ get_app_destination
     exit 0
 }
 
+get_app_destination
+
+[ "$1" = uninstall ] && {
+    echo
+    echo "-----   Uninstall olint   -----"
+    # if [
+    rm -f "$d_app_dest"/olint || echo "no app installed"
+    rm -rf "$HOME"/.config/olint
+    rm -f "$HOME"/.olint.conf
+    echo "Uninstall completed"
+    exit 0
+}
+
 deploy_default_config
 deploy_app
+deploy_app
 deploy_plugins
+# deploy_default_ignore
 # deploy_default_ignore
