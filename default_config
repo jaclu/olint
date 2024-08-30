@@ -114,4 +114,4 @@ excludes+=(
 # or when trying out a new plugin definition.
 # In most cases, leave this empty to use the default plugin location.
 #
-# plugin_dir="$olint_cfg_dir/plugins"
+# olint_plugin_dir="/tmp/foo/olint_plugins"
