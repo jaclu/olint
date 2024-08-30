@@ -18,9 +18,9 @@ check_dependencies() {
     command -v rsync >/dev/null || deps="$deps rsync"
 
     if [ -f /etc/debian_version ]; then
-	install_procedure="apt install"
+        install_procedure="apt install"
     elif [ -f /etc/alpine-release ]; then
-	install_procedure="apk add"
+        install_procedure="apk add"
     fi
 
     [ -n "$deps" ] && {
@@ -37,7 +37,7 @@ check_dependencies() {
     unset deps install_procedure
 }
 
-not_dependencies_alpine() {  # should be deleted after check on Alpine iSH
+not_dependencies_alpine() { # should be deleted after check on Alpine iSH
     install_procedure="apk add"
 
     _s="$(command -v find)"
@@ -57,7 +57,6 @@ not_dependencies_alpine() {  # should be deleted after check on Alpine iSH
     }
 }
 
-
 get_app_destination() {
     #
     #  Exposed variables:
@@ -65,8 +64,8 @@ get_app_destination() {
     #
     f_dest_hint="$(echo "$REPO_DIR/.destination" | sed 's#^\./##')"
     if [ ! -f "$f_dest_hint" ]; then
-	echo "In order for deploy to know the intended destination for the binary"
-	echo "Create a file with destination foler and name it: $f_dest_hint"
+        echo "In order for deploy to know the intended destination for the binary"
+        echo "Create a file with destination foler and name it: $f_dest_hint"
         echo "This deploy will use rsync and install/update olint to that location."
         echo "Example:"
         echo "  echo /usr/local/bin > $f_dest_hint"
@@ -109,9 +108,9 @@ deploy_default_config() {
 deploy_app() {
     echo "---  olint app"
     if sudo rsync -ahP "$REPO_DIR"/olint "$d_app_dest" | grep -q "olint"; then
-	echo "Latest version installed: $d_app_dest/olint"
+        echo "Latest version installed: $d_app_dest/olint"
     else
-	echo "Was current: $d_app_dest/olint"
+        echo "Was current: $d_app_dest/olint"
     fi
     echo
 }
@@ -121,26 +120,28 @@ deploy_plugins() {
 
     cmd_conf_dir="$REPO_DIR/olint --config-dir"
     d_default_conf="$($cmd_conf_dir)" || {
-	echo "ERROR: Failed to detect config folder using: $cmd_conf_dir"
-	exit 1
+        echo "ERROR: Failed to detect config folder using: $cmd_conf_dir"
+        exit 1
     }
 
     d_plugins="$d_default_conf"/plugins
     mkdir -p "$d_plugins"
     [ -n "$(ls -A "$d_plugins")" ] && {
         echo "Plugin folder has content, will not be overwritten"
-	echo "  $d_plugins"
+        echo "  $d_plugins"
         return
     }
 
-    # rsync -ahP --exclude="*~" "$REPO_DIR"/plugins/* "$d_plugins"
-    if cmd_output="$(rsync -ahP --exclude="*~" "$REPO_DIR"/plugins/* "$d_plugins" 2>&1)"; then
-	echo "Default plugins installed to: $d_plugins"
+    if cmd_output="$(
+        rsync -ahP --exclude="*/" --exclude="*~" "$REPO_DIR"/plugins/* \
+            "$d_plugins" 2>&1
+    )"; then
+        echo "Default plugins installed to: $d_plugins"
     else
-	echo "ERROR: copying plugins failed"
-	echo
-	echo "$cmd_output"
-	exit 1
+        echo "ERROR: copying plugins failed"
+        echo
+        echo "$cmd_output"
+        exit 1
     fi
 }
 

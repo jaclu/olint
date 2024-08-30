@@ -1,5 +1,7 @@
 # ToDo
 
+## Rename debug_lvl into verbose_lvl
+
 ## CtrlC
 
 - jsonlint ignores ctrl c

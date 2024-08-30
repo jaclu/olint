@@ -16,6 +16,18 @@
 #
 #
 
+should_project_be_ignored() {
+    #  Abort Check
+    case "$(lowercase_it "$ignore_project")" in
+    1 | "true" | "yes")
+        echo "olint - Project ignored due to ignore_project=$ignore_project"
+        echo "        Defined in: $olint_cfg_proj"
+        env_cleanup 0
+        ;;
+    *) ;;
+    esac
+}
+
 error_msg() {
     #
     #  Display error to /dev/stderr, and exit if exit code > -1
@@ -28,17 +40,26 @@ error_msg() {
         echo "error_msg() no param"
         env_cleanup 9
     fi
-    printf "\\n\\nERROR: %s\\n\\n" "$msg" >&2
+    # shellcheck disable=SC2059 # msg needs to be allowed go contain \n
+    printf "\\n\\nERROR: $msg\\n\\n" >&2
     [[ "$exit_code" -gt -1 ]] && env_cleanup "$exit_code"
 }
 
 dbg_print() {
     #
-    #  Displays info to /dev/stderr
+    #  Displays info to /dev/stderr, if 2nd param is: forced
+    #  This will always be printed, practical to use early on in the
+    #  program before debug_level & dbg_indent has been defined
+    #  For such line, comment them out if not desired
     #
     local msg="$1"
     local this_debug_level="${2:-1}"
-    [[ "$debug_level" -ge "$this_debug_level" ]] || return
+    [[ "$this_debug_level" = "forced" ]] && {
+        local this_debug_level=1
+        local debug_level="$this_debug_level"
+        local dbg_indent=1
+    }
+    [[ "$debug_level" -lt "$this_debug_level" ]] && return
     printf "%s>%*s%s\\n" "$this_debug_level" "$dbg_indent" "" "$msg" >&2
 }
 
@@ -64,12 +85,16 @@ env_cleanup() {
 source_file() {
     #  Source a file, exit with error on failure
     local fname="$1"
+    local dbg_indent=$dbg_indent
 
     dbg_print "source_file($fname)" 3
+    # only indent if func name is displayed
+    [[ "$debug_level" -gt 2 ]] && ((dbg_indent++))
+
     if [[ -f "$fname" ]]; then
         # shellcheck source=/dev/null
         source "$fname" || error_msg "Failed to source: $fname"
-        dbg_print "Sourced: $fname"
+        dbg_print "Sourced: $fname" 2
         return 0
     else
         dbg_print "source_file() - File not found: $fname" 1
@@ -77,34 +102,120 @@ source_file() {
     return 1
 }
 
+parse_cmd_line() {
+    # dbg_print "parse_cmd_line()" forced
+    while [[ -n "$1" ]]; do
+        case $1 in
+
+        -h | --help)
+            #
+            # only toggle a switch now, help will be displayed after
+            # git_config is called
+            #
+            # shellcheck disable=SC2317
+            do_show_help=true
+            ;;
+
+        -c | --config) show_config=true ;;
+        -C | --continue) lint_continue=true ;;
+
+        --config-dir) # Suport for ./deploy - prints out the config dir
+            echo "$olint_cfg_dir"
+            exit 0
+            ;;
+
+        -e | --excluded)
+            show_excluded=true
+            skip_common_excludes=true
+            ;;
+        -E | --excluded-all)
+            show_excluded=true
+            skip_common_excludes=false
+            ;;
+        -m | --mime-type) mime_type_limit=true ;;
+        -n | --no-linter) do_lint_files=false ;;
+        -N | --nocache) use_cache=false ;;
+
+        -v | --verbose)
+            lvl="${2:-missing param}"
+            [[ "$lvl" = "missing param" ]] && {
+                error_msg "-v/--verbose without verbosity lvl param"
+            }
+            is_integer "$lvl" || error_msg "debug_lvl is not int: [$lvl]"
+            debug_level="$lvl"
+            shift # pop debug level
+            ;;
+
+        -z | --zapcache)
+            if [[ -f "$f_cache_file" ]]; then
+                #  Will only attempt to remove the "local" same folder cache file
+                echo "Removing $f_cache_file"
+                rm -f "$f_cache_file"
+            # else
+            #     echo "No cache found: $f_cache_file"
+            fi
+            ;;
+
+        *[!0-9]*) error_msg "Unrecognized option: $1" ;;
+
+        *) # only remaining param type is an int
+            h_max_age="$1"
+            echo "Will only check files changed in the last $h_max_age hours"
+            ;;
+
+        esac
+        shift
+    done
+}
+
 get_project_config() {
+    local dbg_indent=$dbg_indent
+
+    dbg_print "get_project_config()" 2
+    ((dbg_indent++)) # increase indent until this returns
+
     # Traverse up until a project conf is found
     olint_cfg_proj=""
     dir=$(pwd)
 
     # Traverse up the directory tree
     while [[ "$dir" != "/" ]]; do
-        olint_cfg_proj="$dir"/.olint.conf
+        olint_cfg_proj="$dir"/"$bname_proj_config"
         dbg_print "Checking for config in: $dir" 2
         if [[ -f "$olint_cfg_proj" ]]; then
             source_file "$olint_cfg_proj" || olint_cfg_proj="" || {
                 error_msg "Failed to source Project config: $olint_cfg_proj"
             }
-            f_cache_file="$dir/$f_cache_file"
-            dbg_print "Using cache file: $f_cache_file" 1
+            [[ -n "$plugin_dir" ]] && {
+                local msg="Obsolete config variable found in: $olint_cfg_proj\n"
+                msg+="\n  plugin_dir should be replaced by olint_plugin_dir"
+                error_msg "$msg"
+            }
+            dbg_print "Using Project file: $olint_cfg_proj" 1
+            f_cache_file="$dir/$bname_cache"
+            dbg_print "Will use cache file: $f_cache_file" 1
             return
         fi
         dir=$(dirname "$dir")
     done
     olint_cfg_proj=""
-    dbg_print "get_project_config() - No project config found!" 1
+    dbg_print "get_project_config() - No Project config (.olint_conf) found!" 1
+}
+
+de_duplicate_exclude_lists() {
+    read -r -a excluded_patterns <<<"$(filter_duplicates "${excluded_patterns[@]}")"
+    read -r -a hidden_patterns <<<"$(filter_duplicates "${hidden_patterns[@]}")"
+    read -r -a excluded_basenames <<<"$(filter_duplicates "${excluded_basenames[@]}")"
+    read -r -a excludes <<<"$(filter_duplicates "${excludes[@]}")"
+    read -r -a prefixes <<<"$(filter_duplicates "${prefixes[@]}")"
+    read -r -a suffixes <<<"$(filter_duplicates "${suffixes[@]}")"
 }
 
 filter_duplicates() {
     # Take the input array as a parameter
     local input_array=("$@")
 
-    # Declare an associative array to store unique elements
+    # Declare a local associative array to store unique elements
     declare -A seen
 
     # Declare a new array to hold the unique values
@@ -157,79 +268,28 @@ get_config() {
     dbg_print "get_config()" 2
     ((dbg_indent++)) # increase indent until this returns
 
-    #  Selects config location
-    if [[ -n "$XDG_CONFIG_HOME" ]]; then
-        olint_cfg_dir="$XDG_CONFIG_HOME"/olint
-    else
-        olint_cfg_dir=~/.config/olint
-    fi
     mkdir -p "$olint_cfg_dir" || {
         error_msg "Failed to create folder: $olint_cfg_dir"
     }
-    olint_cfg_base="$olint_cfg_dir"/olint.conf
+    olint_cfg_global="$olint_cfg_dir"/olint.conf
 
-    #
-    #  Defaults that can be overriden in config files
-    #
-    olint_plugin_dir="$olint_cfg_dir"/plugins
-    skip_plugins=() # plugins to skip in this project
-    excluded_patterns=(
-        __pycache__/
-        .git/
-        .mypy_cache/
-        .pytest_cache/
-        .venv/
-        .vscode/
-    )
-    hidden_patterns=(
-        __pycache__/
-        .git/
-        .mypy_cache/
-        .pytest_cache/
-        .venv/
-        .vscode/
-    )
-    # basename excludes
-    excluded_basenames=(
-        .cache.olint
-        .flake8
-        .gitignore
-        .shellcheckrc
-    )
-    # excludes by prefix
-    prefixes=(
-    )
-    # excludes by suffix
-    suffixes=(
-        \~
-        \#
-        .pyc
-    )
-    #  Specifix excludes
-    excludes=(
-    )
+    if [[ -f "$olint_cfg_global" ]]; then
+        #  handling base configuration
+        source_file "$olint_cfg_global"
+    else
+        echo "Warning - no Global config file: $olint_cfg_global"
+        echo
+    fi
 
-    #  handling base configuration                                                                     │
-    source_file "$olint_cfg_base" # || olint_cfg_base=""
-
-    declare -A override_linter_cmd
+    declare -A override_linter_cmd # local array ie sans -g
 
     get_project_config
-
-    read -r -a excluded_patterns <<<"$(filter_duplicates "${excluded_patterns[@]}")"
-    read -r -a hidden_patterns <<<"$(filter_duplicates "${hidden_patterns[@]}")"
-    read -r -a excluded_basenames <<<"$(filter_duplicates "${excluded_basenames[@]}")"
-    read -r -a excludes <<<"$(filter_duplicates "${excludes[@]}")"
-    read -r -a prefixes <<<"$(filter_duplicates "${prefixes[@]}")"
-    read -r -a suffixes <<<"$(filter_duplicates "${suffixes[@]}")"
-
+    de_duplicate_exclude_lists
     filter_hidden_vs_actually_excluded_patterns
-
-    check_linter_plugins "$olint_plugin_dir"
 
     for linter_override in "${!override_linter_cmd[@]}"; do
         if [[ -z "${linter_cmd[$linter_override]}" ]]; then
-            error_msg "Linter Not defined, can't be changed in .olint.conf: $linter_override " 2
+            error_msg "Linter Not defined, can't be changed in $bname_proj_config: $linter_override " 2
         fi
         new_cmd="${override_linter_cmd[$linter_override]}"
         [[ -z "$new_cmd" ]] && {
@@ -262,10 +322,16 @@ display_config() {
     dbg_print "display_config()" "$dbglvl_lintscan_basic" 2
 
     echo "---  File-level Configuration  ---"
-    if [[ -n "$olint_cfg_base" ]] || [[ -n "$olint_cfg_proj" ]]; then
-        [[ -n "$olint_cfg_base" ]] && echo "Global conf:  $olint_cfg_base"
+    if [[ -n "$olint_cfg_global" ]] || [[ -n "$olint_cfg_proj" ]]; then
+        [[ -n "$olint_cfg_global" ]] && {
+            if [[ -f "$olint_cfg_global" ]]; then
+                echo "Global conf:  $olint_cfg_global"
+            else
+                echo "Global conf (not present):  $olint_cfg_global"
+            fi
+        }
         [[ -n "$olint_cfg_proj" ]] && echo "Project conf: $olint_cfg_proj"
-        echo "Cache file:   $f_cache_file"
+        $use_cache && echo "Cache file:   $f_cache_file"
     else
         echo "Neither base nor project config found!"
     fi
@@ -299,7 +365,7 @@ display_config() {
     done
     echo
 
-    echo "Plugins skipped in .olint.conf:"
+    echo "Plugins skipped in $bname_proj_config:"
     lst="${skip_plugins[*]}"
     if [[ -n "$lst" ]]; then
         for item in $lst; do
@@ -377,11 +443,134 @@ display_config() {
     echo
 }
 
-#===============================================================
+#---------------------------------------------------------------
+#
+#   Default settings
+#
+#---------------------------------------------------------------
+
+initialize_env() {
+    # dbg_print "initialize_env()" forced
+
+    kernel_name="$(uname -s)"
+    dbg_indent=1 # used to indent printouts in dbg_print
+    bname_proj_config=".olint.conf"
+    bname_cache=".cache.olint" # mtime|date|fname
+
+    #  Define Global config location
+    if [[ -n "$XDG_CONFIG_HOME" ]]; then
+        olint_cfg_dir="$XDG_CONFIG_HOME"/olint
+    else
+        olint_cfg_dir=~/.config/olint
+    fi
+
+    defaults_for_cmdline
+    defaults_for_config_file_excludes
+
+    #  -----   linting env   -----
+
+    files_without_matching_linter=0
+    not_linting_msg="skipped task due to no-linters display beeing selected"
+
+    f_linter_output=/tmp/olint["$$"]-linter-output
+
+    declare -g -A linter_cmd
+    declare -g -A linter_priorities
+    declare -g -A linter_extensions
+    declare -g -A linter_file_types
+    linter_order=() # used to display them in alphabetical order
+
+    #  -----   caching env   -----
+
+    # Will only be updated if cache format is changed
+    olint_cache_version="olint cache vers: 0.3.1"
+
+    cache_is_changed=false
+    declare -g -A cache_old     # What is read from cache file
+    declare -g -A cache_new     # What will be written to cache file
+    f_cache_file="$bname_cache" # initiaally assume its in same foleer
+
+    #  -----   debug level helpers   -----
+
+    #  Some debug level constants, to make it easier to limit what
+    #  is displayed
+
+    dbglvl_cache_events_basic=4
+    dbglvl_cache_events_more="$((dbglvl_cache_events_basic + 1))"
+    dbglvl_lintscan_basic=4
+    dbglvl_lintscan_details="$((dbglvl_lintscan_basic + 1))"
+    dbglvl_data_types=9
+}
+
+defaults_for_cmdline() {
+    #  -----   defaults for cmdline options   -----
+
+    show_config=false          # option: -c
+    lint_continue=false        # option: -C
+    show_excluded=false        # option: -e / -E
+    skip_common_excludes=false # extra setting for: -e / -E
+    do_show_help=false         # option: -h
+    mime_type_limit=false      # -m
+    do_lint_files=true         # option: -n
+    use_cache=true             # option: -N
+    debug_level=0              # option: -v
+    h_max_age=0                # no max file age for items to be processed
+}
+
+defaults_for_config_file_excludes() {
+    # ignore_project=yes   # Ignore this entire project from being processed.
+    #                         Essentially prevent olint from running in this project
+    #> use_cache=false      # Disable the use of cache for linting results.
+    #> mime_type_limit=true # Only scan files based on their MIME type.
+    #> lint_continue=true   # Continue linting even if errors are found.
+    #> debug_level=9        # Set the verbosity of debug output.
+
+    ignore_project=no
+
+    olint_plugin_dir="$olint_cfg_dir"/plugins
+    skip_plugins=() # plugins to skip in this project
+    excluded_patterns=(
+        __pycache__/
+        .git/
+        .mypy_cache/
+        .pytest_cache/
+        .venv/
+        .vscode/
+    )
+    hidden_patterns=(
+        __pycache__/
+        .git/
+        .mypy_cache/
+        .pytest_cache/
+        .venv/
+        .vscode/
+    )
+    # basename excludes
+    excluded_basenames=(
+        "$bname_cache"
+        .flake8
+        .gitignore
+        .shellcheckrc
+    )
+    # excludes by prefix
+    prefixes=(
+    )
+    # excludes by suffix
+    suffixes=(
+        \~
+        \#
+        .pyc
+    )
+    #  Specifix excludes
+    excludes=(
+    )
+}
+
+#---------------------------------------------------------------
 #
 #   Data Types
 #
-#===============================================================
+#---------------------------------------------------------------
 
 is_integer() {
     dbg_print "is_integer($1)" "$dbglvl_data_types"
@@ -407,27 +596,35 @@ remove_duplicates() {
     echo "${result[@]}"
 }
 
-#===============================================================
+lowercase_it() {
+    echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+#---------------------------------------------------------------
 #
 #   Cache handling
 #
-#===============================================================
+#---------------------------------------------------------------
 
 cache_write() {
+    #
+    #  First line is expected to contain a cache version identifier,
+    #  rest is: mtime|date|fname
+    #
     local dbg_indent=$dbg_indent
     local key value
+
+    $use_cache || {
+        # abort if not using cache
+        dbg_print "cache_write() - aborted due to not using cache" 1
+        return
+    }
 
     dbg_print "cache_write()" 3
     ((dbg_indent++)) # increase indent until this returns
 
     $do_lint_files || {
         dbg_print "$not_linting_msg" 3
-        return
-    }
-
-    # abort if not using cache
-    $use_cache || {
-        dbg_print "skipped task due to not using cache" 3
         return
     }
 
@@ -464,7 +661,8 @@ cache_write() {
 
 cache_read() {
     #
-    #  First line is expected to contain an identifier
+    #  First line is expected to contain a cache version identifier,
+    #  rest is: mtime|date|fname
     #
     local dbg_indent=$dbg_indent
     local waiting_for_header=true
@@ -473,17 +671,17 @@ cache_read() {
     local f_date
     local f_mtime
 
+    $use_cache || {
+        # abort if not using cache
+        dbg_print "cache_read() - aborted due to not using cache" 1
+        return
+    }
+
     dbg_print "cache_read()" 2
     ((dbg_indent++)) # increase indent until this returns
 
     $do_lint_files || {
         dbg_print "$not_linting_msg" 2
-        return
-    }
-
-    # abort if not using cache
-    $use_cache || {
-        dbg_print "skipped task due to not using cache" 2
         return
     }
 
@@ -557,8 +755,7 @@ filename_is_cached() {
 
     $use_cache || return 1 # False
 
-    dbg_print "filename_is_cached($f_to_check)" \
-        "$dbglvl_cache_events_more"
+    dbg_print "filename_is_cached($f_to_check)" "$dbglvl_cache_events_more"
     ((dbg_indent++)) # increase indent until this returns
 
     #echo ">= filename_is_cached($1)"
@@ -598,11 +795,11 @@ cache_add() {
     dbg_print "added $f_name = $f_mtime|$f_date" "dbglvl_cache_events_more"
 }
 
-#===============================================================
+#---------------------------------------------------------------
 #
 #   File Age related
 #
-#===============================================================
+#---------------------------------------------------------------
 
 recent_enough() {
     local dbg_indent=$dbg_indent
@@ -641,7 +838,7 @@ get_mtime() {
     local fname="$1"
 
     dbg_print "get_mtime($fname)" "$dbglvl_data_types"
-    if [[ "$this_uname" == "Darwin" ]]; then
+    if [[ "$kernel_name" == "Darwin" ]]; then
         # macOS version
         stat -f "%m" "$fname"
     else
@@ -662,7 +859,7 @@ mtime_2_date() {
         f_mtime="$(get_mtime "$1"))"
     fi
 
-    case "$this_uname" in
+    case "$kernel_name" in
     "Darwin") as_date="$(date -r "$f_mtime" +'%Y-%m-%d %H:%M:%S')" ;;
     *) as_date="$(date -d "@$f_mtime" +'%Y-%m-%d %H:%M:%S')" ;;
     esac
@@ -671,38 +868,116 @@ mtime_2_date() {
     echo "$as_date"
 }
 
-#===============================================================
+#---------------------------------------------------------------
 #
-#   Linting actions
+#   Linting setup
 #
-#===============================================================
+#---------------------------------------------------------------
 
-# Function to sort linters based on priorities
-sort_linters() {
-    local -n linters_array=$1
-    local sorted_linters=()
+check_linter_plugins() {
+    local dbg_indent=$dbg_indent
+    local plugin_dir="$1"
+    local plugin_count=0
+    local file_type
 
-    dbg_print "sort_linters(${linters_array[*]}" "$dbglvl_lintscan_details"
-
-    if test -d /proc/ish; then
-        #
-        #  iSH kernel doesnt support enough of /proc to make mapfile work
-        #
-        # shellcheck disable=SC2207
-        sorted_linters=($(
-            for linter in "${linters_array[@]}"; do
-                echo "$linter ${linter_priorities[$linter]}"
-            done | sort -k2nr | awk '{print $1}'
-        ))
-    else
-        mapfile -t sorted_linters < <(
-            for linter in "${linters_array[@]}"; do
-                echo "$linter ${linter_priorities[$linter]}"
-            done | sort -k2nr | awk '{print $1}'
-        )
+    if [[ -z "$plugin_dir" ]]; then
+        error_msg "check_linter_plugins() - called with no plugin_dir param"
+    elif [[ ! -d "$plugin_dir" ]]; then
+        error_msg "Plugin folder missing: $plugin_dir"
     fi
-    # dbg_print "sort_linters() - sorted [${sorted_linters[*]}]" 0
-    echo "${sorted_linters[@]}"
+
+    dbg_print "check_linter_plugins($plugin_dir)" 2
+    ((dbg_indent++)) # increase indent until this returns
+
+    # Loop through each file in alphabetical order
+    for plugin_def in "$plugin_dir"/*; do
+        [[ ! -f "$plugin_def" ]] && continue
+        ((plugin_count += 1))
+
+        # skip files ending with ~
+        [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
+        # Process the file here
+        parse_plugin_file "$plugin_def"
+    done
+    [[ "$plugin_count" -eq 0 ]] && {
+        error_msg "No plugins found in: $plugin_dir"
+    }
+}
+
+parse_plugin_file() {
+    local plugin_def="$1"
+    local dbg_indent=$dbg_indent
+    local plugin_name
+    local plugin_priority
+    local plugin_cmd
+    local item
+    local plugin_cmd_actual
+    local cmd_ok
+    local plugin_extensions
+    local plugin_file_types
+    local ext
+    local file_type
+
+    dbg_print "parse_plugin_file($plugin_def)" "$dbglvl_lintscan_basic"
+    ((dbg_indent++)) # increase indent until this returns
+
+    plugin_name=$(basename "$plugin_def") # defaults to fname of plugin
+    plugin_priority=10                    # set a default priority
+
+    source_file "$plugin_def"
+
+    [[ -z "$plugin_cmd" ]] && {
+        dbg_print "Plugin $plugin_def - missing: plugin_cmd" 0
+        return 1 # False
+    }
+
+    for item in "${skip_plugins[@]}"; do
+        [[ "$item" = "$plugin_name" ]] && {
+            dbg_print "$plugin_name was in skip_plugins item [$item]" \
+                "$dbglvl_lintscan_details"
+            return 1 # False
+        }
+    done
+
+    if [[ -n "$plugin_cmd_actual" ]]; then
+        check_cmd="$plugin_cmd_actual"
+    else
+        check_cmd="$plugin_cmd"
+    fi
+
+    cmd_ok="$(verify_lint_cmd "$check_cmd")"
+    [[ -z "$cmd_ok" ]] && {
+        # command not found - linter not installed/available
+        return 1 # False
+    }
+    if [[ -n "$plugin_cmd_actual" ]]; then
+        # use the intended cmd - potentially a function
+        cmd_ok="$(verify_lint_cmd "$plugin_cmd")"
+        [[ -z "$cmd_ok" ]] && {
+            # command not found - linter not installed/available
+            return 1 # False
+        }
+    fi
+
+    linter_cmd["$plugin_name"]="$cmd_ok"
+    linter_order+=("$plugin_name")
+
+    linter_priorities["$plugin_name"]="$plugin_priority"
+
+    [[ ${#plugin_extensions[@]} -eq 0 ]] &&
+        [[ ${#plugin_file_types[@]} -eq 0 ]] && {
+
+        error_msg "Plugin $plugin_def - neither plugin_extensions nor plugin_file_types defined"
+    }
+
+    for ext in "${plugin_extensions[@]}"; do
+        add_plugin_extension "$plugin_name" "$plugin_priority" "$ext"
+    done
+
+    for file_type in "${plugin_file_types[@]}"; do
+        add_plugin_file_type "$plugin_name" "$(lowercase_it "$file_type")"
+    done
+    return 0 # True
 }
 
 add_plugin_extension() {
@@ -757,107 +1032,30 @@ add_plugin_file_type() {
         sorted_items="$(sort_linters unsorted)"
         linter_file_types[$lc_file_type]="$sorted_items"
     fi
-}
+    # #if [[ -z "${linter_file_types[$lc_file_type]}" ]]; then
+    # if [[ ${#linter_file_types[@]} -eq 0 ]]; then
+    #     dbg_print "><> addig first item [$lc_file_type] to linter_file_types"
+    #     # linter_file_types["posix shell script"]="some_value"
+    #     linter_file_types["$lc_file_type"]="hepp"
+    #     linter_file_types["$lc_file_type"]="$plugin"
+    #     error_msg "chk if it worked"
+    # elif [[ -z "${linter_file_types[\"$lc_file_type\"]+isset}" ]]; then
+    #     for item in ${linter_file_types[$lc_file_type]}; do
+    #         [[ "$item" = "$plugin" ]] && return 0
+    #     done
+    #     linter_file_types[$lc_file_type]+=" $plugin"
 
-parse_plugin_file() {
-    local plugin_def="$1"
-    local dbg_indent=$dbg_indent
-    local plugin_name
-    local plugin_priority
-    local plugin_cmd
-    local item
-    local plugin_cmd_actual
-    local cmd_ok
-    local plugin_extensions
-    local plugin_file_types
-    local ext
-    local file_type
-    local lowercase_plugin_name
+    #     unsorted=()
+    #     for itm in ${linter_file_types[$lc_file_type]}; do
+    #         unsorted+=("$itm")
+    #     done
 
-    dbg_print "parse_plugin_file($plugin_def)" "$dbglvl_lintscan_basic"
-    ((dbg_indent++)) # increase indent until this returns
-
-    plugin_name=$(basename "$plugin_def") # defaults to fname of plugin
-    plugin_priority=10                    # set a default priority
-
-    source_file "$plugin_def"
-
-    [[ -z "$plugin_cmd" ]] && {
-        dbg_print "Plugin $plugin_def - missing: plugin_cmd" 0
-        return 1 # False
-    }
-
-    for item in "${skip_plugins[@]}"; do
-        [[ "$item" = "$plugin_name" ]] && return 1 # False
-    done
-
-    if [[ -n "$plugin_cmd_actual" ]]; then
-        check_cmd="$plugin_cmd_actual"
-    else
-        check_cmd="$plugin_cmd"
-    fi
-    cmd_ok="$(verify_lint_cmd "$check_cmd")"
-    [[ -z "$cmd_ok" ]] && {
-        # command not found - linter not installed/available
-        return 1 # False
-    }
-    if [[ -n "$plugin_cmd_actual" ]]; then
-        # use the intended cmd - potentially a function
-        cmd_ok="$(verify_lint_cmd "$plugin_cmd")"
-        [[ -z "$cmd_ok" ]] && {
-            # command not found - linter not installed/available
-            return 1 # False
-        }
-    fi
-
-    linter_cmd["$plugin_name"]="$cmd_ok"
-    linter_order+=("$plugin_name")
-
-    linter_priorities["$plugin_name"]="$plugin_priority"
-
-    [[ ${#plugin_extensions[@]} -eq 0 ]] &&
-        [[ ${#plugin_file_types[@]} -eq 0 ]] && {
-
-        error_msg "Plugin $plugin_def - neither plugin_extensions nor plugin_file_types defined"
-    }
-
-    for ext in "${plugin_extensions[@]}"; do
-        add_plugin_extension "$plugin_name" "$plugin_priority" "$ext"
-    done
-
-    for file_type in "${plugin_file_types[@]}"; do
-        lowercase_plugin_name="${plugin_name,,}"
-        add_plugin_file_type "$lowercase_plugin_name" "$file_type"
-    done
-    return 0 # True
-}
-
-check_linter_plugins() {
-    local dbg_indent=$dbg_indent
-    local olint_plugin_dir="$1"
-    local file_type
-
-    [[ -z "$olint_plugin_dir" ]] && {
-        error_msg "check_linter_plugins() - called with no olint_plugin_dir param"
-    }
-
-    dbg_print "check_linter_plugins($olint_plugin_dir)" 2
-    ((dbg_indent++)) # increase indent until this returns
-
-    if [[ -d "$olint_plugin_dir" ]]; then
-        # Loop through each file in alphabetical order
-        for plugin_def in "$olint_plugin_dir"/*; do
-            # Check if the item is a file (not a olint_plugin_dir)
-            if [[ -f "$plugin_def" ]]; then
-                # skip files ending with ~
-                [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
-                # Process the file here
-                parse_plugin_file "$plugin_def"
-            fi
-        done
-    else
-        mkdir -p "$olint_plugin_dir"
-    fi
+    #     sorted_items="$(sort_linters unsorted)"
+    #     linter_file_types[$lc_file_type]="$sorted_items"
+    # else
+    #     dbg_print "><> addig new item [$lc_file_type] to linter_file_types"
+    #     linter_file_types[$lc_file_type]="$plugin"
+    # fi
 }
 
 do_parse_linter_def() {
@@ -866,6 +1064,7 @@ do_parse_linter_def() {
     #   linter_cmd
     #   linter_cmd -with -options
     #   ""
+    #   prints the verified command if found or ""
     #
     local dbg_indent=$dbg_indent
     local lint_cmd="$1"
@@ -924,6 +1123,40 @@ verify_lint_cmd() {
     # dbg_print "result [$cmd_parsed]" 2
 }
 
+sort_linters() {
+    # Function to sort linters based on priorities
+    local -n linters_array=$1
+    local sorted_linters=()
+
+    dbg_print "sort_linters(${linters_array[*]}" "$dbglvl_lintscan_details"
+
+    if test -d /proc/ish; then
+        #
+        #  iSH kernel doesnt support enough of /proc to make mapfile work
+        #
+        # shellcheck disable=SC2207
+        sorted_linters=($(
+            for linter in "${linters_array[@]}"; do
+                echo "$linter ${linter_priorities[$linter]}"
+            done | sort -k2nr | awk '{print $1}'
+        ))
+    else
+        mapfile -t sorted_linters < <(
+            for linter in "${linters_array[@]}"; do
+                echo "$linter ${linter_priorities[$linter]}"
+            done | sort -k2nr | awk '{print $1}'
+        )
+    fi
+    # dbg_print "sort_linters() - sorted [${sorted_linters[*]}]" 0
+    echo "${sorted_linters[@]}"
+}
+
+#---------------------------------------------------------------
+#
+#   Linting actions
+#
+#---------------------------------------------------------------
+
 handle_linting_error() {
     #
     #  Either write out allready processed files to cache and then exit
@@ -970,11 +1203,11 @@ lint_file() {
     return 1 # False
 }
 
-#===============================================================
+#---------------------------------------------------------------
 #
 #   Process files
 #
-#===============================================================
+#---------------------------------------------------------------
 
 should_fname_be_excluded() {
     #
@@ -1151,7 +1384,7 @@ generate_list_of_files_to_process() {
 
     printf "Generating sorted tree of all files..."
 
-    if [[ $this_uname == "Darwin" ]]; then
+    if [[ $kernel_name == "Darwin" ]]; then
         # macOS version
         # shellcheck disable=SC2312
         # mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
@@ -1196,6 +1429,7 @@ process_file_tree() {
     trap 'handle_ctrl_c INT' INT
     for fname in "${all_files[@]}"; do
         dbg_indent=$orig_dbg_indent
+        [[ -z "$fname" ]] && continue
 
         linter_found=false
         [[ -d "$fname" ]] && continue
@@ -1209,13 +1443,13 @@ process_file_tree() {
 
         # abort if a time limit was set
         recent_enough "$fname" || {
-            # maintain cache items if this run is time limited
-            dbg_print "to old to be processed" 4
-            filename_is_cached "$fname"
+            dbg_print "too old to be processed" 4
+            # maintain file in new cache
+            $use_cache && filename_is_cached "$fname"
             continue
         }
 
-        filename_is_cached "$fname" && {
+        $use_cache && filename_is_cached "$fname" && {
             $do_lint_files && dbg_print "no changes: $fname" 1
             continue
         }
@@ -1268,8 +1502,10 @@ display_hidden_excludes() {
     done
 }
 show_help() {
-    #region help text
-    echo "Usage: $prog_name [-h] [-c] [-C] [--config-dir] [-n] [-N] [-v] [number]
+    local prog_name
+
+    prog_name=$(basename "$0")
+    echo "Usage: $prog_name [-h] [-c] [-C] [--config-dir] [-n] [-N] [-v verbosity_lvl] [number]
 
 Lint all files recursively in reverse chronological order.
 
@@ -1286,18 +1522,17 @@ $(display_hidden_excludes)
 -m  --mime-type     When scaning files, only identify by mime-type
 -n, --no-linter     Lists all files without a matching linter
 -N, --nocache       Don't use caching for successfully linted files
+-v, --verbose       Set verbosity level, level must also be suplied
 -z, --zapcache      Remove cache file if present
--v, --verbose       Increase verbosity. Multiple -v flags can be used to
-                    increase verbosity level
 number              Only check files changed in the last number hours
 
 If a file is successfully linted, the filename and time of the latest change
-are saved in a cache (.cache.olint). Next time olint is run, files that have
+are saved in a cache '$bname_cache'. Next time olint is run, files that have
 not been changed are skipped.
 
-If an .olint.conf is found, it is read after the global config file.
-This can be used to define filenames, prefixes and suffixes that should be
-excluded for this project.
+If an '$bname_proj_config' is found, it is read after the global config file.
+This can be used to define plugins, filenames, prefixes and suffixes
+that should be excluded for this project.
 See README.md for more information about this file.
 "
     #endregion
@@ -1309,138 +1544,43 @@ See README.md for more information about this file.
 #
 #===============================================================
 
-prog_name=$(basename "$0")
-this_uname="$(uname -s)"
+# echo "====  initial proc [$$]"
 
-dbg_indent=1 # used to indent printoutd in dbg_print
-#
-#  Some debug level constants, to make it easier to limit what
-#  is displayed
-#
-dbglvl_cache_events_basic=4
-dbglvl_cache_events_more="$((dbglvl_cache_events_basic + 1))"
-dbglvl_lintscan_basic=4
-dbglvl_lintscan_details="$((dbglvl_lintscan_basic + 1))"
-dbglvl_data_types=9
-
-# Will only be updated if cache format is changed
-olint_cache_version="olint cache vers: 0.3.1"
-cache_is_changed=false
-f_cache_file=".cache.olint" # mtime|date|fname
-declare -A cache_old        # What is read from cache file
-declare -A cache_new        # What will be written to cache file
-
-files_without_matching_linter=0
-not_linting_msg="skipped task due to no-linters display beeing selected"
-
-f_linter_output=/tmp/olint["$$"]-linter-output
-
-declare -A linter_cmd
-declare -A linter_priorities
-declare -A linter_extensions
-declare -A linter_file_types
-linter_order=()            # used to display them in alphabetical order
-show_config=false          # option: -c
-lint_continue=false        # option: -C
-show_excluded=false        # option: -e / -E
-skip_common_excludes=false # extra setting for: -e / -E
-do_show_help=false         # option: -h
-mime_type_limit=false      # -m
-do_lint_files=true         # option: -n
-use_cache=true             # option: -N
-# show_stats=false        # (unofficial olint dev) option: -s
-ignore_project=false
-debug_level=0 # option: -v
-h_max_age=0   # no max file age for items to be processed
-
-while [[ -n "$1" ]]; do
-    case $1 in
-
-    -h | --help)
-        #
-        # only toggle a switch now, help will be displayed after
-        # git_config is called
-        #
-        # shellcheck disable=SC2317
-        do_show_help=true
-        ;;
-
-    -c | --config) show_config=true ;;
-    -C | --continue) lint_continue=true ;;
-
-    --config-dir) # Suport for ./deploy - prints out the config dir
-        get_config
-        echo "$olint_cfg_dir"
-        exit 0
-        ;;
-
-    -e | --excluded)
-        show_excluded=true
-        skip_common_excludes=true
-        ;;
-    -E | --excluded-all)
-        show_excluded=true
-        skip_common_excludes=false
-        ;;
-    -n | --no-linter) do_lint_files=false ;;
-    -N | --nocache) use_cache=false ;;
-
-    -m | --mime-type) mime_type_limit=true ;;
-
-    -z | --zapcache)
-        if [[ -f "$f_cache_file" ]]; then
-            echo "Removing $f_cache_file"
-            rm -f "$f_cache_file"
-        else
-            echo "No cache found: $f_cache_file"
-        fi
-        ;;
-
-    -v | --verbose) ((debug_level++)) ;;
-
-    *[!0-9]*) error_msg "Unrecognized option: $1" ;;
-
-    *) # only remaining param type is an int
-        h_max_age="$1"
-        echo "Will only check files changed in the last $h_max_age hours"
-        ;;
-
-    esac
-    shift
-done
+initialize_env
+parse_cmd_line "$@"
 
 [[ "$debug_level" -gt 0 ]] && echo "Debug lvl is: $debug_level"
 
 get_config
 
 $do_show_help && {
+    # In order to show list of hidden excludes, get_config must be called first
     show_help || error_msg "show_help() failure"
     env_cleanup 0
 }
+
+if [[ -d "$olint_plugin_dir" ]]; then
+    check_linter_plugins "$olint_plugin_dir"
+else
+    msg="Without plugins olint will not be able to do any linting!\n"
+    msg+="No plugin folder found: $olint_plugin_dir"
+    error_msg "$msg"
+fi
 
 $show_config && {
     display_config
     env_cleanup 0
 }
 
-#  Abort Check
-# shellcheck disable=SC2154
-case "$(echo "$ignore_project" | tr '[:upper:]' '[:lower:]')" in
-1 | "true" | "yes")
-    echo "olint - Project ignored due to ignore_project=$ignore_project"
-    echo "        Defined in: $olint_cfg_proj"
-    env_cleanup 0
-    ;;
-*) ;;
-esac
+should_project_be_ignored
 
 $lint_continue && echo "Will contine with next file if linter found issues"
 $use_cache || {
     echo "Will not use cache for checked files"
-    [[ -f "$f_cache_file" ]] && {
-        echo "Removing $f_cache_file"
-        rm -f "$f_cache_file"
-    }
+    # [[ -f "$f_cache_file" ]] && {
+    #     echo "Removing $f_cache_file"
+    #     rm -f "$f_cache_file"
+    # }
 }
 echo
 
