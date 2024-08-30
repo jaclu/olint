@@ -10,78 +10,34 @@
 #  Can be run again to deploy updates.
 #
 
-deploy_app() {
-    f_destination="$(echo "$CURRENT_DIR/.destination" | sed 's#^\./##')"
+check_dependencies() {
+    #
+    #  Check if tools needed are available
+    #
+    deps=""
+    command -v rsync >/dev/null || deps="$deps rsync"
 
-    echo
-    if [ ! -f "$f_destination" ]; then
-        echo "If you put a destination folder in the file $f_destination"
-        echo "This deploy will use rsync and install/update olint to that location."
-        echo "This would typically only need sudo on first deploy."
-        echo "Example:"
-        echo "  echo /usr/local/bin > $f_destination"
-        exit 1
+    if [ -f /etc/debian_version ]; then
+        install_procedure="apt install"
+    elif [ -f /etc/alpine-release ]; then
+        install_procedure="apk add"
     fi
 
-    dest="$(cat "$f_destination")"
-
-    if [ ! -d "$dest" ]; then
-        echo
-        echo "ERROR: The directory mentioned in .destination does not exist"
-        echo "       Supplied destination: $dest"
-        exit 1
-    fi
-
-    sudo rsync -ahP --inplace "$CURRENT_DIR"/olint "$dest" | grep -v -e '^./$' -e '^sending incremental'
-}
-
-deploy_default_config() {
-    d_default_conf="$("$CURRENT_DIR"/olint --config-dir)" || {
-        echo "ERROR: Failed to extract config-dir"
+    [ -n "$deps" ] && {
+        if [ -z "$install_procedure" ]; then
+            echo
+            echo "WARNING: tools missing: $deps"
+            echo "Not able to suggest how to deploy"
+        else
+            echo "WARNING: Missing dependencies, solve by running"
+            echo "$install_procedure $deps"
+        fi
         exit 1
     }
-    f_default_conf="$d_default_conf/olint.conf"
-    if [ ! -f "$f_default_conf" ] || $force_deploy; then
-        cp "$CURRENT_DIR"/default_config "$f_default_conf"
-
-        echo "A default config has been copied to [$f_default_conf]"
-        echo "You should inspect it to ensure it matches your preferences."
-        echo "As long as it is present, it will not be overwritten."
-
-    else
-        echo "Global config already pressent: [$f_default_conf]"
-    fi
-    echo
+    unset deps install_procedure
 }
 
-deploy_default_ignore() {
-    cfg_file="$HOME"/.olint.conf
-    if [ ! -f "$cfg_file" ]; then
-        echo "Deploying a default 'ignore_project=yes' to home-dir"
-        echo "ignore_project=yes" >"$cfg_file"
-        echo
-    fi
-}
-
-deploy_plugins() {
-    d_default_conf="$("$CURRENT_DIR"/olint --config-dir)"
-    d_plugins="$d_default_conf"/plugins
-    mkdir -p "$d_plugins"
-
-    ! $force_deploy && [ -n "$(ls -A "$d_plugins")" ] && {
-        echo "Plugin folder: $d_plugins not empty"
-        echo "No automatic instsall of plugins, current ones are in plugins/"
-        return
-    }
-    echo "Deploying plugins"
-    rsync -ahP --exclude="*~" plugins/* "$d_plugins"
-}
-
-dependencied_debian() {
-    install_procedure="apt install"
-}
-
-dependencies_alpine() {
+not_dependencies_alpine() { # should be deleted after check on Alpine iSH
     install_procedure="apk add"
 
     _s="$(command -v find)"
@@ -101,33 +57,103 @@ dependencies_alpine() {
     }
 }
 
-check_dependencies() {
-    deps=""
-
+get_app_destination() {
     #
-    #  Generic dependencies, with same names across distros
+    #  Exposed variables:
+    #    d_app_dest - where the olint app should be installed
     #
-    command -v bash >/dev/null || deps="$deps bash"
-    command -v file >/dev/null || deps="$deps file"
-    command -v rsync >/dev/null || deps="$deps rsync"
-
-    if [ -f /etc/debian_version ]; then
-        dependencied_debian
-    elif [ -f /etc/alpine-release ]; then
-        dependencies_alpine
+    f_dest_hint="$(echo "$REPO_DIR/.destination" | sed 's#^\./##')"
+    if [ ! -f "$f_dest_hint" ]; then
+        echo "In order for deploy to know the intended destination for the binary"
+        echo "Create a file with destination foler and name it: $f_dest_hint"
+        echo "This deploy will use rsync and install/update olint to that location."
+        echo "Example:"
+        echo "  echo /usr/local/bin > $f_dest_hint"
+        exit 1
     fi
+    d_app_dest="$(cat "$f_dest_hint")"
+    unset f_dest_hint
 
-    [ -n "$deps" ] && {
-        if [ -z "$install_procedure" ]; then
-            echo
-            echo "WARNING: tools missing: $deps"
-            echo "Not able to suggest how to deploy"
-        else
-            echo "WARNING: Missing dependencies, solve by running"
-            echo "$install_procedure $deps"
-        fi
+    if [ ! -d "$d_app_dest" ]; then
+        echo
+        echo "ERROR: The directory mentioned in .destination does not exist"
+        echo "       Supplied destination: $d_app_dest"
+        exit 1
+    fi
+}
+
+deploy_default_config() {
+    echo "---  Global olint config"
+
+    d_default_conf="$("$REPO_DIR"/olint --config-dir)" || {
+        echo "ERROR: Failed to extract config-dir"
         exit 1
     }
+    mkdir -p "$d_default_conf"
+
+    f_default_conf="$d_default_conf/olint.conf"
+    if [ ! -f "$f_default_conf" ]; then
+        cp "$REPO_DIR"/default_config "$f_default_conf"
+
+        echo "A default config has been copied to: $f_default_conf"
+        echo "You should inspect it to ensure it matches your preferences."
+        echo "As long as it is present, it will not be overwritten."
+
+    else
+        echo "Already pressent: $f_default_conf"
+    fi
+    echo
+}
+
+deploy_app() {
+    echo "---  olint app"
+    if sudo rsync -ahP "$REPO_DIR"/olint "$d_app_dest" | grep -q "olint"; then
+        echo "Latest version installed: $d_app_dest/olint"
+    else
+        echo "Was current: $d_app_dest/olint"
+    fi
+    echo
+}
+
+deploy_plugins() {
+    echo "---  Linter plugins"
+
+    cmd_conf_dir="$REPO_DIR/olint --config-dir"
+    d_default_conf="$($cmd_conf_dir)" || {
+        echo "ERROR: Failed to detect config folder using: $cmd_conf_dir"
+        exit 1
+    }
+
+    d_plugins="$d_default_conf"/plugins
+    mkdir -p "$d_plugins"
+    [ -n "$(ls -A "$d_plugins")" ] && {
+        echo "Plugin folder has content, will not be overwritten"
+        echo "  $d_plugins"
+        return
+    }
+
+    if cmd_output="$(
+        rsync -ahP --exclude="*/" --exclude="*~" "$REPO_DIR"/plugins/* \
+            "$d_plugins" 2>&1
+    )"; then
+        echo "Default plugins installed to: $d_plugins"
+    else
+        echo "ERROR: copying plugins failed"
+        echo
+        echo "$cmd_output"
+        exit 1
+    fi
+}
+
+deploy_default_ignore() {
+    echo "---  Default ignore"
+
+    cfg_file="$HOME"/.olint.conf
+    if [ ! -f "$cfg_file" ]; then
+        echo "Deploying a default 'ignore_project=yes' to home-dir"
+        echo "ignore_project=yes" >"$cfg_file"
+        echo
+    fi
 }
 
 #===============================================================
@@ -136,19 +162,23 @@ check_dependencies() {
 #
 #===============================================================
 
-CURRENT_DIR="$(dirname -- "$0")"
+REPO_DIR="$(dirname -- "$0")"
 
 check_dependencies
+get_app_destination
 
-echo
-echo "-----   Deploying olint   -----"
-force_deploy=false
-[ "$1" = force ] && {
-    echo "Will force deploy"
-    force_deploy=true
+[ "$1" = uninstall ] && {
+    echo
+    echo "-----   Uninstall olint   -----"
+    # if [
+    rm -f "$d_app_dest"/olint || echo "no app installed"
+    rm -rf "$HOME"/.config/olint
+    rm -f "$HOME"/.olint.conf
+    echo "Uninstall completed"
+    exit 0
 }
 
-deploy_app
 deploy_default_config
-deploy_default_ignore
+deploy_app
 deploy_plugins
+# deploy_default_ignore
