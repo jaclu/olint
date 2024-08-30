@@ -29,6 +29,7 @@
 skip_plugins+=(
     # bandit          # Security linter for Python code
     # checkbashisms   # Checks for portability issues in shell scripts
+    # cppcheck        # Linter for C & C++
     # flake8          # Python linter; handles multiple PEP 8 violations
     # jsonlint        # JSON file linter
     # markdownlint    # Linter for Markdown files
