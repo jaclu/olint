@@ -5,8 +5,8 @@
 # Installation methods;
 #  pip install pylint
 #  brew install pylint
-#  (Ubuntu) apt install pylint
-#  (Alpine) available via apk py3-pylint
+#  (Ubuntu) sudo apt install pylint
+#  (Alpine) sudo apk add py3-pylint
 
 plugin_cmd="pylint"
 

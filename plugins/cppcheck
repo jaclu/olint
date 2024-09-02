@@ -4,8 +4,7 @@
 
 # Installation methods;
 #  brew install cppcheck
-#  (Ubuntu)
-#   sudo apt install cppcheck
+#  (Ubuntu) sudo apt install cppcheck
 
 plugin_cmd="cppcheck"
 

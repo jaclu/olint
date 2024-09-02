@@ -4,8 +4,8 @@
 # Installation methods;
 #  pip install yamllint
 #  brew install yamllint
-#  (Ubuntu) apt install yamllint
-#  (Alpine) apk add yamllint
+#  (Ubuntu) sudo apt install yamllint
+#  (Alpine) sudo apk add yamllint
 
 plugin_cmd="yamllint -s" # never trigger error, just display issues
 

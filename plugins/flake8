@@ -9,10 +9,17 @@
 # Installation methods;
 #  pip install flake8
 #  brew install flake8
-#  (Ubuntu) python3-flake8
-#  (Alpine) apk py3-flake8
+#  (Ubuntu) sudo apt install python3-flake8
+#  (Alpine) sudo apk add py3-flake8
 
-plugin_cmd="flake8 --color=always"
+# Depending on install method, the binary changes name:
+#  pip
+_bin=flake8
+#  apt
+#_bin=pyflakes3
+
+plugin_cmd="$_bin --color=always"
+unset _bin
 
 plugin_priority=60
 

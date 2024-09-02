@@ -4,20 +4,17 @@
 
 # Installation methods;
 #  brew install checkbashisms
-#  (Alpine) apk add checkbashisms
+#  (Alpine) sudo apk add checkbashisms
 
-# Dependencies:
-# Alpine: available via apk checkbashisms
-
-# plugin_cmd="checkbashisms -n -x "
-plugin_cmd=do_checkbashisms # never trigger error, just display issues
+plugin_cmd="checkbashisms -n -x "
+#plugin_cmd=do_checkbashisms # never trigger error, just display issues
 
 #
 #  if defined, check this for pressence, instead of plugin_cmd
 #  useful if a function is used, since then pressence of the function
 #  would give a false positive
 #
-plugin_cmd_actual="checkbashisms"
+#plugin_cmd_actual="checkbashisms"
 
 plugin_priority=5 #  suggested order when multiple plugins can handle a file
 
@@ -30,8 +27,8 @@ plugin_file_types=(
 #  Instead of aborting on error, just display output to /dev/stderr
 #  and always return true
 #
-do_checkbashisms() {
-    local fname="$1"
-    $plugin_cmd_actual -n -x "$fname" || echo >/dev/stderr
-    true # override potential error
-}
+#do_checkbashisms() {
+#    local fname="$1"
+#    $plugin_cmd_actual -n -x "$fname" || echo >/dev/stderr
+#    #true # override potential error/warning
+#}
