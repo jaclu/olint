@@ -7,13 +7,21 @@
 #
 
 # Installation methods;
-#  pip install flake8
-#  brew install flake8
-#  (Ubuntu) sudo apt install flake8
-#  (Alpine) sudo apk add py3-flake8
+#  pip install pyflakes
 
-plugin_cmd="flake8 --color=always"
-unset _bin
+#  (Ubuntu) sudo apt install pyflakes3
+#  (Alpine) sudo apk add 
+
+if [[ -n "$(command -v flake8)" ]]; then
+    #
+    # Redundant if flake8 is found, this is part of flake8
+    # set to /dev/null instead of "" to avoid warning
+    #   missing: plugin_cmd
+    #
+    plugin_cmd="/dev/null"
+else
+    plugin_cmd="pyflakes3"
+fi
 
 plugin_priority=60
 
