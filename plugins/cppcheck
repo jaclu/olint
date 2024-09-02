@@ -5,6 +5,7 @@
 # Installation methods;
 #  brew install cppcheck
 #  (Ubuntu) sudo apt install cppcheck
+#  (Alpine) sudo apk add cppcheck
 
 plugin_cmd="cppcheck"
 
