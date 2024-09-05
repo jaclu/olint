@@ -149,7 +149,7 @@ deploy_default_ignore() {
     echo "---  Default ignore"
 
     cfg_file="$HOME"/.olint.conf
-    if [ ! -f "$cfg_file" ]; then
+    if [ ! -f "$cfg_file" ] || $force_deploy; then
         echo "Deploying a default 'ignore_project=yes' to home-dir"
         echo "ignore_project=yes" >"$cfg_file"
         echo
@@ -190,4 +190,4 @@ fi
 deploy_default_config
 deploy_app
 deploy_plugins
-# deploy_default_ignore
+deploy_default_ignore
