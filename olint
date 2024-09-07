@@ -472,7 +472,7 @@ initialize_env() {
     files_without_matching_linter=0
     not_linting_msg="skipped task due to no-linters display beeing selected"
 
-    f_linter_output=/tmp/olint["$$"]-linter-output
+    f_linter_output=/"${TMPDIR:-tmp}"/olint["$$"]-linter-output
 
     declare -g -A linter_cmd
     declare -g -A linter_priorities
