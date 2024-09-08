@@ -107,7 +107,7 @@ deploy_default_config() {
 
 deploy_app() {
     echo "---  olint app"
-    if sudo rsync -ahP "$REPO_DIR"/olint "$d_app_dest" | grep -q "olint"; then
+    if rsync -ahP "$REPO_DIR"/olint "$d_app_dest" | grep -q "olint"; then
         echo "Latest version installed: $d_app_dest/olint"
     else
         echo "Was current: $d_app_dest/olint"
