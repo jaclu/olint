@@ -151,9 +151,10 @@ parse_cmd_line() {
                 #  Will only attempt to remove the "local" same folder cache file
                 echo "Removing $f_cache_file"
                 rm -f "$f_cache_file"
-            # else
-            #     echo "No cache found: $f_cache_file"
+            else
+                echo "No cache found: $f_cache_file"
             fi
+	    env_cleanup 0
             ;;
 
         *[!0-9]*) error_msg "Unrecognized option: $1" ;;
