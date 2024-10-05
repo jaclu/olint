@@ -5,7 +5,7 @@
 # This linter ignores Ctrl-C and I havent figured out how to solve this...
 
 # Installation methods;
-#   brew search jsonlint
+#   brew install jsonlint
 #   (Ubuntu)
 #      sudo apt install nodejs npm
 #      sudo npm install -g jsonlint

@@ -5,7 +5,7 @@
 # Installation methods;
 #  pip install bandit
 #  brew install bandit
-#  (Ubunu) sudo apt install bandit
+#  (Ubuntu) sudo apt install bandit
 
 plugin_cmd="bandit"  # -q"
 
