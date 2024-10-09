@@ -8,10 +8,6 @@
 #  (Ubuntu) sudp apt install mypy
 #  (Alpine) sudo apk add py3-mypy
 
-# helper for MyPy linter
-MYPYPATH=$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))")
-export MYPYPATH
-
 plugin_cmd="mypy"
 
 # file extensions this plugin handles
