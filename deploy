@@ -68,7 +68,7 @@ get_app_destination() {
         echo "Create a file with destination foler and name it: $f_dest_hint"
         echo "This deploy will use rsync and install/update olint to that location."
         echo "Example:"
-        echo "  echo /usr/local/bin > $f_dest_hint"
+        echo "  echo $HOME/.local/bin > $f_dest_hint"
         exit 1
     fi
     d_app_dest="$(cat "$f_dest_hint")"
