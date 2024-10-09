@@ -657,7 +657,8 @@ cache_write() {
     done >>"$f_cache_file"
 
     echo
-    echo "${#cache_new[@]} successfully linted files cached: $f_cache_file - run with -v to see cached files"
+    echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
+    [[ "$verbosity_lvl" -lt 1 ]] && echo "run with -v 1 to see cached files listed"
 }
 
 cache_read() {
