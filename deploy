@@ -166,6 +166,11 @@ REPO_DIR="$(dirname -- "$0")"
 
 force_deploy=false
 
+if [ "$(whoami)" != "root" ]; then
+    sudo "$0" "$1"
+    exit $?
+fi
+
 check_dependencies
 get_app_destination
 
