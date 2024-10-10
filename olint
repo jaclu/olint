@@ -1551,6 +1551,9 @@ See README.md for more information about this file.
 initialize_env
 parse_cmd_line "$@"
 
+#  Dependencies
+[[ -z "$(command -v file)" ]] && error_msg "Missing dependency: file"
+
 [[ "$verbosity_lvl" -gt 0 ]] && echo "Verbosity lvl is: $verbosity_lvl"
 
 get_config
