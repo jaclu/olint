@@ -4,6 +4,7 @@
 
 # Installation methods;
 #  brew install checkbashisms
+#  (Ubuntu) sudo apt install devscripts
 #  (Alpine) sudo apk add checkbashisms
 
 plugin_cmd="checkbashisms -n -x "
