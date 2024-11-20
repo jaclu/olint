@@ -10,7 +10,7 @@
 #  pip install pyflakes
 
 #  (Ubuntu) sudo apt install pyflakes3
-#  (Alpine) sudo apk add 
+#  (Alpine) sudo apk add py3-pyflakes
 
 if [[ -n "$(command -v flake8)" ]]; then
     #

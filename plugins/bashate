@@ -4,6 +4,7 @@
 
 # Installation methods;
 #  brew install bashate
+#  (Ubuntu) sudo apt install python3-bashate
 
 if command -v bashate-wrapper >/dev/null; then
     plugin_cmd="bashate-wrapper"
