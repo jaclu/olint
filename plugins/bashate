@@ -1,0 +1,23 @@
+#!/bin/bash
+#  This is sourced. Fake bang-path to help editors and linters
+#  shellcheck disable=SC2034  # dont warn about unused variables
+
+# Installation methods;
+#  brew install bashate
+
+if command -v bashate-wrapper >/dev/null; then
+    plugin_cmd="bashate-wrapper"
+else
+    plugin_cmd="bashate"
+fi
+
+plugin_priority=5 #  suggested order when multiple plugins can handle a file
+
+#  file-types this plugin handles
+plugin_file_types=(
+    "Bourne-Again shell script*"
+)
+
+plugin_extensions=(
+    .bash
+)
