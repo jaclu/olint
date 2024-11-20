@@ -154,7 +154,7 @@ parse_cmd_line() {
             else
                 echo "No cache found: $f_cache_file"
             fi
-	    env_cleanup 0
+            env_cleanup 0
             ;;
 
         *[!0-9]*) error_msg "Unrecognized option: $1" ;;
