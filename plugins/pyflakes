@@ -1,9 +1,9 @@
 #!/bin/bash
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
+
 #
-# Flake8 also provides: pyflakes, pycodestyle, McCabe
-# so it would be redundant to also run them if you use Flake8
+# Provided by flake8, dont use this if flake8 is used!
 #
 
 # Installation methods;

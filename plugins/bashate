@@ -3,6 +3,7 @@
 #  shellcheck disable=SC2034  # dont warn about unused variables
 
 # Installation methods;
+#  pip3 install bashate
 #  brew install bashate
 #  (Ubuntu) sudo apt install python3-bashate
 
