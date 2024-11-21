@@ -65,7 +65,6 @@ Olint supports the following linters out of the box:
 - vale (prose - disabled by default)
 - yamllint (yaml)
 
-
 ## Suggested order for python linting
 
 This order will be used by default based on `plugin_priority` settings
