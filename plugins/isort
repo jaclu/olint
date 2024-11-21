@@ -3,21 +3,22 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 # Purpose:
-#  Security-focused linter.
+#  Checks and formats import statements.
 # Strengths:
-#  Identifies security vulnerabilities (e.g., usage of insecure functions
-#  or libraries).
+#  Ensures imports are grouped and ordered correctly according to PEP 8.
 # Use case:
-#  Essential for projects where security is a concern.
+#  Keeps imports organized and clean.
 
 # Installation methods;
-#  pip install bandit
-#  brew install bandit
-#  (Ubuntu) sudo apt install bandit
+#  pip install isort
+#  brew install isort
+#  (Ubuntu) sudo apt install isort
+#  (Alpine) sudo apk add py3-isort
 
-plugin_cmd="bandit"  # -q"
+plugin_cmd="isort"
 
-plugin_priority=70
+plugin_priority=65
+
 
 # file extensions this plugin handles
 plugin_extensions=(

@@ -2,6 +2,15 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # dont warn about unused variables
 
+# Purpose:
+#  Static type checker.
+# Strengths:
+#  Ensures type correctness when using type hints.
+#  Helps catch errors early in larger projects with complex type relationships.
+# Use case:
+#  Recommended for projects that use type annotations to improve code
+#  robustness.
+
 # Installation methods;
 #  pip install mypy
 #  brew install mypy
@@ -9,6 +18,8 @@
 #  (Alpine) sudo apk add py3-mypy
 
 plugin_cmd="mypy"
+
+plugin_priority=75
 
 # file extensions this plugin handles
 plugin_extensions=(

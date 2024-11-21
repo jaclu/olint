@@ -3,21 +3,21 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 # Purpose:
-#  Security-focused linter.
+#  Code formatter.
 # Strengths:
-#  Identifies security vulnerabilities (e.g., usage of insecure functions
-#  or libraries).
+#  Enforces consistent formatting across your codebase.
 # Use case:
-#  Essential for projects where security is a concern.
+#  Works well alongside linters like Flake8 and Pylint for a unified style.
 
 # Installation methods;
-#  pip install bandit
-#  brew install bandit
-#  (Ubuntu) sudo apt install bandit
+#  pip install black
+#  brew install black
+#  (Ubuntu) sudo apt install black
+#  (Alpine) sudo apk add black
 
-plugin_cmd="bandit"  # -q"
+plugin_cmd="black"
 
-plugin_priority=70
+plugin_priority=60
 
 # file extensions this plugin handles
 plugin_extensions=(
