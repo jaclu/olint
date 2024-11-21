@@ -71,6 +71,9 @@ Olint supports the following linters out of the box:
 This order will be used by default based on `plugin_priority` settings
 ruff bandit pyright mypy pylint
 
+If ruff is not used, the suggested order is:
+black isort flake8 bandit pyright mypy pylint
+
 Unwanted linters can be excluded, either by simply deleting the plugin file,
 or by skipping it in the global or the project config.
 
