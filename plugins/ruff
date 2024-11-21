@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 # Installation methods;
-#  pip install ryff
+#  pip install ruff
 #  brew install ruff
 #  (Alpine) sudo apk add ruff
 
