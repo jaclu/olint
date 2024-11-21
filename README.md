@@ -43,16 +43,33 @@ This command lists detected linters and filters.
 
 Olint supports the following linters out of the box:
 
-- bandit
-- checkbashisms
-- flake8
-- jsonlint
-- markdownlint
-- pycodestyle
-- pylint
-- rslint
-- shellcheck
-- yamllint
+- ansible-lint (ansible)
+- bandit (python)
+- bashate (bash)
+- black (python)
+- checkbashisms (bash, posix)
+- cppcheck (c, c++)
+- flake8 (python)
+- isort (python)
+- jsonlint (json)
+- markdownlint (markdown)
+- mypy (python)
+- pid_valid (pidfile found points to a running process)
+- pycodestyle (python)
+- pyflakes (python)
+- pylint (python)
+- pyright (python)
+- rslint (JavaScript and TypeScript)
+- ruff (python)
+- shellcheck (bash, posix)
+- vale (prose - disabled by default)
+- yamllint (yaml)
+
+
+## Suggested order for python linting
+
+This order will be used by default based on `plugin_priority` settings
+ruff bandit pyright mypy pylint
 
 Unwanted linters can be excluded, either by simply deleting the plugin file,
 or by skipping it in the global or the project config.

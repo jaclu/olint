@@ -27,20 +27,27 @@
 # for a specific project.
 #  Uncomment the linters you want to exclude from being run.
 skip_plugins+=(
+    # ansible-lint    # Checks ansible playbooks for practices and behaviour
     # bandit          # Security linter for Python code
+    # bashate         # Code style enforcement for bash programs
+    # black           # Python code formatter
     # checkbashisms   # Checks for portability issues in shell scripts
     # cppcheck        # Linter for C & C++
     # flake8          # Python linter; handles multiple PEP 8 violations
+    # isort           # Sort Python imports automatically
     # jsonlint        # JSON file linter
     # markdownlint    # Linter for Markdown files
     # mypy            # Static type checker for Python
-    # pid_valid       # Verifies that any pidfile found points to a running process
+    pid_valid         # Verifies that any pidfile found points to a running process
     # pycodestyle     # PEP 8 style checker; redundant if flake8 is used
+    # pyflakes        # Passive checker of Python 3 programs
     # pylint          # Comprehensive Python code linter
     # pylintrc        # Configuration file for pylint
+    # pyright         # Static type checker for Python
     # rslint          # Linter for Rust code
+    # ruff            # Extremely fast Python linter, written in Rust
     # shellcheck      # Linter for shell scripts
-    # vale            # Linter for prose; checks grammar and style
+    vale            # Linter for prose; checks grammar and style
     # yamllint        # Linter for YAML files
 )
 

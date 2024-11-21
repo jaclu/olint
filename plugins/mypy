@@ -21,7 +21,7 @@ plugin_cmd="mypy"
 
 # do this plugin late, since if other plugins find issues
 # on next run the mypy cache might cause issues
-plugin_priority=5
+plugin_priority=80
 
 # file extensions this plugin handles
 plugin_extensions=(
