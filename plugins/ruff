@@ -12,7 +12,7 @@
 #  Rapid linting
 
 # Installation methods;
-#  pip install ruff
+#  pip install ruff  (dependency: rust)
 #  brew install ruff
 #  (Alpine) sudo apk add ruff
 
