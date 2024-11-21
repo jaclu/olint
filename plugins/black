@@ -17,7 +17,7 @@
 
 plugin_cmd="black"
 
-plugin_priority=60
+plugin_priority=95
 
 # file extensions this plugin handles
 plugin_extensions=(

@@ -17,7 +17,7 @@
 
 plugin_cmd="bandit"  # -q"
 
-plugin_priority=90
+plugin_priority=35
 
 # file extensions this plugin handles
 plugin_extensions=(

@@ -17,7 +17,7 @@
 
 plugin_cmd="isort"
 
-plugin_priority=65
+plugin_priority=55
 
 
 # file extensions this plugin handles
