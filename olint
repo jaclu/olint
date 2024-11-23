@@ -159,11 +159,11 @@ parse_cmd_line() {
                 .ruff_cache
             )
             for d_ceche_folder in "${cache_folders[@]}"; do
-		if [[ -d "$d_cache_folder" ]]; then
-                    echo "Removing: $d_cache_folder"
-                    rm -rf "$d_cache_folder"
-		fi
-	    done
+                if [[ -d "$d_ceche_folder" ]]; then
+                    echo "Removing: $d_ceche_folder"
+                    rm -rf "$d_ceche_folder"
+                fi
+            done
             env_cleanup 0
             ;;
 

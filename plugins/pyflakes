@@ -21,10 +21,10 @@ if [[ -n "$(command -v flake8)" ]]; then
     plugin_cmd="/dev/null"
 else
     if [[ -n "$(command -v pyflakes3)" ]]; then
-	plugin_cmd="pyflakes3"
+        plugin_cmd="pyflakes3"
     else
-	plugin_cmd="pyflakes"
-    fi		
+        plugin_cmd="pyflakes"
+    fi
 fi
 
 plugin_priority=60
