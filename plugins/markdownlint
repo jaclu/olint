@@ -10,7 +10,7 @@
 #   otherwise:
 #     sudo apt install nodejs npm
 #
-#   sudo npm install markdownlint-cli
+#   sudo npm install -g markdownlint-cli
 
 plugin_cmd="markdownlint --disable MD013 MD033 --"
 

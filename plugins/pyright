@@ -15,6 +15,7 @@
 # Installation methods;
 #  pip install pyright
 #  brew install pyright
+#  npm install -g pyright
 
 plugin_cmd="pyright"
 

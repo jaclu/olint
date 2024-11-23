@@ -103,6 +103,8 @@ source_file() {
 }
 
 parse_cmd_line() {
+    local cache_folders d_ceche_folder
+
     # dbg_print "parse_cmd_line()" forced
     while [[ -n "$1" ]]; do
         case $1 in
@@ -152,10 +154,16 @@ parse_cmd_line() {
                 echo "Removing $f_cache_file"
                 rm -f "$f_cache_file"
             fi
-            if [[ -d .mypy_cache ]]; then
-                echo "Removing .mypy_cache"
-                rm -rf .mypy_cache
-            fi
+            cache_folders=(
+                .mypy_cache
+                .ruff_cache
+            )
+            for d_ceche_folder in "${cache_folders[@]}"; do
+		if [[ -d "$d_cache_folder" ]]; then
+                    echo "Removing: $d_cache_folder"
+                    rm -rf "$d_cache_folder"
+		fi
+	    done
             env_cleanup 0
             ;;
 

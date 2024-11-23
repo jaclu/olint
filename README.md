@@ -206,6 +206,12 @@ plugin_file_types=(
 )
 ```
 
+## iSH not usable plugins
+
+- jsonlint
+- rslint
+- shellcheck
+
 ## Cache File
 
 The `.cache.olint` file stores information about already linted files
