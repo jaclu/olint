@@ -12,6 +12,8 @@
 #  (Ubuntu) sudo apt install pyflakes3
 #  (Alpine) sudo apk add py3-pyflakes
 
+# inline-excludes:  # noqa: F401,F403
+
 if [[ -n "$(command -v flake8)" ]]; then
     #
     # Redundant if flake8 is found, this is part of flake8
