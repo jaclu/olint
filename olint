@@ -370,13 +370,12 @@ display_config() {
     done
     echo
 
-    $show_config_short && return
-
     echo "Supported File types: (lower cased for compatability)"
     for file_type in "${!linter_file_types[@]}"; do
         echo " '$file_type'  -  ${linter_file_types[$file_type]}"
     done
     echo
+    $show_config_short && return
 
     echo "Supported extensions:"
     keys=$(for ext in "${!linter_extensions[@]}"; do echo "$ext"; done | sort)
