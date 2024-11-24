@@ -28,7 +28,7 @@
 plugin_cmd="flake8 --color=always"
 unset _bin
 
-plugin_priority=50
+plugin_priority=85
 
 # file extensions this plugin handles
 plugin_extensions=(

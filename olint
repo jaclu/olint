@@ -929,7 +929,7 @@ parse_plugin_file() {
     local plugin_def="$1"
     local dbg_indent=$dbg_indent
     local plugin_name
-    local plugin_priority
+    local plugin_priority=50  # set a default priority
     local plugin_cmd
     local item
     local plugin_cmd_actual
@@ -943,7 +943,6 @@ parse_plugin_file() {
     ((dbg_indent++)) # increase indent until this returns
 
     plugin_name=$(basename "$plugin_def") # defaults to fname of plugin
-    plugin_priority=10                    # set a default priority
 
     source_file "$plugin_def"
 

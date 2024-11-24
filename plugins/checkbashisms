@@ -17,7 +17,7 @@ plugin_cmd="checkbashisms -n -x "
 #
 #plugin_cmd_actual="checkbashisms"
 
-plugin_priority=5 #  suggested order when multiple plugins can handle a file
+plugin_priority=60
 
 #  file-types this plugin handles
 plugin_file_types=(
