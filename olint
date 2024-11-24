@@ -119,6 +119,7 @@ parse_cmd_line() {
             ;;
 
         -c | --config) show_config=true ;;
+
         -C | --continue) lint_continue=true ;;
 
         --config-dir) # Suport for ./deploy - prints out the config dir
@@ -138,6 +139,11 @@ parse_cmd_line() {
         -n | --no-linter) do_lint_files=false ;;
         -N | --nocache) use_cache=false ;;
 
+        -s | --conffig-short)
+            show_config=true
+            show_config_short=true
+            ;;
+
         -v | --verbose)
             lvl="${2:-missing param}"
             [[ "$lvl" = "missing param" ]] && {
@@ -154,7 +160,6 @@ parse_cmd_line() {
                 echo "Removing $f_cache_file"
                 rm -f "$f_cache_file"
             fi
-            #  Remove known linting cache folders
             cache_folders=(
                 .mypy_cache
                 .pytest_cache
@@ -365,16 +370,18 @@ display_config() {
     done
     echo
 
-    echo "Supported extensions:"
-    keys=$(for ext in "${!linter_extensions[@]}"; do echo "$ext"; done | sort)
-    for ext in $keys; do
-        echo " $ext  -  ${linter_extensions[$ext]}"
-    done
-    echo
+    $show_config_short && return
 
     echo "Supported File types: (lower cased for compatability)"
     for file_type in "${!linter_file_types[@]}"; do
         echo " '$file_type'  -  ${linter_file_types[$file_type]}"
+    done
+    echo
+
+    echo "Supported extensions:"
+    keys=$(for ext in "${!linter_extensions[@]}"; do echo "$ext"; done | sort)
+    for ext in $keys; do
+        echo " $ext  -  ${linter_extensions[$ext]}"
     done
     echo
 
@@ -518,7 +525,7 @@ initialize_env() {
 defaults_for_cmdline() {
     #  -----   defaults for cmdline options   -----
 
-    show_config=false          # option: -c
+    show_config=false          # option: -c / -s
     lint_continue=false        # option: -C
     show_excluded=false        # option: -e / -E
     skip_common_excludes=false # extra setting for: -e / -E
@@ -526,6 +533,7 @@ defaults_for_cmdline() {
     mime_type_limit=false      # -m
     do_lint_files=true         # option: -n
     use_cache=true             # option: -N
+    show_config_short=false    # option: -s
     verbosity_lvl=0            # option: -v
     h_max_age=0                # no max file age for items to be processed
 }
@@ -1537,6 +1545,7 @@ $(display_hidden_excludes)
 -n, --no-linter     Lists all files without a matching linter
 -N, --nocache       Don't use caching for successfully linted files
 -v, --verbose       Set verbosity level, level must also be suplied
+-s, --conffig-short Only show config up to linters defined
 -z, --zapcache      Remove cache file if present
 number              Only check files changed in the last number hours
 
