@@ -17,6 +17,15 @@
 #  (Ubuntu) sudo apt install mypy
 #  (Alpine) sudo apk add py3-mypy
 
+# inline-excludes:  # type: ignore
+# project config files: mypy.ini, setup.cfg, or pyproject.toml
+# generic rule
+#  [mypy]
+#  ignore_missing_imports = True
+# more specific rule
+#  [mypy-.brabantse_gebouwen.settings]
+#  ignore_missing_imports = True
+
 plugin_cmd="mypy"
 
 # do this plugin late, since if other plugins find issues

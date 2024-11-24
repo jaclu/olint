@@ -7,6 +7,15 @@
 #  (Ubuntu) sudo apt install yamllint
 #  (Alpine) sudo apk add yamllint
 
+# project config files: .yamllint
+#  ---
+#  extends: default
+#  rules:
+#    line-length:
+#    max: 92
+#    level: warning
+
+
 plugin_cmd="yamllint -s" # never trigger error, just display issues
 
 # file extensions this plugin handles

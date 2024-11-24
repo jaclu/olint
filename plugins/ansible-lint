@@ -8,6 +8,12 @@
 #  (Ubuntu) sudo apt install ansible-lint
 #  (Alpine) sudo apk add ansible-lint
 
+# project config files: .ansible-lint.yml
+#  ---
+#  rules:
+#    skip:
+#      - ANSIBLE0012
+
 plugin_cmd=ansible-lint
 
 # file extensions this plugin handles

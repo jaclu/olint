@@ -17,6 +17,19 @@
 #  (Ubuntu) sudo apt install pylint
 #  (Alpine) sudo apk add py3-pylint
 
+# line above: # pylint: disable=C0321
+# line above: # pylint: disable=missing-docstring
+# project config files: .pylintrc
+#  [MASTER]
+#  disable=C0103,C0114,C0115,C0116,R0902,R0913,R0914
+#
+#  [FORMAT]
+#  max-line-length=92
+#
+#  [base.py]
+#  disable=R0904
+
+
 plugin_cmd="pylint"
 
 plugin_priority=20

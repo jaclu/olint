@@ -16,6 +16,9 @@
 #  brew install ruff
 #  (Alpine) sudo apk add ruff
 
+
+# inline-excludes:  # noqa: F403,F401
+
 plugin_cmd="ruff check"
 
 # really fast so run early

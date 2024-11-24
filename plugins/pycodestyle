@@ -12,6 +12,11 @@
 #  (Ubuntu) sudo apt install pycodestyle
 #  (Alpine) sudo apk add py3-pycodestyle
 
+# inline-excludes:  # noqa: E402
+# project config files: setup.cfg
+#  [pycodestyle]
+#  max-line-length = 92
+
 if [[ -n "$(command -v flake8)" ]]; then
     #
     # Redundant if flake8 is found, this is part of flake8

@@ -17,6 +17,9 @@
 #  brew install pyright
 #  npm install -g pyright
 
+# line above: # pyright: reportGeneralTypeIssues=false
+# line above: # pyright: reportMissingImports=false
+
 plugin_cmd="pyright"
 
 plugin_priority=30

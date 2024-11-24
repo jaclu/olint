@@ -27,8 +27,6 @@ else
     fi
 fi
 
-plugin_priority=60
-
 # file extensions this plugin handles
 plugin_extensions=(
     .py

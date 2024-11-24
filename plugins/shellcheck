@@ -7,13 +7,15 @@
 #  (Ubuntu) sudo apt install shellcheck
 #  (Alpine edge) sudo apk add shellcheck
 
-plugin_cmd="shellcheck -a -x --color=always -o all -e SC2250,SC2312"
-
+# line above:  # shellcheck disable=SC2059
+# line above:  # shellcheck source=/dev/null
+# project config files: .shellcheckrc
 # -o all -e SC2250,SC2312
 # is the same as creating a .shellcheckrc in a project dir with:
 #  enable=all
 #  disable=SC2250,SC2312
-#
+
+plugin_cmd="shellcheck -a -x --color=always -o all -e SC2250,SC2312"
 
 # file extensions this plugin handles
 plugin_extensions=(

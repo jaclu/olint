@@ -7,6 +7,12 @@
 #  brew install bashate
 #  (Ubuntu) sudo apt install python3-bashate
 
+# inline-excludes:  # noqa: E001
+# project config files: .bashateconfig
+#  max-line-length=92
+#  ignore=E001,E002
+
+
 if command -v bashate-wrapper >/dev/null; then
     plugin_cmd="bashate-wrapper"
 else
