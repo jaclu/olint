@@ -15,9 +15,15 @@
 #  (Ubuntu) sudo apt install black
 #  (Alpine) sudo apk add black
 
+# inline-excludes:  # fmt: skip
+# line above a block: # fmt: off
+# line after a blick: # fmt: on
+# project config files: pyproject.toml $XDG_CONFIG_HOME/black (~/.config/ if not set)
+#  [tool.black]
+
 plugin_cmd="black"
 
-plugin_priority=95
+plugin_priority=94
 
 # file extensions this plugin handles
 plugin_extensions=(
