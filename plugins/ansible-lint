@@ -16,6 +16,10 @@
 
 plugin_cmd=ansible-lint
 
+# This is a slow one, so make it run towards
+# the end of any chain
+plugin_priority=30
+
 # file extensions this plugin handles
 plugin_extensions=(
     .yml
