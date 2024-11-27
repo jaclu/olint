@@ -21,7 +21,16 @@
 # project config files: pyproject.toml $XDG_CONFIG_HOME/black (~/.config/ if not set)
 #  [tool.black]
 
-plugin_cmd="black"
+if [[ -n "$(command -v ruff)" ]]; then
+    #
+    # Redundant if ruff is found
+    # set to /dev/null instead of "" to avoid warning
+    #   missing: plugin_cmd
+    #
+    plugin_cmd="/dev/null"
+else
+    plugin_cmd="black"
+fi
 
 plugin_priority=94
 
@@ -35,3 +44,10 @@ plugin_extensions=(
 plugin_file_types=(
     "Python script*"
 )
+
+# Handle entire project
+
+# conf file .bandit
+# bandit -r .
+# conf file pyproject.toml
+# bandit -c pyproject.toml -r .

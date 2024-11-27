@@ -25,8 +25,16 @@
 #  [flake8]
 #  max-line-length = 92
 
-plugin_cmd="flake8 --color=always"
-unset _bin
+if [[ -n "$(command -v ruff)" ]]; then
+    #
+    # Redundant if ruff is found
+    # set to /dev/null instead of "" to avoid warning
+    #   missing: plugin_cmd
+    #
+    plugin_cmd="/dev/null"
+else
+    plugin_cmd="flake8 --color=always"
+fi
 
 plugin_priority=85
 
