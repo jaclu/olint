@@ -26,7 +26,7 @@
 #  Use 'skip_plugins' to disable specific linters from your workflow or
 # for a specific project.
 #  Uncomment the linters you want to exclude from being run.
-skip_plugins+=(
+skip_linters+=(
     # ansible-lint    # Checks ansible playbooks for practices and behaviour
     # bandit          # Security linter for Python code
     # bashate         # Code style enforcement for bash programs
@@ -38,7 +38,6 @@ skip_plugins+=(
     # jsonlint        # JSON file linter
     # markdownlint    # Linter for Markdown files
     # mypy            # Static type checker for Python
-    pid_valid         # Verifies that any pidfile found points to a running process
     # pycodestyle     # PEP 8 style checker; redundant if flake8 is used
     # pyflakes        # Passive checker of Python 3 programs
     # pylint          # Comprehensive Python code linter
@@ -47,19 +46,17 @@ skip_plugins+=(
     # rslint          # Linter for Rust code
     # ruff            # Extremely fast Python linter, written in Rust
     # shellcheck      # Linter for shell scripts
-    vale            # Linter for prose; checks grammar and style
     # yamllint        # Linter for YAML files
 )
 
 #  =====  Handling which files should be skipped by 'olint'.  =====
 
-# Patterns to exclude from linting, including their relative paths.
-# Add any paths or patterns here that should always be excluded.
-excluded_patterns+=(
-    # .git/  # Example: Exclude the .git directory from linting.
+# Patterns to exclude from linting, anything starting with thia will be excluded
+excluded_prefixes+=(
+    # .git/  # Example: Exclude any .git directory from linting.
 )
 
-# Patterns in this list, when matched with items in `excluded_patterns`,
+# Patterns in this list, when matched with items in `excluded_prefixes`,
 # will be hidden from the output when running 'olint' with the `-e` option.
 # This prevents the `-e` output from being cluttered with potentially
 # hundreds or thousands of lines for common patterns like .git/, which
@@ -68,34 +65,29 @@ excluded_patterns+=(
 # When running 'olint' with the `-E` option, these patterns will be listed
 # as explicitly excluded files or directories, providing visibility into
 # what is being suppressed.
-hidden_patterns+=(
-    # .git/  # Example: Exclude the .git directory from being listed.
+hidden_prefixes+=(
+    # .git/  # Example: Exclude any .git directory from being listed.
 )
 
-# Exclude specific files based on their basename (filename without the path).
-# Add any filenames here that should always be excluded.
-excluded_basenames+=(
-    # .gitignore  # Example: Exclude .gitignore files.
-)
-
-# Exclude files based on their filename prefix.
-# This is useful for skipping files that start with certain strings.
-prefixes+=(
-    # test_  # Example: Exclude files that start with 'test_'.
+# Exclude specific files by specifying their entire filename as listed by 'olint'.
+excludes+=(
+    # path/to/file  # Example: Exclude a specific file.
 )
 
 # Exclude files based on their filename suffix.
 # This is useful for skipping files with specific extensions or endings.
-suffixes+=(
+excluded_suffixes+=(
     # .pyc  # Example: Exclude compiled Python files.
 )
 
-# Explicitly exclude files by specifying their entire filepath as listed
-# by 'olint'.
-# This is useful for skipping specific files that don’t fit into the other
-# exclusion categories.
-excludes+=(
-    # path/to/file  # Example: Exclude a specific file.
+# Exclude specific files based on their basename (filename without the path).
+excluded_basenames+=(
+    # .gitignore  # Example: Exclude .gitignore files.
+)
+
+# Exclude files based on their basename (filename without the path) prefix.
+excluded_basename_prefixes+=(
+    # test_  # Example: Exclude files that start with 'test_'.
 )
 
 # Per-project linter command overrides.

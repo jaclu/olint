@@ -11,11 +11,10 @@
 
 import glob
 import os
-
+import sys
 # from whichcraft import which
 from shutil import which
-from subprocess import run, CalledProcessError  # nosec B404
-import sys
+from subprocess import CalledProcessError, run  # nosec B404
 
 
 class LinterCore:

@@ -54,7 +54,6 @@ Olint supports the following linters out of the box:
 - jsonlint (json)
 - markdownlint (markdown)
 - mypy (python)
-- pid_valid (pidfile found points to a running process)
 - pycodestyle (python)
 - pyflakes (python)
 - pylint (python)
@@ -62,8 +61,9 @@ Olint supports the following linters out of the box:
 - rslint (JavaScript and TypeScript)
 - ruff (python)
 - shellcheck (bash, posix)
-- vale (prose - disabled by default)
 - yamllint (yaml)
+
+In plugins/extras there are some additional linter plugins, not used by default
 
 ## Suggested order for python linting
 
@@ -73,12 +73,12 @@ ruff bandit pyright mypy pylint
 If ruff is not used, the suggested order is:
 black isort flake8 bandit pyright mypy pylint
 
-Unwanted linters can be excluded, either by simply deleting the plugin file,
-or by skipping it in the global or the project config.
+Unwanted linters can be excluded, either by simply deleting the plugin definition
+file from plugins/ or by skipping it in the global or the project config.
 
 If the cmd for a linter is not found, that linter will be skipped.
 
-New linters can be added by creating a definition file in the plugins
+New linters can be added by creating a plugin definition file in the plugins
 folder, located where the global config file is, see below for details.
 
 ## Configuration
@@ -102,37 +102,35 @@ Here's an example project configuration:
 # += means that local config is appended to global
 #    If global should be replaced, use = instead
 
-skip_plugins+=(
-    pycodestyle
+# Only linters that are installed needs to be excluded,
+# in order to prevent them from being used in this project
+skip_linters+=(
+    checkbasisms
     pylint
+)
+
+# Filter by prefix, as listed by olint
+excluded_prefixes+=(
+    __pycache__/
+    .git/
+    .venv/
 )
 
 # Explicit excludes, give entire filename as listed by olint
 excludes+=(
-    services/sshd/ssh_defs/Deb10/etc_init.d_ssh
-    #TODO.md
+    data/packet_loss.sqlite
 )
 
-# Filter by prefix, as listed by olint
-prefixes+=(
-    local_tmux_conf/
-    .pytest_cache/
+# Filter by end of filename
+excluded_suffixes+=(
+    .tmp
+    \~
 )
 
-# Filter by suffix
-suffixes+=(
-    .md
+# Filter by basename prefix
+excluded_basename_prefixes=(
+    \#
 )
-
-# modify a linter's command line for this project
-override_linter_cmd["bandit"]="bandit --skip B101"
-
-#
-#  Some options that can be pre-defined
-#
-# lint_continue=true
-# use_cache=false
-# debug_level=9
 
 ```
 
