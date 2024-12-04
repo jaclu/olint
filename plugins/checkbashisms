@@ -11,8 +11,8 @@ plugin_cmd="checkbashisms -n -x "
 #plugin_cmd=do_checkbashisms # never trigger error, just display issues
 
 #
-#  if defined, check this for pressence, instead of plugin_cmd
-#  useful if a function is used, since then pressence of the function
+#  if defined, check this for presence, instead of plugin_cmd
+#  useful if a function is used, since then presence of the function
 #  would give a false positive
 #
 #plugin_cmd_actual="checkbashisms"

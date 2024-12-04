@@ -65,7 +65,7 @@ get_app_destination() {
     f_dest_hint="$(echo "$REPO_DIR/.destination" | sed 's#^\./##')"
     if [ ! -f "$f_dest_hint" ]; then
         echo "In order for deploy to know the intended destination for the binary"
-        echo "Create a file with destination foler and name it: $f_dest_hint"
+        echo "Create a file with destination folder and name it: $f_dest_hint"
         echo "This deploy will use rsync and install/update olint to that location."
         echo "Example:"
         echo "  echo $HOME/.local/bin > $f_dest_hint"
@@ -100,7 +100,7 @@ deploy_default_config() {
         echo "As long as it is present, it will not be overwritten."
 
     else
-        echo "Already pressent: $f_default_conf"
+        echo "Already present: $f_default_conf"
     fi
     echo
 }

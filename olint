@@ -22,7 +22,7 @@ handle_ctrl_c() {
     echo
     echo "Ctrl-C captured, terminating olint"
     echo
-    echo "Saving allready checked files to cache"
+    echo "Saving already checked files to cache"
     env_cleanup 1
 }
 
@@ -134,7 +134,7 @@ remove_duplicates_1() {
     local item
     local result
 
-    result=("$@") # cant send $@ as a param
+    result=("$@") # can't send $@ as a param
     result=()
     for item in "$@"; do
         if [[ ! " ${result[*]} " =~ $item ]]; then
@@ -251,7 +251,7 @@ defaults_for_config_file_excludes() {
         .venv/
         .vscode/
     )
-    excludes=( # Specifix excludes
+    excludes=( # Specific excludes
     )
     excluded_suffixes=( # excludes by filename suffix
         \~
@@ -289,7 +289,7 @@ initialize_env() {
     #  -----   linting env   -----
 
     files_without_matching_linter=0
-    not_linting_msg="skipped task due to no-linters display beeing selected"
+    not_linting_msg="skipped task due to no-linters display being selected"
 
     f_linter_output=/"${TMPDIR:-tmp}"/olint["$$"]-linter-output
 
@@ -492,7 +492,7 @@ parse_cmd_line() {
 
         -C | --continue) lint_continue=true ;;
 
-        --config-dir) # Suport for ./deploy - prints out the config dir
+        --config-dir) # Support for ./deploy - prints out the config dir
             echo "$olint_cfg_dir"
             exit 0
             ;;
@@ -689,7 +689,7 @@ get_cache_item() {
     ((dbg_indent++)) # increase indent until this returns
 
     #
-    #  [[ -v cache_old["$f_to_check"] ]] doesnt work on Debian 10
+    #  [[ -v cache_old["$f_to_check"] ]] doesn't work on Debian 10
     #  instead first extract it to a variable, then do the check
     #
     cached_item="${cache_old["$f_to_check"]}"
@@ -776,11 +776,11 @@ Available options:
 -e  --excluded      List all files that are excluded, except typically
                     uninteresting items, currently:
 $(display_hidden_excludes)
--E  --excluded-all  Reallly list all files that are excluded
--m  --mime-type     When scaning files, only identify by mime-type
+-E  --excluded-all  Really list all files that are excluded
+-m  --mime-type     When scanning files, only identify by mime-type
 -n, --no-linter     Lists all files without a matching linter
 -N, --nocache       Don't use caching for successfully linted files
--v, --verbose       Set verbosity level, level must also be suplied
+-v, --verbose       Set verbosity level, level must also be supplied
 -s, --conffig-short Only show config up to linters defined
 -z, --zapcache      Remove cache file if present
 number              Only check files changed in the last number hours
@@ -839,7 +839,7 @@ display_config() {
     done
     echo
 
-    echo "==  Supported File types: (lower cased for compatability)  =="
+    echo "==  Supported File types: (lower cased for compatibility)  =="
     for file_type in "${!linter_file_types[@]}"; do
         echo " '$file_type'  -  ${linter_file_types[$file_type]}"
     done
@@ -1176,7 +1176,7 @@ add_plugin_file_type() {
     fi
     # #if [[ -z "${linter_file_types[$lc_file_type]}" ]]; then
     # if [[ ${#linter_file_types[@]} -eq 0 ]]; then
-    #     dbg_print "><> addig first item [$lc_file_type] to linter_file_types"
+    #     dbg_print "><> adding first item [$lc_file_type] to linter_file_types"
     #     # linter_file_types["posix shell script"]="some_value"
     #     linter_file_types["$lc_file_type"]="hepp"
     #     linter_file_types["$lc_file_type"]="$plugin"
@@ -1195,7 +1195,7 @@ add_plugin_file_type() {
     #     sorted_items="$(sort_linters unsorted)"
     #     linter_file_types[$lc_file_type]="$sorted_items"
     # else
-    #     dbg_print "><> addig new item [$lc_file_type] to linter_file_types"
+    #     dbg_print "><> adding new item [$lc_file_type] to linter_file_types"
     #     linter_file_types[$lc_file_type]="$plugin"
     # fi
 }
@@ -1274,7 +1274,7 @@ sort_linters() {
 
     if test -d /proc/ish; then
         #
-        #  iSH kernel doesnt support enough of /proc to make mapfile work
+        #  iSH kernel doesn't support enough of /proc to make mapfile work
         #
         # shellcheck disable=SC2207
         sorted_linters=($(
@@ -1301,7 +1301,7 @@ sort_linters() {
 
 handle_linting_error() {
     #
-    #  Either write out allready processed files to cache and then exit
+    #  Either write out already processed files to cache and then exit
     #  or continue based upon
     #
     dbg_print "handle_linting_error()" 2
@@ -1525,7 +1525,7 @@ generate_list_of_files_to_process() {
     else
         if test -d /proc/ish; then
             #
-            #  iSH kernel doesnt support enough of /proc to make mapfile work
+            #  iSH kernel doesn't support enough of /proc to make mapfile work
             #
             # shellcheck disable=SC2207
             #all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##'))
@@ -1667,7 +1667,7 @@ $show_config && {
 
 should_project_be_ignored
 
-$lint_continue && echo "Will contine with next file if linter found issues"
+$lint_continue && echo "Will continue with next file if linter found issues"
 $use_cache || {
     echo "Will not use cache for checked files"
 }

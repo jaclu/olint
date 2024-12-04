@@ -51,7 +51,7 @@ skip_linters+=(
 
 #  =====  Handling which files should be skipped by 'olint'.  =====
 
-# Patterns to exclude from linting, anything starting with thia will be excluded
+# Patterns to exclude from linting, anything starting with this will be excluded
 excluded_prefixes+=(
     # .git/  # Example: Exclude any .git directory from linting.
 )
