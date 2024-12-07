@@ -148,7 +148,7 @@ deploy_plugins() {
 deploy_default_ignore() {
     cfg_file="$HOME"/.olint.conf
     if [ ! -f "$cfg_file" ] || $force_deploy; then
-	echo "---  Default ignore"
+        echo "---  Default ignore"
         echo "Deploying a default 'ignore_project=yes' to home-dir"
         echo "ignore_project=yes" >"$cfg_file"
         echo
@@ -170,6 +170,7 @@ get_app_destination
 
 if [ "$1" = force ]; then
     force_deploy=true
+    rm -rf "$HOME"/.config/olint
 elif [ "$1" = uninstall ]; then
     echo
     echo "-----   Uninstall olint   -----"
@@ -182,9 +183,8 @@ elif [ -n "$1" ]; then
     echo "deploy [force/uninstall]"
     echo
     echo "ERROR: invalid option: $1"
-    exit 1    
+    exit 1
 fi
-
 
 deploy_default_config
 deploy_app
