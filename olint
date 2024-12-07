@@ -81,6 +81,21 @@ lowercase_it() {
     echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
+str_in_array() {
+    local item="$1"             # The first argument is the search string
+    shift                       # Shift to remove the first argument (the item)
+    local array_to_check=("$@") # Capture the remaining arguments as the array
+    local element
+
+    for element in "${array_to_check[@]}"; do
+        if [[ "$element" == "$item" ]]; then
+            return 0 # Return 0 (true) if found
+        fi
+    done
+
+    return 1 # Return 1 (false) if not found
+}
+
 remove_duplicates_1() {
     # Does not require associative arrays, which makes it compatible with older
     # versions of bash (pre-4.0). Inefficient for large arrays.
@@ -508,10 +523,10 @@ display_config() {
     done
     echo
 
-    [[ ${#linter_proj_order[@]} -gt 0 ]] && {
+    [[ ${#proj_linter_order[@]} -gt 0 ]] && {
         echo "==  Linters handling the entire project defined  =="
-        for linter_name in "${linter_proj_order[@]}"; do
-            echo " $linter_name  - ${linter_proj_cmd[$linter_name]}"
+        for linter_name in "${proj_linter_order[@]}"; do
+            echo " $linter_name  - ${proj_linter_cmd[$linter_name]}"
         done
         echo
     }
@@ -710,14 +725,14 @@ initialize_env() {
     f_linter_output=/"${TMPDIR:-tmp}"/olint["$$"]-linter-output
 
     declare -g -A linter_cmd
-    declare -g -A linter_proj_cmd
+    declare -g -A proj_linter_cmd
     declare -g -A override_linter_cmd
 
     declare -g -A linter_priorities
     declare -g -A linter_extensions
     declare -g -A linter_file_types
     linter_order=() # used to display them in alphabetical order
-    linter_proj_order=()
+    proj_linter_order=()
 
     #  -----   caching env   -----
 
@@ -1025,9 +1040,9 @@ override_proj_cmd() {
 
     # echo "override_proj_cmd()"
     # echo "Modifying linter: $linter_override"
-    # echo " replacing: ${linter_proj_cmd[$linter_override]}"
-    linter_proj_cmd["$linter_override"]="$cmd_ok"
-    # echo "      with: ${linter_proj_cmd[$linter_override]}"
+    # echo " replacing: ${proj_linter_cmd[$linter_override]}"
+    proj_linter_cmd["$linter_override"]="$cmd_ok"
+    # echo "      with: ${proj_linter_cmd[$linter_override]}"
 }
 
 process_linter_overrides() {
@@ -1035,9 +1050,16 @@ process_linter_overrides() {
     local new_cmd
     local cmd_ok
 
+    dbg_print "process_linter_overrides()" 2
     for linter_override in "${!override_linter_cmd[@]}"; do
+        if ! str_in_array "$linter_override" "${linter_order[@]}" &&
+            ! str_in_array "$linter_override" "${proj_linter_order[@]}"; then
+
+            # linter not used, ignore override
+            continue
+        fi
         new_cmd="${override_linter_cmd[$linter_override]}"
-        echo "Key: $linter_override, Value: $new_cmd"
+        dbg_print "linter: $linter_override  - override command: $new_cmd" 1
         [[ -z "$new_cmd" ]] && {
             error_msg "override_linter_cmd[$linter_override]= - command not defined"
         }
@@ -1045,11 +1067,9 @@ process_linter_overrides() {
         [[ -z "$cmd_ok" ]] && {
             error_msg "override_linter_cmd[$linter_override]=$new_cmd - command not found"
         }
-
-        # Only override linter if used
-        if [[ -v "linter_cmd[$linter_override]" ]]; then
+        if str_in_array "$linter_override" "${linter_order[@]}"; then
             override_cmd "$linter_override" "$cmd_ok"
-        elif [[ -v "linter_proj_cmd[$linter_override]" ]]; then
+        elif str_in_array "$linter_override" "${proj_linter_order[@]}"; then
             override_proj_cmd "$linter_override" "$cmd_ok"
         fi
     done
@@ -1091,7 +1111,7 @@ parse_plugin_file() {
     local plugin_def="$1"
     local dbg_indent=$dbg_indent
     local plugin_name
-    local plugin_proj_cmd
+    local proj_plugin_cmd
     local plugin_priority=50 # set a default priority
     local plugin_cmd
     local cmd_ok plugin_cmd_actual
@@ -1108,9 +1128,9 @@ parse_plugin_file() {
 
     source_file "$plugin_def"
 
-    if [[ -z "$plugin_proj_cmd" ]]; then
+    if [[ -z "$proj_plugin_cmd" ]]; then
         [[ -z "$plugin_cmd" ]] && {
-            dbg_print "Plugin $plugin_def - need either plugin_cmd or plugin_proj_cmd" 0
+            dbg_print "Plugin $plugin_def - need either plugin_cmd or proj_plugin_cmd" 0
             return 1
         }
     fi
@@ -1126,12 +1146,12 @@ parse_plugin_file() {
     #
     #  First check if it is a project wide lint command
     #
-    [[ -n "$plugin_proj_cmd" ]] && {
-        cmd_ok="$(verify_lint_cmd "$plugin_proj_cmd")"
+    [[ -n "$proj_plugin_cmd" ]] && {
+        cmd_ok="$(verify_lint_cmd "$proj_plugin_cmd")"
         [[ -n "$cmd_ok" ]] && {
             # Handle it as a project spanning linter
-            linter_proj_cmd["$plugin_name"]="$cmd_ok"
-            linter_proj_order+=("$plugin_name")
+            proj_linter_cmd["$plugin_name"]="$cmd_ok"
+            proj_linter_order+=("$plugin_name")
             return 0
         }
     }
@@ -1657,10 +1677,10 @@ process_file_tree() {
     done
     trap '' INT # abort capturing Ctrl-C
 
-    [[ ${#linter_proj_order[@]} -gt 0 ]] && {
-        for linter_name in "${linter_proj_order[@]}"; do
+    [[ ${#proj_linter_order[@]} -gt 0 ]] && {
+        for linter_name in "${proj_linter_order[@]}"; do
             show_linter_action "* entire project *" "$linter_name"
-            eval "${linter_proj_cmd[$linter_name]}"
+            eval "${proj_linter_cmd[$linter_name]}"
         done
     }
 

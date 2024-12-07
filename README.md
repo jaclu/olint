@@ -19,7 +19,7 @@ To install Olint, follow these steps:
 1. Download the latest release or clone the repository.
 2. Run `./deploy` this is used both to install and to update.
 3. Execute `olint -c` to list available linters, and install any missing
-ones from the supported list that you plan to use.
+   ones from the supported list that you plan to use.
 
 ## Usage
 
@@ -143,11 +143,11 @@ is not found, that plugin is ignored.
 Some linters are more suited to be run on the project as a whole, perhaps
 there aren't any specific file extensions/mime types that would be practical.
 
-In such cases instead of defining it using `plugin_cmd` instead use `plugin_proj_cmd`
+In such cases instead of defining it using `plugin_cmd` instead use `proj_plugin_cmd`
 in the plugin file for that linter.
 
 Linters defined this way will be processing the entire project, any limitations
-would have to be given either in `plugin_proj_cmd` for global scope, or if a
+would have to be given either in `proj_plugin_cmd` for global scope, or if a
 change is needed on a per project basis use `override_linter_cmd` in that projects
 `.olint.conf`
 
