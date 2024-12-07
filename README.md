@@ -117,7 +117,7 @@ excluded_basename_prefixes=(
     \#
 )
 
-override_linter_cmd["codespell"]="codespell -L THIRDPARTY"
+override_linter_cmd["codespell"]="codespell -L THIS"
 ```
 
 ## Cache File
@@ -141,7 +141,7 @@ is not found, that plugin is ignored.
 #### Project wide linters
 
 Some linters are more suited to be run on the project as a whole, perhaps
-there aren't any specific file extentions/mime types that would be practical.
+there aren't any specific file extensions/mime types that would be practical.
 
 In such cases instead of defining it using `plugin_cmd` instead use `plugin_proj_cmd`
 in the plugin file for that linter.
@@ -205,7 +205,7 @@ In some cases a special parameter might be needed for a linter to handle a speci
 project. Add this type of line to that projects `.olint.conf`
 
 ```bash
-override_linter_cmd["codespell"]="codespell -L THIRDPARTY"
+override_linter_cmd["codespell"]="codespell -L THIS"
 ```
 
 ## Suggested order for python linting
