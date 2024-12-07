@@ -48,6 +48,7 @@ Olint supports the following linters out of the box:
 - bashate (bash)
 - black (python)
 - checkbashisms (bash, posix)
+- codespell (checks comments for typos)
 - cppcheck (c, c++)
 - flake8 (python)
 - isort (python)
@@ -64,22 +65,6 @@ Olint supports the following linters out of the box:
 - yamllint (yaml)
 
 In plugins/extras there are some additional linter plugins, not used by default
-
-## Suggested order for python linting
-
-This order will be used by default based on `plugin_priority` settings
-ruff bandit pyright mypy pylint
-
-If ruff is not used, the suggested order is:
-black isort flake8 bandit pyright mypy pylint
-
-Unwanted linters can be excluded, either by simply deleting the plugin definition
-file from plugins/ or by skipping it in the global or the project config.
-
-If the cmd for a linter is not found, that linter will be skipped.
-
-New linters can be added by creating a plugin definition file in the plugins
-folder, located where the global config file is, see below for details.
 
 ## Configuration
 
@@ -132,7 +117,15 @@ excluded_basename_prefixes=(
     \#
 )
 
+override_linter_cmd["codespell"]="codespell -L THIRDPARTY"
 ```
+
+## Cache File
+
+The `.cache.olint` file stores information about already linted files
+to optimize olint's performance, each line in the cache file contains the
+file's modification time, human readable timestamp, and relative filepath,
+This means that after a first run, only changed files will be linted.
 
 ## Plugins
 
@@ -140,23 +133,25 @@ For each linter one plugin file must be defined, this should contain
 Bash style variable definitions and be saved in the folder `plugins` located
 in the same folder as the global config file.
 
-Obligatory: plugin_cmd - what cmd to run
-
-At least one of: plugin_extensions, plugin_file_types must be included,
-they are described below.
-
-Sample:
-
-```shell
-plugin_cmd="checkbashisms -n -x"
-```
-
 When it starts olint checks if it can run the first word in plugin_cmd, if it
 is not found, that plugin is ignored.
 
 ### Optionals
 
-#### plugin_priority (default is 10)
+#### Project wide linters
+
+Some linters are more suited to be run on the project as a whole, perhaps
+there aren't any specific file extentions/mime types that would be practical.
+
+In such cases instead of defining it using `plugin_cmd` instead use `plugin_proj_cmd`
+in the plugin file for that linter.
+
+Linters defined this way will be processing the entire project, any limitations
+would have to be given either in `plugin_proj_cmd` for global scope, or if a
+change is needed on a per project basis use `override_linter_cmd` in that projects
+`.olint.conf`
+
+#### plugin_priority (default is 50)
 
 If multiple plugins can handle the same file, they will be processed starting
 with the one with highest priority.
@@ -204,18 +199,51 @@ plugin_file_types=(
 )
 ```
 
+#### Custom settings for a linter command
+
+In some cases a special parameter might be needed for a linter to handle a specific
+project. Add this type of line to that projects `.olint.conf`
+
+```bash
+override_linter_cmd["codespell"]="codespell -L THIRDPARTY"
+```
+
+## Suggested order for python linting
+
+This order will be used by default based on `plugin_priority` settings
+
+- ruff
+- bandit
+- pyright
+- mypy
+- pylint
+
+If ruff is not used, the suggested order is:
+
+- black
+- isort
+- flake8
+- bandit
+- pyright
+- mypy
+- pylint
+
+This is the default order, and black, isort, flake8 will not be used if ruff is
+found.
+
+Unwanted linters can be excluded, either by simply deleting the plugin definition
+file from plugins/ or by skipping it in the global or the project config.
+
+If the cmd for a linter is not installed, that linter will be skipped.
+
+New linters can be added by creating a plugin definition file in the plugins
+folder, located where the global config file is, see below for details.
+
 ## iSH not usable plugins
 
 - jsonlint
 - rslint
 - shellcheck
-
-## Cache File
-
-The `.cache.olint` file stores information about already linted files
-to optimize olint's performance, each line in the cache file contains the
-file's modification time, human readable timestamp, and relative filepath,
-This means that after a first run, only changed files will be linted.
 
 ## Contributing
 
