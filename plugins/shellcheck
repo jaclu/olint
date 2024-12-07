@@ -3,6 +3,7 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 # Installation methods;
+#  pip install shellcheck-py
 #  brew install shellcheck
 #  (Ubuntu) sudo apt install shellcheck
 #  (Alpine edge) sudo apk add shellcheck
