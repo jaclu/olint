@@ -1046,21 +1046,12 @@ process_linter_overrides() {
             error_msg "override_linter_cmd[$linter_override]=$new_cmd - command not found"
         }
 
+        # Only override linter if used
         if [[ -v "linter_cmd[$linter_override]" ]]; then
             override_cmd "$linter_override" "$cmd_ok"
         elif [[ -v "linter_proj_cmd[$linter_override]" ]]; then
             override_proj_cmd "$linter_override" "$cmd_ok"
-        else
-            error_msg "Linter Not defined, can't be changed in $bname_proj_config: $linter_override " 2
         fi
-
-        # new_cmd="${override_linter_cmd[$linter_override]}"
-        # [[ -z "$new_cmd" ]] && {
-
-        #     unset "linter_cmd[$linter_override]"
-        #     #echo "lintercmd: ${!linter_cmd[*]}"
-        #     continue
-        # }
     done
     # echo "process_linter_overrides() - done"
 }
