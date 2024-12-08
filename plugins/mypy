@@ -12,7 +12,7 @@
 #  robustness.
 
 # Installation methods;
-#  pip install mypy
+#  pip install mypy  # can be installed on iSH
 #  brew install mypy
 #  (Ubuntu) sudo apt install mypy
 #  (Alpine) sudo apk add py3-mypy

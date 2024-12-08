@@ -7,7 +7,7 @@
 #
 
 # Installation methods;
-#  pip install pyflakes
+#  pip install pyflakes   # can be installed on iSH
 
 #  (Ubuntu) sudo apt install pyflakes3
 #  (Alpine) sudo apk add py3-pyflakes

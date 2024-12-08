@@ -3,7 +3,7 @@
 #  shellcheck disable=SC2034  # dont warn about unused variables
 
 # Installation methods;
-#  pip install codespell
+#  pip install codespell  # can be installed on iSH
 #  brew install codespell
 #  (Ubuntu) sudo apt install codespell
 #  (Alpine) sudo apk add py3-codespell

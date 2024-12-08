@@ -2,7 +2,7 @@
 # shellcheck disable=SC2034
 
 # Installation methods;
-#  pip install yamllint
+#  pip install yamllint   # can be installed on iSH
 #  brew install yamllint
 #  (Ubuntu) sudo apt install yamllint
 #  (Alpine) sudo apk add yamllint

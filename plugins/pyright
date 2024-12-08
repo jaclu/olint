@@ -13,7 +13,7 @@
 #  Provides type checks and basic linting as you write code.
 
 # Installation methods;
-#  pip install pyright
+#  pip install pyright  # ish fails to run this
 #  brew install pyright
 #  npm install -g pyright
 
