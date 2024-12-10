@@ -703,8 +703,13 @@ initialize_env() {
 
     kernel_name="$(uname -s)"
     dbg_indent=1 # used to indent printouts in dbg_print
-    bname_proj_config=".olint.conf"
-    bname_cache=".cache.olint" # mtime|date|fname
+
+    # local folder for plugin overrides
+    d_plugin_overrides="$(pwd)"/.olint_plugin_overrides
+
+    # basenames, checked in multiple folders
+    bname_proj_config=.olint.conf
+    bname_cache=.cache.olint # mtime|date|fname
 
     #  Define Global config location
     if [[ -n "$XDG_CONFIG_HOME" ]]; then
@@ -1099,7 +1104,13 @@ check_linter_plugins() {
         # skip files ending with ~
         [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
         # Process the file here
-        parse_plugin_file "$plugin_def"
+        f_plugin_override="$d_plugin_overrides/$(basename "$plugin_def")"
+        if [[ -f "$f_plugin_override" ]]; then
+            dbg_print "using plugin_override: $f_plugin_override" 1
+            parse_plugin_file "$f_plugin_override"
+        else
+            parse_plugin_file "$plugin_def"
+        fi
     done
     [[ "$plugin_count" -eq 0 ]] && {
         error_msg "No plugins found in: $d_plugins"
@@ -1378,9 +1389,12 @@ show_linter_action() {
 lint_file() {
     local linter="$1"
     local fname="$2"
+    local lint_pid
+    local lint_exit_status
 
     dbg_print "lint_file($linter, $fname)" 4
     dbg_print " running: ${linter_cmd["$linter"]} $fname" 8
+
     #
     #  In order to avoid some linters untrapping Ctrl-C
     #  they are run in the background. Then some code to ensure the
@@ -1395,6 +1409,30 @@ lint_file() {
         return 0
     else
         cat "$f_linter_output"
+        handle_linting_error
+    fi
+    return 1
+}
+
+lint_proj() {
+    local linter="$1"
+    local lint_pid
+    local lint_exit_status
+
+    dbg_print "lint_proj($linter)" 4
+    dbg_print " running: ${linter_cmd["$linter"]}" 8
+
+    show_linter_action "* entire project *" "$linter_name"
+    #
+    #  In order to avoid some linters untrapping Ctrl-C
+    #  they are run in the background. Then some code to ensure the
+    #  exit code of the linter is captured
+    #
+    eval "${proj_linter_cmd["$linter"]}"
+    lint_exit_status=$?
+    if [[ "$lint_exit_status" -eq 0 ]]; then
+        return 0
+    else
         handle_linting_error
     fi
     return 1
@@ -1590,6 +1628,10 @@ generate_list_of_files_to_process() {
             mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' | sort -n -r -k1,1 | cut -d' ' -f2-)
         fi
     fi
+    dbg_print "all_files:" 2
+    for f in "${all_files[@]}"; do
+        dbg_print "  $f" 2
+    done
     echo "done!"
 }
 
@@ -1683,6 +1725,8 @@ process_file_tree() {
             eval "${proj_linter_cmd[$linter_name]}"
         done
     }
+
+    trap '' INT # abort capturing Ctrl-C
 
     [[ $files_without_matching_linter -gt 0 ]] && {
         echo

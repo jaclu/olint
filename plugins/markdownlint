@@ -9,13 +9,13 @@
 #     curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 #   otherwise:
 #     sudo apt install nodejs npm
-#
 #   sudo npm install -g markdownlint-cli
+# project config file: .markdownlint.yaml
+# sample: https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
 
-plugin_cmd="markdownlint --disable MD013 MD033 --"
-
-# For markdownlint-cli2 use this instead
-#plugin_cmd="markdownlint-cli2 -p"
+plugin_cmd="markdownlint"
+# If used on the whole project
+# proj_plugin_cmd="markdownlint ."
 
 # file extensions this plugin handles
 plugin_extensions=(

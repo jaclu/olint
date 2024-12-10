@@ -19,6 +19,12 @@
 
 # line above: # pyright: reportGeneralTypeIssues=false
 # line above: # pyright: reportMissingImports=false
+# project config file: pyrightconfig.json
+# {
+#     "exclude": [
+#         ".venv",
+#     ],
+# }
 
 plugin_cmd="pyright"
 
