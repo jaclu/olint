@@ -20,7 +20,7 @@
 plugin_cmd="bandit"
 
 # If used on the whole project
-# proj_plugin_cmd="bandit ."
+# proj_plugin_cmd="bandit --exclude './.venv' -r ."
 
 plugin_priority=50
 
