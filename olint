@@ -1422,7 +1422,7 @@ lint_proj() {
     dbg_print "lint_proj($linter)" 4
     dbg_print " running: ${linter_cmd["$linter"]}" 8
 
-    show_linter_action "* entire project *" "$linter_name"
+    show_linter_action "=====  entire project  =====" "$linter_name"
     #
     #  In order to avoid some linters untrapping Ctrl-C
     #  they are run in the background. Then some code to ensure the
@@ -1721,8 +1721,7 @@ process_file_tree() {
 
     [[ ${#proj_linter_order[@]} -gt 0 ]] && {
         for linter_name in "${proj_linter_order[@]}"; do
-            show_linter_action "* entire project *" "$linter_name"
-            eval "${proj_linter_cmd[$linter_name]}"
+            lint_proj  "$linter_name"
         done
     }
 
