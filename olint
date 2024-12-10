@@ -703,8 +703,13 @@ initialize_env() {
 
     kernel_name="$(uname -s)"
     dbg_indent=1 # used to indent printouts in dbg_print
-    bname_proj_config=".olint.conf"
-    bname_cache=".cache.olint" # mtime|date|fname
+
+    # local folder for plugin overrides
+    d_plugin_overrides="$(pwd)"/.olint_plugin_overrides
+
+    # basenames, checked in multiple folders
+    bname_proj_config=.olint.conf
+    bname_cache=.cache.olint # mtime|date|fname
 
     #  Define Global config location
     if [[ -n "$XDG_CONFIG_HOME" ]]; then
@@ -1099,9 +1104,9 @@ check_linter_plugins() {
         # skip files ending with ~
         [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
         # Process the file here
-        f_plugin_override="$(pwd)/.olint_plugin_override/$(basename "$plugin_def")"
+        f_plugin_override="$d_plugin_overrides/$(basename "$plugin_def")"
         if [[ -f "$f_plugin_override" ]]; then
-            echo "><> using plugin_override: $f_plugin_override"
+            dbg_print "using plugin_override: $f_plugin_override" 1
             parse_plugin_file "$f_plugin_override"
         else
             parse_plugin_file "$plugin_def"
@@ -1387,10 +1392,9 @@ lint_file() {
     local lint_pid
     local lint_exit_status
 
-    dbg_print "lint_file($linter, $fname)" 1 # 4
-    dbg_print " running: ${linter_cmd["$linter"]} $fname" 1 # 8
+    dbg_print "lint_file($linter, $fname)" 4
+    dbg_print " running: ${linter_cmd["$linter"]} $fname" 8
 
-    show_linter_action "$fname" "$linter"
     #
     #  In order to avoid some linters untrapping Ctrl-C
     #  they are run in the background. Then some code to ensure the
