@@ -1099,7 +1099,13 @@ check_linter_plugins() {
         # skip files ending with ~
         [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
         # Process the file here
-        parse_plugin_file "$plugin_def"
+        f_plugin_override="$(pwd)/.olint_plugin_override/$(basename "$plugin_def")"
+        if [[ -f "$f_plugin_override" ]]; then
+            echo "><> using plugin_override: $f_plugin_override"
+            parse_plugin_file "$f_plugin_override"
+        else
+            parse_plugin_file "$plugin_def"
+        fi
     done
     [[ "$plugin_count" -eq 0 ]] && {
         error_msg "No plugins found in: $d_plugins"
@@ -1380,9 +1386,9 @@ lint_file() {
     local fname="$2"
     local lint_pid
     local lint_exit_status
-    
-    dbg_print "lint_file($linter, $fname)" 4
-    dbg_print " running: ${linter_cmd["$linter"]} $fname" 8
+
+    dbg_print "lint_file($linter, $fname)" 1 # 4
+    dbg_print " running: ${linter_cmd["$linter"]} $fname" 1 # 8
 
     show_linter_action "$fname" "$linter"
     #
@@ -1408,7 +1414,7 @@ lint_proj() {
     local linter="$1"
     local lint_pid
     local lint_exit_status
-    
+
     dbg_print "lint_proj($linter)" 4
     dbg_print " running: ${linter_cmd["$linter"]}" 8
 
@@ -1466,6 +1472,7 @@ lint_by_ext() {
                 dbg_print "$not_linting_msg" 4
                 return 0 # True - next file
             }
+            show_linter_action "$fname" "$linter"
             lint_file "$linter" "$fname" || linter_found_issue=true
         done
         if $linter_found; then
@@ -1617,6 +1624,10 @@ generate_list_of_files_to_process() {
             mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' | sort -n -r -k1,1 | cut -d' ' -f2-)
         fi
     fi
+    dbg_print "all_files:" 2
+    for f in "${all_files[@]}"; do
+        dbg_print "  $f" 2
+    done
     echo "done!"
 }
 
@@ -1710,7 +1721,7 @@ process_file_tree() {
             done
         }
     }
-    
+
     trap '' INT # abort capturing Ctrl-C
 
     [[ $files_without_matching_linter -gt 0 ]] && {
