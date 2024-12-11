@@ -11,7 +11,7 @@
 #  Essential for projects where security is a concern.
 
 # Installation methods;
-#  pip install bandit  # can be installed on iSH
+#  pip install bandit  # usable on iSH
 #  brew install bandit
 #  (Ubuntu) sudo apt install bandit
 

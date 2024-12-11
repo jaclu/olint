@@ -10,7 +10,7 @@
 #  Works well alongside linters like Flake8 and Pylint for a unified style.
 
 # Installation methods;
-#  pip install black  # can be installed on iSH
+#  pip install black  # usable on iSH
 #  brew install black
 #  (Ubuntu) sudo apt install black
 #  (Alpine) sudo apk add black

@@ -12,7 +12,7 @@
 #  imports or variables.
 
 # Installation methods;
-#  pip install pylint  # can be installed on iSH
+#  pip install pylint  # usable on iSH
 #  brew install pylint
 #  (Ubuntu) sudo apt install pylint
 #  (Alpine) sudo apk add py3-pylint
