@@ -3,6 +3,7 @@
 # shellcheck disable=SC2034  # dont warn about unused variables
 
 # Installation methods;
+#  pip install 
 #  brew install markdownlint-cli2
 #  (Ubuntu)
 #   ensure nodejs >= 18 if not:

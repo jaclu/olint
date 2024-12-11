@@ -2,6 +2,8 @@
 #  This is sourced. Fake bang-path to help editors and linters
 #  shellcheck disable=SC2034  # dont warn about unused variables
 
+#  To slow to be usable on iSH
+
 # Installation methods;
 #  brew install checkbashisms
 #  (Ubuntu) sudo apt install devscripts
