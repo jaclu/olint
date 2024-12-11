@@ -3,7 +3,7 @@
 #  shellcheck disable=SC2034  # dont warn about unused variables
 
 # Installation methods;
-#  pip install ansible-lint  # ish fails to run this
+#  pip install ansible-lint  # fails on ish & termux
 #  brew install ansible-lint
 #  (Ubuntu) sudo apt install ansible-lint
 #  (Alpine) sudo apk add ansible-lint
