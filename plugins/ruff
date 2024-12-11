@@ -12,7 +12,7 @@
 #  Rapid linting
 
 # Installation methods;
-#  pip install ruff  (dependency: rust)
+#  pip install ruff  # dependency: rust  iSH can install but fails to run this
 #  brew install ruff
 #  (Alpine) sudo apk add ruff
 

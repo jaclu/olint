@@ -22,6 +22,7 @@ if [[ -n "$(command -v flake8)" ]]; then
     #
     plugin_cmd="/dev/null"
 else
+    # obviously there are two names it might use...
     if [[ -n "$(command -v pyflakes3)" ]]; then
         plugin_cmd="pyflakes3"
     else
