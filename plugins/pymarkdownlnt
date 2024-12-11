@@ -8,9 +8,9 @@
 # Installation methods;
 #  pip install pymarkdownlnt
 
-plugin_cmd="pymarkdownlnt"
+plugin_cmd="pymarkdownlnt scan"
 # If used on the whole project
-# proj_plugin_cmd="pymarkdownlnt ."
+# proj_plugin_cmd="pymarkdownlnt scan -r ."
 
 # file extensions this plugin handles
 plugin_extensions=(
