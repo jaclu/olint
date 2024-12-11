@@ -4,7 +4,7 @@
 
 # Installation methods;
 #  For python, consider pymarkdown
-#  brew install markdownlint-cli2
+#  brew install markdownlint-cli
 #  (Ubuntu)
 #   ensure nodejs >= 18 if not:
 #     curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
