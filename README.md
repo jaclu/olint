@@ -92,7 +92,6 @@ Here's an example project configuration:
 # in order to prevent them from being used in this project
 skip_linters+=(
     checkbasisms
-    pylint
 )
 
 # Filter by prefix, as listed by olint
