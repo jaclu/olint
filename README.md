@@ -58,6 +58,7 @@ Olint supports the following linters out of the box:
 - pycodestyle (python)
 - pyflakes (python)
 - pylint (python)
+- pymarkdown (markdown)
 - pyright (python)
 - rslint (JavaScript and TypeScript)
 - ruff (python)

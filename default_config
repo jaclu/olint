@@ -42,6 +42,7 @@ skip_linters+=(
     # pyflakes        # Passive checker of Python 3 programs
     # pylint          # Comprehensive Python code linter
     # pylintrc        # Configuration file for pylint
+    # pymarkdown      # Linter for Markdown files
     # pyright         # Static type checker for Python
     # rslint          # Linter for Rust code
     # ruff            # Extremely fast Python linter, written in Rust
