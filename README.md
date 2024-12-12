@@ -91,7 +91,7 @@ Here's an example project configuration:
 # Only linters that are installed needs to be excluded,
 # in order to prevent them from being used in this project
 skip_linters+=(
-    checkbasisms
+    markdownlint
 )
 
 # Filter by prefix, as listed by olint
