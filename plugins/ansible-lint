@@ -6,7 +6,7 @@
 #  pip install ansible-lint  # fails on ish & termux
 #  brew install ansible-lint
 #  (Ubuntu) sudo apt install ansible-lint
-#  (Alpine) sudo apk add ansible-lint
+#  (Alpine) sudo apk add ansible-lint  # usable on iSH
 
 # project config files: .ansible-lint.yml
 #  ---
