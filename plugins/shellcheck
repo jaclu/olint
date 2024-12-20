@@ -23,11 +23,11 @@
 #        its return value (or use '|| true' to ignore).
 plugin_cmd="shellcheck -a -x --color=always -o all -e SC2250"
 
-if [ -f /etc/debian_version ] && grep -q 10 /etc/debian_version; then
+if [[ -f /etc/debian_version ]] && grep -q 10 /etc/debian_version; then
     # Debian 10 comes with shellcheck 0.5. lacking the -o option
     plugin_cmd="shellcheck -a -x --color=always -e SC1117,SC2250"
 fi
-	
+
 # file extensions this plugin handles
 plugin_extensions=(
     .sh
