@@ -8,7 +8,7 @@
 #  (Ubuntu) sudo apt install codespell
 #  (Alpine) sudo apk add py3-codespell
 
-proj_plugin_cmd="codespell -H -S './.git'"
+proj_plugin_cmd="codespell -H -S './.git,./.venv,./.mypy_cache'"
 
 # Custom overrides,  add this in the global or project config
 # to see all codespell options, run: codespell -h
