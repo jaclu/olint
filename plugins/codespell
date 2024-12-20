@@ -1,6 +1,6 @@
 #!/bin/bash
 #  This is sourced. Fake bang-path to help editors and linters
-#  shellcheck disable=SC2034  # dont warn about unused variables
+#  shellcheck disable=SC2034  # don't warn about unused variables
 
 # Installation methods;
 #  pip install codespell  # usable on iSH
@@ -8,7 +8,7 @@
 #  (Ubuntu) sudo apt install codespell
 #  (Alpine) sudo apk add py3-codespell
 
-proj_plugin_cmd="codespell"
+proj_plugin_cmd="codespell -S './.git'"
 
 # Custom overrides,  add this in the global or project config
 # to see all codespell options, run: codespell -h

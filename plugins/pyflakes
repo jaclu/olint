@@ -1,9 +1,9 @@
 #!/bin/bash
 # This is sourced. Fake bang-path to help editors and linters
-# shellcheck disable=SC2034  # dont warn about unused variables
+# shellcheck disable=SC2034  # don't warn about unused variables
 
 #
-# Provided by flake8, dont use this if flake8 is used!
+# Provided by flake8, don't use this if flake8 is used!
 #
 
 # Installation methods;

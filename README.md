@@ -183,7 +183,7 @@ plugin_extensions=(
 #### plugin_file_types
 
 Lists all file types the plugin handles, defined as in the output of
-`file -b filename`. When processed this is comma-separated, so dont use
+`file -b filename`. When processed this is comma-separated, so don't use
 the entire output in the definition!
 
 Since some Operating Systems use only lowercase for this, the definitions
