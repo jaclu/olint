@@ -712,6 +712,7 @@ initialize_env() {
     bname_cache=.cache.olint # mtime|date|fname
 
     #  Define Global config location
+    # shellcheck disable=SC2154
     if [[ -n "$XDG_CONFIG_HOME" ]]; then
         olint_cfg_dir="$XDG_CONFIG_HOME"/olint
     else
