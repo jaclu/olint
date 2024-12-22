@@ -717,10 +717,9 @@ defaults_for_config_file_excludes() {
 consider_alpine_linting_venv() {
     # shellcheck disable=SC2154
     #
-
-    if [[ -f /etc/alpine-release ]] && [[ ! -d "$d_alpine_linting_venv" ]] &&
+    dbg_print "consider_alpine_linting_venv()" 2
+    if [[ -f /etc/alpine-release ]] && [[ -d "$d_alpine_linting_venv" ]] &&
         [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
-
         alpine_linting_venv_enabled=true
         echo "===  Activating Alpine linting venv  ==="
         # shellcheck source=/dev/null
@@ -730,8 +729,10 @@ consider_alpine_linting_venv() {
     fi
 }
 
-condider_disabling_alpine_linting_venv() {
+consider_disabling_alpine_linting_venv() {
+    dbg_print "consider_disabling_alpine_linting_venv()" 2
     $alpine_linting_venv_enabled && {
+	dbg_print "deactivating alpine_linting_venv" 3
         deactivate || error_msg "Failed to deactivate alpine linting venv"
     }
     return 0
@@ -762,6 +763,8 @@ initialize_env() {
     d_alpine_linting_venv=~/.config/olint/.venv
     alpine_linting_venv_enabled=false
 
+    consider_alpine_linting_venv
+    
     defaults_for_cmdline_options
     defaults_for_config_file_excludes
 
@@ -820,7 +823,7 @@ env_cleanup() {
         echo
         echo "*****  olint exited with an error  *****"
     }
-    condider_disabling_alpine_linting_venv
+    consider_disabling_alpine_linting_venv
     exit "$ex_code"
 }
 
