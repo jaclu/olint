@@ -12,12 +12,13 @@
 #  max-line-length=92
 #  ignore=E001,E002
 
+plugin_cmd="bashate"
 
-if command -v bashate-wrapper >/dev/null; then
-    # this reads .bashateconfig
-    plugin_cmd="bashate-wrapper"
-else
-    plugin_cmd="bashate"
+if command -v "$plugin_cmd" >/dev/null; then
+    if command -v bashate-wrapper >/dev/null; then
+        # this reads .bashateconfig
+        plugin_cmd="bashate-wrapper"
+    fi
 fi
 
 plugin_priority=60
