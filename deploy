@@ -170,7 +170,6 @@ get_app_destination
 
 if [ "$1" = force ]; then
     force_deploy=true
-    rm -rf "$HOME"/.config/olint
 elif [ "$1" = uninstall ]; then
     echo
     echo "-----   Uninstall olint   -----"
