@@ -715,9 +715,8 @@ defaults_for_config_file_excludes() {
 }
 
 consider_alpine_linting_venv() {
-    # shellcheck disable=SC2154
-    #
     dbg_print "consider_alpine_linting_venv()" 2
+    # shellcheck disable=SC2154
     if [[ -f /etc/alpine-release ]] && [[ -d "$d_alpine_linting_venv" ]] &&
         [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
         alpine_linting_venv_enabled=true
@@ -732,7 +731,8 @@ consider_alpine_linting_venv() {
 consider_disabling_alpine_linting_venv() {
     dbg_print "consider_disabling_alpine_linting_venv()" 2
     $alpine_linting_venv_enabled && {
-	dbg_print "deactivating alpine_linting_venv" 3
+        dbg_print "deactivating alpine_linting_venv" 3
+        echo "===  De-activating Alpine linting venv  ==="
         deactivate || error_msg "Failed to deactivate alpine linting venv"
     }
     return 0
@@ -764,7 +764,7 @@ initialize_env() {
     alpine_linting_venv_enabled=false
 
     consider_alpine_linting_venv
-    
+
     defaults_for_cmdline_options
     defaults_for_config_file_excludes
 
