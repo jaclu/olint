@@ -158,13 +158,25 @@ remove_duplicates_3() {
 de_duplicate_config() {
     # Remove dupes
 
-    read -r -d '' -a skip_linters <<<"$(remove_duplicates_2 "${skip_linters[@]}")"
+    read -r -d '' -a skip_linters <<<"$(
+        remove_duplicates_2 "${skip_linters[@]}"
+    )"
     read -r -d '' -a excludes <<<"$(remove_duplicates_2 "${excludes[@]}")"
-    read -r -d '' -a excluded_prefixes <<<"$(remove_duplicates_2 "${excluded_prefixes[@]}")"
-    read -r -d '' -a hidden_patterns <<<"$(remove_duplicates_2 "${hidden_patterns[@]}")"
-    read -r -d '' -a excluded_suffixes <<<"$(remove_duplicates_2 "${excluded_suffixes[@]}")"
-    read -r -d '' -a excluded_basenames <<<"$(remove_duplicates_2 "${excluded_basenames[@]}")"
-    read -r -d '' -a excluded_basename_prefixes <<<"$(remove_duplicates_2 "${excluded_basename_prefixes[@]}")"
+    read -r -d '' -a excluded_prefixes <<<"$(
+        remove_duplicates_2 "${excluded_prefixes[@]}"
+    )"
+    read -r -d '' -a hidden_patterns <<<"$(
+        remove_duplicates_2 "${hidden_patterns[@]}"
+    )"
+    read -r -d '' -a excluded_suffixes <<<"$(
+        remove_duplicates_2 "${excluded_suffixes[@]}"
+    )"
+    read -r -d '' -a excluded_basenames <<<"$(
+        remove_duplicates_2 "${excluded_basenames[@]}"
+    )"
+    read -r -d '' -a excluded_basename_prefixes <<<"$(
+        remove_duplicates_2 "${excluded_basename_prefixes[@]}"
+    )"
 }
 
 #---------------------------------------------------------------
@@ -311,6 +323,7 @@ cache_read() {
     local f_mtime
     local f_date
     local f_name
+    local msg
 
     $use_cache || {
         # abort if not using cache
@@ -341,7 +354,9 @@ cache_read() {
                     echo "  expected: [$olint_cache_version]"
                     echo "  found:    [$cached_line]"
                     echo
-                    echo "Will ignore this cache and replace it in 3 seconds - hit Ctrl-C to abort!"
+                    msg="Will ignore this cache and replace it in 3 seconds"
+                    msg+=" - hit Ctrl-C to abort!"
+                    echo "$msg"
                     sleep 3
                     break
                 }
@@ -447,7 +462,8 @@ show_help() {
 
     prog_name=$(basename "$0")
     #region help text
-    echo "Usage: $prog_name [-h] [-c] [-C] [--config-dir] [-n] [-N] [-v verbosity_lvl] [number]
+    echo "
+Usage: $prog_name [-h] [-c] [-C] [--config-dir] [-n] [-N] [-v verbosity_lvl] [number]
 
 Lint all files recursively in reverse chronological order.
 
@@ -698,6 +714,29 @@ defaults_for_config_file_excludes() {
     )
 }
 
+consider_alpine_linting_venv() {
+    # shellcheck disable=SC2154
+    #
+
+    if [[ -f /etc/alpine-release ]] && [[ ! -d "$d_alpine_linting_venv" ]] &&
+        [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
+
+        alpine_linting_venv_enabled=true
+        echo "===  Activating Alpine linting venv  ==="
+        # shellcheck source=/dev/null
+        . "$d_alpine_linting_venv"/bin/activate || {
+            error_msg "Failed to activate alpine linting venv"
+        }
+    fi
+}
+
+condider_disabling_alpine_linting_venv() {
+    $alpine_linting_venv_enabled && {
+        deactivate || error_msg "Failed to deactivate alpine linting venv"
+    }
+    return 0
+}
+
 initialize_env() {
     # dbg_print "initialize_env()" forced
 
@@ -719,6 +758,9 @@ initialize_env() {
         olint_cfg_dir=~/.config/olint
     fi
     olint_plugin_dir="$olint_cfg_dir"/plugins
+
+    d_alpine_linting_venv=~/.config/olint/.venv
+    alpine_linting_venv_enabled=false
 
     defaults_for_cmdline_options
     defaults_for_config_file_excludes
@@ -778,6 +820,7 @@ env_cleanup() {
         echo
         echo "*****  olint exited with an error  *****"
     }
+    condider_disabling_alpine_linting_venv
     exit "$ex_code"
 }
 
@@ -1132,6 +1175,7 @@ parse_plugin_file() {
     local plugin_file_types
     local ext
     local file_type
+    local msg
 
     dbg_print "parse_plugin_file($plugin_def)" "$dbglvl_lintscan_basic"
     ((dbg_indent++)) # increase indent until this returns
@@ -1200,7 +1244,9 @@ parse_plugin_file() {
     [[ ${#plugin_extensions[@]} -eq 0 ]] &&
         [[ ${#plugin_file_types[@]} -eq 0 ]] && {
 
-        error_msg "Plugin $plugin_def - neither plugin_extensions nor plugin_file_types defined"
+        msg="Plugin $plugin_def - neither plugin_extensions"
+        msg+=" nor plugin_file_types defined"
+        error_msg "$msg"
     }
 
     for ext in "${plugin_extensions[@]}"; do
@@ -1221,7 +1267,8 @@ add_plugin_extension() {
     local item
     local unsorted
 
-    dbg_print "add_plugin_extension($plugin, $plugin_priority, $ext)" "$dbglvl_lintscan_basic"
+    dbg_print "add_plugin_extension($plugin, $plugin_priority, $ext)" \
+        "$dbglvl_lintscan_basic"
     ((dbg_indent++)) # increase indent until this returns
     if [[ -z "${linter_extensions[$ext]}" ]]; then
         linter_extensions[$ext]="$plugin"
@@ -1614,19 +1661,25 @@ generate_list_of_files_to_process() {
     if [[ $kernel_name == "Darwin" ]]; then
         # macOS version
         # shellcheck disable=SC2312
-        # mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
-        mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+        # mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; |
+        #    sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+        mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + |
+            sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
     else
         if test -d /proc/ish; then
             #
             #  iSH kernel doesn't support enough of /proc to make mapfile work
             #
             # shellcheck disable=SC2207
-            #all_files=($(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##'))
-            all_files=($(find . -type f -printf '%T@ %P\n' | sort -n -r -k1,1 | cut -d' ' -f2-))
+            #all_files=($(find . -type f -printf '%T@ %p\n' |
+            #    sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##'))
+            all_files=($(find . -type f -printf '%T@ %P\n' |
+                sort -n -r -k1,1 | cut -d' ' -f2-))
         else
-            # mapfile -t all_files < <(find . -type f -printf '%T@ %p\n' | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
-            mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' | sort -n -r -k1,1 | cut -d' ' -f2-)
+            # mapfile -t all_files < <(find . -type f -printf '%T@ %p\n'
+            #     | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+            mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' |
+                sort -n -r -k1,1 | cut -d' ' -f2-)
         fi
     fi
     dbg_print "all_files:" 2
@@ -1722,7 +1775,7 @@ process_file_tree() {
 
     [[ ${#proj_linter_order[@]} -gt 0 ]] && {
         for linter_name in "${proj_linter_order[@]}"; do
-            lint_proj  "$linter_name"
+            lint_proj "$linter_name"
         done
     }
 
