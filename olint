@@ -14,7 +14,6 @@
 #  in the order the files are found. This means the last changed
 #  file is the first to be checked.
 #
-#
 
 # shellcheck disable=SC2317
 handle_ctrl_c() {
