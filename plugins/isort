@@ -24,9 +24,11 @@ if [[ -n "$(command -v ruff)" ]]; then
     plugin_cmd="/dev/null"
 else
     plugin_cmd="isort"
+    # If used on the whole project
+    # proj_plugin_cmd="isort --gitignore ."
 fi
 
-plugin_priority=90
+plugin_priority=65
 
 
 # file extensions this plugin handles

@@ -34,9 +34,11 @@ if [[ -n "$(command -v ruff)" ]]; then
     plugin_cmd="/dev/null"
 else
     plugin_cmd="flake8 --color=always"
+    # If used on the whole project
+    # proj_plugin_cmd="flake8 --color=always"
 fi
 
-plugin_priority=85
+plugin_priority=60
 
 # file extensions this plugin handles
 plugin_extensions=(

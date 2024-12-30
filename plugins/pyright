@@ -27,8 +27,10 @@
 # }
 
 plugin_cmd="pyright"
+# If used on the whole project
+# proj_plugin_cmd="pyright"
 
-plugin_priority=80
+plugin_priority=50
 
 # file extensions this plugin handles
 plugin_extensions=(

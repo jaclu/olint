@@ -212,21 +212,21 @@ override_linter_cmd["codespell"]="codespell -L THIS"
 
 This order will be used by default based on `plugin_priority` settings
 
-- ruff
-- bandit
-- pyright
-- mypy
-- pylint
+- ruff 90
+- bandit 55
+- pyright 50
+- mypy 40
+- pylint 30
 
 If ruff is not used, the suggested order is:
 
-- black
-- isort
-- flake8
-- bandit
-- pyright
-- mypy
-- pylint
+- black 85
+- isort 65
+- flake8 60
+- bandit 55
+- pyright 50
+- mypy 40
+- pylint 30
 
 This is the default order, and black, isort, flake8 will not be used if ruff is
 found.

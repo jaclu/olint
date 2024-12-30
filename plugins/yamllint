@@ -15,8 +15,9 @@
 #    max: 92
 #    level: warning
 
-
-plugin_cmd="yamllint -s" # never trigger error, just display issues
+plugin_cmd="yamllint -s" # -s trigger error on warnings
+# If used on the whole project
+# proj_plugin_cmd="yamllint -s ."
 
 # file extensions this plugin handles
 plugin_extensions=(
