@@ -909,6 +909,9 @@ get_proj_config_recursive() {
         olint_cfg_proj="$dir"/"$bname_proj_config"
         dbg_print "Checking for config in: $dir" 2
         if [[ -f "$olint_cfg_proj" ]]; then
+            cd "$dir" || {
+                error_msg "get_proj_config_recursive() failed to cd into: $dir"
+            }
             read_config_file "$olint_cfg_proj"
             dbg_print "Using Project file: $olint_cfg_proj" 1
             f_cache_file="$dir/$bname_cache"
@@ -1837,4 +1840,3 @@ echo
 cache_read ### R
 process_file_tree
 env_cleanup 0
-
