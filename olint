@@ -1461,7 +1461,11 @@ lint_file() {
     if [[ "$lint_exit_status" -eq 0 ]]; then
         return 0
     else
-        cat "$f_linter_output"
+        if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
+            less -R "$f_linter_output"
+        else
+            cat "$f_linter_output"
+        fi
         handle_linting_error
     fi
     return 1
