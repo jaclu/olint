@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Copyright (c) 2024: Jacob.Lundqvist@gmail.com
+# License: MIT
+#
+# Part of https://github.com/jaclu/olint
+#
+#  bashate doesn't seem to read any project config file, by using this one
+#  a project conf file is used
+#
+
+CMD="bashate"
+CONFIG_FILE=".bashateconfig"
+
+# Default values
+MAX_LINE_LENGTH=80
+IGNORE=""
+
+# Load config if it exists
+if [ -f "$CONFIG_FILE" ]; then
+    MAX_LINE_LENGTH=$(grep -E '^max-line-length=' "$CONFIG_FILE" | cut -d'=' -f2)
+    IGNORE=$(grep -E '^ignore=' "$CONFIG_FILE" | cut -d'=' -f2)
+fi
+
+# Build the bashate command
+[ -n "$MAX_LINE_LENGTH" ] && CMD="$CMD --max-line-length $MAX_LINE_LENGTH"
+[ -n "$IGNORE" ] && CMD="$CMD --ignore $IGNORE"
+
+# Execute bashate with the passed arguments
+$CMD "$@"

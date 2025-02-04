@@ -106,13 +106,13 @@ deploy_default_config() {
 }
 
 deploy_app() {
-    echo "---  olint app"
-    if rsync -ahP "$REPO_DIR"/olint "$d_app_dest" | grep -q "olint"; then
-        echo "Latest version installed: $d_app_dest/olint"
+    app="$1"
+    echo "---  Install: $app"
+    if rsync -ahP "$REPO_DIR/$app" "$d_app_dest" | grep -q "$app"; then
+        echo "Latest version installed: $d_app_dest/$app"
     else
-        echo "Was current: $d_app_dest/olint"
+        echo "Was current: $d_app_dest/$app"
     fi
-    echo
 }
 
 deploy_plugins() {
@@ -186,6 +186,8 @@ elif [ -n "$1" ]; then
 fi
 
 deploy_default_config
-deploy_app
+deploy_app olint
+deploy_app bashate-wrapper
+echo
 deploy_plugins
 deploy_default_ignore
