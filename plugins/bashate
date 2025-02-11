@@ -23,7 +23,11 @@ if command -v "$plugin_cmd" >/dev/null; then
     fi
 fi
 
-plugin_priority=60
+# much faster than shellcheck, but in a few corner cases will fail to
+# give a meaningful error. such as missing a } somewhere will just
+# be reported as unexpected end of file.
+# so better to run after shellcheck
+plugin_priority=40
 
 #  file-types this plugin handles
 plugin_file_types=(
