@@ -1782,7 +1782,7 @@ process_file_tree() {
     done
     trap '' INT # abort capturing Ctrl-C
 
-    [[ ${#proj_linter_order[@]} -gt 0 ]] && {
+    ! $show_excluded && [[ ${#proj_linter_order[@]} -gt 0 ]] && {
         for linter_name in "${proj_linter_order[@]}"; do
             lint_proj "$linter_name"
         done
