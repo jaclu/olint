@@ -1462,6 +1462,8 @@ lint_file() {
         return 0
     else
         if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
+            printf '0a\nLinting command:\n%s\n\n.\nw\n' \
+                "${linter_cmd["$linter"]}" ed -s "$f_linter_output"
             less -R "$f_linter_output"
         else
             cat "$f_linter_output"
@@ -1485,11 +1487,21 @@ lint_proj() {
     #  they are run in the background. Then some code to ensure the
     #  exit code of the linter is captured
     #
-    eval "${proj_linter_cmd["$linter"]}"
+    eval "${proj_linter_cmd["$linter"]}" >"$f_linter_output" 2>&1 &
+    lint_pid=$!
+    wait "$lint_pid"
     lint_exit_status=$?
+
     if [[ "$lint_exit_status" -eq 0 ]]; then
         return 0
     else
+        if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
+            printf '0a\nProject linter used:\n%s\n\n.\nw\n' \
+                "${proj_linter_cmd["$linter"]}" ed -s "$f_linter_output"
+            less -R "$f_linter_output"
+        else
+            cat "$f_linter_output"
+        fi
         handle_linting_error
     fi
     return 1
