@@ -1462,8 +1462,13 @@ lint_file() {
         return 0
     else
         if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
+            #
+            # prepending output with linter and file name, since when
+            # displaying output in fullecreen the previous lines indicating
+            # those details are not visible
+            #
             printf '0a\nLinting command:\n%s\n\n.\nw\n' \
-                "${linter_cmd["$linter"]}" ed -s "$f_linter_output"
+                "${linter_cmd["$linter"]}" | ed -s "$f_linter_output"
             less -R "$f_linter_output"
         else
             cat "$f_linter_output"
@@ -1496,8 +1501,13 @@ lint_proj() {
         return 0
     else
         if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
+            #
+            # prepending output with linter name, since when displaying
+            # output in fullecreen the previous lines indicating such is not
+            # visible
+            #
             printf '0a\nProject linter used:\n%s\n\n.\nw\n' \
-                "${proj_linter_cmd["$linter"]}" ed -s "$f_linter_output"
+                "${proj_linter_cmd["$linter"]}" | ed -s "$f_linter_output"
             less -R "$f_linter_output"
         else
             cat "$f_linter_output"
