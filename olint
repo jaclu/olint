@@ -1467,8 +1467,8 @@ lint_file() {
             # displaying output in fullecreen the previous lines indicating
             # those details are not visible
             #
-            printf '0a\nLinting command:\n%s\n\n.\nw\n' \
-                "${linter_cmd["$linter"]}" | ed -s "$f_linter_output"
+            printf '0a\nLinting command:\n%s\nFile: %s\n\n.\nw\n' \
+                "${linter_cmd["$linter"]}" "$fname" | ed -s "$f_linter_output"
             less -R "$f_linter_output"
         else
             cat "$f_linter_output"
