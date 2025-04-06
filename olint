@@ -1042,11 +1042,11 @@ parse_cmd_line() {
             ;;
 
         -z | --zapcache)
-            zap_it=1  # zap then exit
+            zap_it=1 # zap then exit
             ;;
 
         -Z | --zaprun)
-            zap_it=2  # zap then run
+            zap_it=2 # zap then run
             ;;
 
         *[!0-9]*) error_msg "Unrecognized option: $1" ;;
@@ -1422,11 +1422,27 @@ show_linter_action() {
     #
     #  Display what linter is used and what file is processed
     #
-    local fname="$1"
-    local linter="$2"
+    local linter="$1"
+    local fname="$2"
 
+    t_lint_start="$(date +%s)"
     # Print using printf with fixed-width formatting
-    printf "%-14s: %s\\n" "$linter" "$fname"
+    printf "%-14s: %s" "$linter" "$fname"
+}
+
+show_linter_time() {
+    duration=$(($(date +%s) - t_lint_start))
+    if [[ "$duration" -gt 2 ]]; then
+        if ((duration >= 15)); then
+            hours=$((duration / 3600))
+            minutes=$(((duration % 3600) / 60))
+            seconds=$((duration - hours * 3600 - minutes * 60))
+            printf '  - %02d:%02d:%02d' "$hours" "$minutes" "$seconds"
+        else
+            printf '  - %ss' "$duration"
+        fi
+    fi
+    echo # always apply a LF
 }
 
 lint_file() {
@@ -1476,7 +1492,7 @@ lint_proj() {
     dbg_print "lint_proj($linter)" 4
     dbg_print " running: ${linter_cmd["$linter"]}" 8
 
-    show_linter_action "=====  entire project  =====" "$linter_name"
+    show_linter_action "$linter_name" "=====  entire project  ====="
     #
     #  In order to avoid some linters untrapping Ctrl-C
     #  they are run in the background. Then some code to ensure the
@@ -1486,6 +1502,7 @@ lint_proj() {
     lint_pid=$!
     wait "$lint_pid"
     lint_exit_status=$?
+    show_linter_time
 
     if [[ "$lint_exit_status" -eq 0 ]]; then
         return 0
@@ -1545,8 +1562,9 @@ lint_by_ext() {
                 dbg_print "$not_linting_msg" 4
                 return 0 # True - next file
             }
-            show_linter_action "$fname" "$linter"
+            show_linter_action "$linter" "$fname"
             lint_file "$linter" "$fname" || linter_found_issue=true
+            show_linter_time
         done
         if $linter_found; then
             dbg_print "processed by ext handler - $fname" 3
@@ -1589,8 +1607,9 @@ lint_by_file_type() {
                 dbg_print "$not_linting_msg" 4
                 return 0 # True - next file
             }
-            show_linter_action "$fname" "$linter"
+            show_linter_action "$linter" "$fname"
             lint_file "$linter" "$fname" || linter_found_issue=true
+            show_linter_time
 
             # not needed for visual inspection, but might be handy for
             # log analysis to get both lf_type and linter in one line
@@ -1631,21 +1650,21 @@ should_fname_be_excluded() {
     # Check if the filename matches any pattern
     for pattern in "${excluded_prefixes[@]}"; do
         [[ "$fname" =~ $pattern ]] && {
-            $show_excluded && show_linter_action "$fname" "prefix"
+            $show_excluded && show_linter_action "prefix" "$fname"
             return 0
         }
     done
 
     for item in "${excludes[@]}"; do
         [[ "$fname" = "$item" ]] && {
-            $show_excluded && show_linter_action "$fname" "excludes"
+            $show_excluded && show_linter_action "excludes" "$fname"
             return 0
         }
     done
 
     for item in "${excluded_suffixes[@]}"; do
         [[ "$fname" = *"$item" ]] && {
-            $show_excluded && show_linter_action "$fname" "suffix"
+            $show_excluded && show_linter_action "suffix" "$fname"
             return 0
         }
     done
@@ -1653,7 +1672,7 @@ should_fname_be_excluded() {
     rel_fname="$(basename "$fname")"
     for item in "${excluded_basenames[@]}"; do
         [[ "$rel_fname" = "$item" ]] && {
-            $show_excluded && show_linter_action "$fname" "basename"
+            $show_excluded && show_linter_action "basename" "$fname"
             return 0
         }
     done
@@ -1661,7 +1680,7 @@ should_fname_be_excluded() {
     for item in "${excluded_basename_prefixes[@]}"; do
         [[ "$rel_fname" = "$item"* ]] && {
             $show_excluded && {
-                show_linter_action "$fname" "basename prefix"
+                show_linter_action "basename prefix" "$fname"
             }
             return 0
         }
@@ -1788,7 +1807,7 @@ process_file_tree() {
         $do_lint_files || {
             $linter_found || {
                 ((files_without_matching_linter++))
-                show_linter_action "$fname" "= No linter ="
+                show_linter_action "= No linter =" "$fname"
             }
         }
     done
