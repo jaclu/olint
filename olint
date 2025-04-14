@@ -1432,7 +1432,7 @@ show_linter_action() {
 
 show_linter_time() {
     local duration=$(($(date +%s) - t_lint_start))
-    if [[ "$duration" -gt 2 ]]; then
+    if [[ "$duration" -gt 1 ]]; then
         if ((duration >= 15)); then
             local hours=$((duration / 3600))
             local minutes=$(((duration % 3600) / 60))
