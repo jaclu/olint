@@ -1431,12 +1431,12 @@ show_linter_action() {
 }
 
 show_linter_time() {
-    duration=$(($(date +%s) - t_lint_start))
+    local duration=$(($(date +%s) - t_lint_start))
     if [[ "$duration" -gt 2 ]]; then
         if ((duration >= 15)); then
-            hours=$((duration / 3600))
-            minutes=$(((duration % 3600) / 60))
-            seconds=$((duration - hours * 3600 - minutes * 60))
+            local hours=$((duration / 3600))
+            local minutes=$(((duration % 3600) / 60))
+            local seconds=$((duration - hours * 3600 - minutes * 60))
             printf '  - %02d:%02d:%02d' "$hours" "$minutes" "$seconds"
         else
             printf '  - %ss' "$duration"
