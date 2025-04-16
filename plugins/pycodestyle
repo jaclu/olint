@@ -30,6 +30,8 @@ else
     # proj_plugin_cmd="pycodestyle ."
 fi
 
+plugin_priority=78
+
 # file extensions this plugin handles
 plugin_extensions=(
     .py

@@ -24,7 +24,7 @@ plugin_cmd="ruff check"
 # proj_plugin_cmd="ruff check ."
 
 # really fast so run early
-plugin_priority=90
+plugin_priority=60
 
 # file extensions this plugin handles
 plugin_extensions=(

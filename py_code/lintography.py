@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
-""" .
-    version:   0.2.1 2022-09-17
-    Copyright: Jacob.Lundqvist@gmail.com
-    License:   MIT
+""".
+version:   0.2.1 2022-09-17
+Copyright: Jacob.Lundqvist@gmail.com
+License:   MIT
 
-    Uses predefined linters to check files.
-    Autoscans file tree for matching items.
+Uses predefined linters to check files.
+Autoscans file tree for matching items.
 """
 
 
 import glob
 import os
 import sys
-
 # from whichcraft import which
 from shutil import which
 from subprocess import CalledProcessError, run  # nosec B404
