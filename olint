@@ -277,11 +277,6 @@ cache_write() {
     #  First line is expected to contain a cache version identifier,
     #  rest is: mtime|date|fname
     #
-    #  Updating cache once/minute or so:
-    #    1. Write new items
-    #    2. Remove all new items from old
-    #    3. Write old items
-    #
     local dbg_indent=$dbg_indent
     local key value
 
@@ -436,7 +431,6 @@ filename_is_cached() {
     dbg_print "filename_is_cached($f_to_check)" "$dbglvl_cache_events_more"
     ((dbg_indent++)) # increase indent until this returns
 
-    #echo ">= filename_is_cached($1)"
     [[ -z "$f_to_check" ]] && error_msg "filename_is_cached() - called without param"
 
     #
@@ -700,13 +694,6 @@ defaults_for_cmdline_options() {
 }
 
 defaults_for_config_file_excludes() {
-    # ignore_project=yes   # Ignore this entire project from being processed.
-    #                         Essentially prevent olint from running in this project
-    #> use_cache=false      # Disable the use of cache for linting results.
-    #> mime_type_limit=true # Only scan files based on their MIME type.
-    #> lint_continue=true   # Continue linting even if errors are found.
-    #> verbosity_lvl=9        # Set the verbosity of debug output.
-
     ignore_project=no
 
     skip_linters=() # plugins to skip in this project
@@ -976,12 +963,6 @@ filter_hidden_vs_actually_excluded_patterns() {
         return # Either list was empty
     }
 
-    # echo "><> Initial Hidden patterns:"
-    # lst="${hidden_patterns[*]}"
-    # for item in $lst; do
-    #     echo "  $item"
-    # done
-
     tmp_hidden=("${hidden_patterns[@]}")
     hidden_patterns=()
     lst_h="${tmp_hidden[*]}"
@@ -1114,22 +1095,14 @@ override_cmd() {
     local linter_override="$1"
     local cmd_ok="$2"
 
-    # echo "override_cmd()"
-    # echo "Modifying linter: $linter_override"
-    # echo " replacing: ${linter_cmd[$linter_override]}"
     linter_cmd["$linter_override"]="$cmd_ok"
-    # echo "      with: ${linter_cmd[$linter_override]}"
 }
 
 override_proj_cmd() {
     local linter_override="$1"
     local cmd_ok="$2"
 
-    # echo "override_proj_cmd()"
-    # echo "Modifying linter: $linter_override"
-    # echo " replacing: ${proj_linter_cmd[$linter_override]}"
     proj_linter_cmd["$linter_override"]="$cmd_ok"
-    # echo "      with: ${proj_linter_cmd[$linter_override]}"
 }
 
 process_linter_overrides() {
@@ -1474,12 +1447,16 @@ show_linter_action() {
 }
 
 show_linter_time() {
-    local duration=$(($(date +%s) - t_lint_start))
+    local duration
+
+    duration=$(($(date +%s) - t_lint_start))
     if [[ "$duration" -gt 1 ]]; then
         if ((duration >= 15)); then
-            local hours=$((duration / 3600))
-            local minutes=$(((duration % 3600) / 60))
-            local seconds=$((duration - hours * 3600 - minutes * 60))
+            local hours minutes seconds
+
+            hours=$((duration / 3600))
+            minutes=$(((duration % 3600) / 60))
+            seconds=$((duration - hours * 3600 - minutes * 60))
             printf '  - %02d:%02d:%02d' "$hours" "$minutes" "$seconds"
         else
             printf '  - %ss' "$duration"
@@ -1744,9 +1721,7 @@ generate_list_of_files_to_process() {
 
     if [[ $kernel_name == "Darwin" ]]; then
         # macOS version
-        # shellcheck disable=SC2312
-        # mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} \; |
-        #    sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+        # shellcheck disable=SC2207
         mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + |
             sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
     else
@@ -1755,13 +1730,9 @@ generate_list_of_files_to_process() {
             #  iSH kernel doesn't support enough of /proc to make mapfile work
             #
             # shellcheck disable=SC2207
-            #all_files=($(find . -type f -printf '%T@ %p\n' |
-            #    sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##'))
             all_files=($(find . -type f -printf '%T@ %P\n' |
                 sort -n -r -k1,1 | cut -d' ' -f2-))
         else
-            # mapfile -t all_files < <(find . -type f -printf '%T@ %p\n'
-            #     | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
             mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' |
                 sort -n -r -k1,1 | cut -d' ' -f2-)
         fi
@@ -1861,8 +1832,12 @@ process_file_tree() {
     ! $show_excluded && [[ ${#proj_linter_order[@]} -gt 0 ]] && {
         for linter_name in "${proj_linter_order[@]}"; do
             [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
-            lint_proj "$linter_name"
+
+            # it would look ridiculous to first flush the cache then imeditally
+            # write it again, so lets do it before the project lint
             maybe_update_cache
+
+            lint_proj "$linter_name"
         done
     }
 
@@ -1879,8 +1854,6 @@ process_file_tree() {
 #   Main
 #
 #===============================================================
-
-# echo "====  initial proc [$$]"
 
 #  Dependencies
 [[ -z "$(command -v file)" ]] && error_msg "Missing dependency: file"
