@@ -306,7 +306,8 @@ cache_write() {
     }
 
     # clear previous cache
-    echo "$olint_cache_version" >"$f_cache_file"
+    echo "><> proj_lint_tasks_completed: [$proj_lint_tasks_completed]"
+    echo "$olint_cache_version|$proj_lint_tasks_completed" >"$f_cache_file"
 
     # Loop through the array and write all lines in one go
     for key in "${!cache_new[@]}"; do
@@ -339,6 +340,8 @@ cache_read() {
     local f_date
     local f_name
     local msg
+    local clear_cach_File=false
+    local cache_version
 
     $use_cache || {
         # abort if not using cache
@@ -363,16 +366,20 @@ cache_read() {
         while IFS= read -r cached_line; do
             dbg_print "read line: $cached_line" 4
             if $waiting_for_header; then
-                [[ "$cached_line" = "$olint_cache_version" ]] || {
+                cache_version="$(echo "$cached_line" | cut -d'|' -f1)"
+                proj_lint_tasks_completed="$(echo "$cached_line" | cut -d'|' -f2)"
+
+                [[ "$cache_version" = "$olint_cache_version" ]] || {
                     echo
                     echo "Incorrect cache version"
                     echo "  expected: [$olint_cache_version]"
-                    echo "  found:    [$cached_line]"
+                    echo "  found:    [$cache_version]"
                     echo
                     msg="Will ignore this cache and replace it in 3 seconds"
                     msg+=" - hit Ctrl-C to abort!"
                     echo "$msg"
                     sleep 3
+                    clear_cach_File=true
                     break
                 }
                 waiting_for_header=false
@@ -383,6 +390,7 @@ cache_read() {
                 cache_old["$f_name"]="$f_mtime|$f_date"
             fi
         done <"$f_cache_file"
+        $clear_cach_File && rm -f "$f_cache_file"
     fi
 }
 
@@ -812,12 +820,17 @@ initialize_env() {
     #  -----   caching env   -----
 
     # Will only be updated if cache format is changed
-    olint_cache_version="olint cache vers: 0.3.1"
+    olint_cache_version="olint cache vers: 0.4.0"
 
     cache_is_changed=false
     declare -g -A cache_old     # What is read from cache file
     declare -g -A cache_new     # What will be written to cache file
     f_cache_file="$bname_cache" # initiaally assume its in same foleer
+
+    # On slow system, log what proj linters have completed in the
+    # cache file. This will be cleared once linting completes, so
+    # on next run, all proj linters will be run
+    proj_lint_tasks_completed=""
 
     #  -----   debug level helpers   -----
 
@@ -841,6 +854,9 @@ env_cleanup() {
     #
     #
     ex_code="${1:-1}"
+
+    # when completed, clear this so that on next run all proj linters are run
+    proj_lint_tasks_completed=""
 
     cache_write
     echo
@@ -1512,46 +1528,6 @@ lint_file() {
     return 1
 }
 
-lint_proj() {
-    local linter="$1"
-    local lint_pid
-    local lint_exit_status
-
-    dbg_print "lint_proj($linter)" 4
-    dbg_print " running: ${linter_cmd["$linter"]}" 8
-
-    show_linter_action "$linter_name" "=====  entire project  ====="
-    #
-    #  In order to avoid some linters untrapping Ctrl-C
-    #  they are run in the background. Then some code to ensure the
-    #  exit code of the linter is captured
-    #
-    eval "${proj_linter_cmd["$linter"]}" >"$f_linter_output" 2>&1 &
-    lint_pid=$!
-    wait "$lint_pid"
-    lint_exit_status=$?
-    show_linter_time
-
-    if [[ "$lint_exit_status" -eq 0 ]]; then
-        return 0
-    else
-        if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
-            #
-            # prepending output with linter name, since when displaying
-            # output in fullecreen the previous lines indicating such is not
-            # visible
-            #
-            printf '0a\nProject linter used:\n%s\n\n.\nw\n' \
-                "${proj_linter_cmd["$linter"]}" | ed -s "$f_linter_output"
-            less -R "$f_linter_output"
-        else
-            cat "$f_linter_output"
-        fi
-        handle_linting_error
-    fi
-    return 1
-}
-
 lint_by_ext() {
     local dbg_indent=$dbg_indent
     local fname="$1"
@@ -1653,6 +1629,47 @@ lint_by_file_type() {
     dbg_print "Unsupported file_type - $file_type" 4
     return 1 # False - next file_type
 
+}
+
+lint_proj() {
+    local linter="$1"
+    local lint_pid
+    local lint_exit_status
+
+    dbg_print "lint_proj($linter)" 4
+    dbg_print " running: ${linter_cmd["$linter"]}" 8
+
+    show_linter_action "$linter_name" "=====  entire project  ====="
+    #
+    #  In order to avoid some linters untrapping Ctrl-C
+    #  they are run in the background. Then some code to ensure the
+    #  exit code of the linter is captured
+    #
+    eval "${proj_linter_cmd["$linter"]}" >"$f_linter_output" 2>&1 &
+    lint_pid=$!
+    wait "$lint_pid"
+    lint_exit_status=$?
+    show_linter_time
+
+    if [[ "$lint_exit_status" -eq 0 ]]; then
+        proj_lint_tasks_completed+=" $linter"
+        return 0
+    else
+        if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
+            #
+            # prepending output with linter name, since when displaying
+            # output in fullecreen the previous lines indicating such is not
+            # visible
+            #
+            printf '0a\nProject linter used:\n%s\n\n.\nw\n' \
+                   "${proj_linter_cmd["$linter"]}" | ed -s "$f_linter_output"
+            less -R "$f_linter_output"
+        else
+            cat "$f_linter_output"
+        fi
+        handle_linting_error
+    fi
+    return 1
 }
 
 #---------------------------------------------------------------
@@ -1844,7 +1861,9 @@ process_file_tree() {
 
     ! $show_excluded && [[ ${#proj_linter_order[@]} -gt 0 ]] && {
         for linter_name in "${proj_linter_order[@]}"; do
+            [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
             lint_proj "$linter_name"
+            maybe_update_cache
         done
     }
 
