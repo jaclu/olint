@@ -306,7 +306,6 @@ cache_write() {
     }
 
     # clear previous cache
-    echo "><> proj_lint_tasks_completed: [$proj_lint_tasks_completed]"
     echo "$olint_cache_version|$proj_lint_tasks_completed" >"$f_cache_file"
 
     # Loop through the array and write all lines in one go
