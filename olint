@@ -551,6 +551,7 @@ display_config() {
     # echo
     # echo "== State variables =="
     echo " verbosity_lvl:    $verbosity_lvl"
+    echo " cache update:     $t_cashe_interval seconds"
     echo " ignore_project:   $ignore_project"
     echo " mime_type_limit:  $mime_type_limit"
     echo " lint_continue:    $lint_continue"
