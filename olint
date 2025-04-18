@@ -1661,6 +1661,12 @@ lint_proj() {
 #
 #---------------------------------------------------------------
 
+show_exclude() {
+    local excl_type="$1"
+    local fname="$2"
+    printf "%-16s: %s\n" "$excl_type" "$fname"
+}
+
 should_fname_be_excluded() {
     #
     #  Check if fname matches exclusion rules
@@ -1678,21 +1684,21 @@ should_fname_be_excluded() {
     # Check if the filename matches any pattern
     for pattern in "${excluded_prefixes[@]}"; do
         [[ "$fname" =~ $pattern ]] && {
-            $show_excluded && show_linter_action "prefix" "$fname"
+            $show_excluded && show_exclude "prefix" "$fname"
             return 0
         }
     done
 
     for item in "${excludes[@]}"; do
         [[ "$fname" = "$item" ]] && {
-            $show_excluded && show_linter_action "excludes" "$fname"
+            $show_excluded && show_exclude "excludes" "$fname"
             return 0
         }
     done
 
     for item in "${excluded_suffixes[@]}"; do
         [[ "$fname" = *"$item" ]] && {
-            $show_excluded && show_linter_action "suffix" "$fname"
+            $show_excluded && show_exclude "suffix" "$fname"
             return 0
         }
     done
@@ -1700,7 +1706,7 @@ should_fname_be_excluded() {
     rel_fname="$(basename "$fname")"
     for item in "${excluded_basenames[@]}"; do
         [[ "$rel_fname" = "$item" ]] && {
-            $show_excluded && show_linter_action "basename" "$fname"
+            $show_excluded && show_exclude "basename" "$fname"
             return 0
         }
     done
@@ -1708,7 +1714,7 @@ should_fname_be_excluded() {
     for item in "${excluded_basename_prefixes[@]}"; do
         [[ "$rel_fname" = "$item"* ]] && {
             $show_excluded && {
-                show_linter_action "basename prefix" "$fname"
+                show_exclude "basename prefix" "$fname"
             }
             return 0
         }
@@ -1830,7 +1836,7 @@ process_file_tree() {
         $do_lint_files || {
             $linter_found || {
                 ((files_without_matching_linter++))
-                show_linter_action "= No linter =" "$fname"
+                show_exclude "= No linter =" "$fname"
             }
         }
     done
