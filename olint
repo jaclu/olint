@@ -556,14 +556,14 @@ display_config() {
     echo " olint_plugin_dir: $olint_plugin_dir"
     echo
 
-    echo "==  Linters defined  =="
+    echo "==  Linters available  =="
     for linter_name in "${linter_order[@]}"; do
         echo " $linter_name  - ${linter_cmd[$linter_name]}"
     done
     echo
 
     [[ ${#proj_linter_order[@]} -gt 0 ]] && {
-        echo "==  Linters handling the entire project defined  =="
+        echo "==  Linters handling the entire project  =="
         for linter_name in "${proj_linter_order[@]}"; do
             echo " $linter_name  - ${proj_linter_cmd[$linter_name]}"
         done
