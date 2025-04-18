@@ -882,13 +882,17 @@ env_cleanup() {
 
     [[ -n "$t_app_start" ]] && $do_lint_files && {
         duration=$(($(date +%s) - t_app_start))
-        printf 'olint processing time: '
-        display_time_elapsed "$duration"
-        printf '\n'
-        [[ "$verbosity_lvl" -ge 1 ]] && {
-            echo
-            echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
-            [[ "$verbosity_lvl" -lt 2 ]] && echo "run with -v 2 to see cached files listed"
+        [[ "$duration" -gt 0 ]] && {
+            printf 'olint processing time: '
+            display_time_elapsed "$duration"
+            printf '\n'
+            [[ "$verbosity_lvl" -ge 1 ]] && {
+                echo
+                echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
+                [[ "$verbosity_lvl" -lt 2 ]] && {
+                    echo "run with -v 2 to see cached files listed"
+                }
+            }
         }
     }
     exit "$ex_code"
