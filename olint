@@ -58,7 +58,7 @@ dbg_print() {
         local dbg_indent=1
     }
     [[ "$verbosity_lvl" -lt "$this_verbose_level" ]] && return
-    printf "%s>%*s%s\\n" "$this_verbose_level" "$dbg_indent" "" "$msg" >&2
+    printf '%s>%*s%s\n' "$this_verbose_level" "$dbg_indent" "" "$msg" >&2
 }
 
 #---------------------------------------------------------------
@@ -287,17 +287,17 @@ cache_write() {
         return
     }
 
-    dbg_print "cache_write()" 3
+    dbg_print "cache_write()" "$dbglvl_cache_events_basic"
     ((dbg_indent++)) # increase indent until this returns
 
     $do_lint_files || {
-        dbg_print "$not_linting_msg" 3
+        dbg_print "$not_linting_msg" "$dbglvl_cache_events_basic"
         return
     }
 
     # If no changes have happened, no need to save cache
     $cache_is_changed || {
-        dbg_print "skipped task due to no changes" 3
+        dbg_print "skipped task due to no changes" "$dbglvl_cache_events_basic"
         return
     }
 
@@ -344,22 +344,22 @@ cache_read() {
         return
     }
 
-    dbg_print "cache_read()" 2
+    dbg_print "cache_read()" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
 
     $do_lint_files || {
-        dbg_print "$not_linting_msg" 2
+        dbg_print "$not_linting_msg" "$dbglvl_major_tasks"
         return
     }
 
     # Check if the file exists and is readable
     if [[ -r "$f_cache_file" ]]; then
-        dbg_print "found cache file: $f_cache_file" 4
+        dbg_print "found cache file: $f_cache_file" "$dbglvl_cache_events_basic"
 
         # Read each line of the file and add to the array
 
         while IFS= read -r cached_line; do
-            dbg_print "read line: $cached_line" 4
+            dbg_print "read line: $cached_line" "$dbglvl_cache_events_basic"
             if $waiting_for_header; then
                 cache_version="$(echo "$cached_line" | cut -d'|' -f1)"
                 proj_lint_tasks_completed="$(echo "$cached_line" | cut -d'|' -f2)"
@@ -378,7 +378,8 @@ cache_read() {
                     break
                 }
                 waiting_for_header=false
-                dbg_print "found correct header: $olint_cache_version" 4
+                dbg_print "found correct header: $olint_cache_version" \
+                    "$dbglvl_cache_events_basic"
                 continue
             else
                 IFS='|' read -r f_mtime f_date f_name <<<"$cached_line"
@@ -402,7 +403,7 @@ get_cache_item() {
     local dbg_indent=$dbg_indent
     local cached_item
 
-    dbg_print "get_cache_item($f_to_check)" "$dbglvl_cache_events_more" 2
+    dbg_print "get_cache_item($f_to_check)" "$dbglvl_cache_events_more"
     ((dbg_indent++)) # increase indent until this returns
 
     #
@@ -411,7 +412,7 @@ get_cache_item() {
     #
     cached_item="${cache_old["$f_to_check"]}"
     [[ -n "$cached_item" ]] || {
-        dbg_print "item not found" "$((dbglvl_cache_events_more + 1))" 2
+        dbg_print "item not found" "$((dbglvl_cache_events_more + 1))"
         return 1
     }
     f_name="$f_to_check"
@@ -503,6 +504,10 @@ $(display_hidden_excludes)
                     To avoid a long running process lossing all progress due to
                     a lost connection.
 -v, --verbose       Set verbosity level, level must also be supplied
+                    1 - Show gathering of available plugins,
+                        Total processing times, nr of files linted
+                    2 - List files already linted (cached)
+                    Higher levels are mostly for debugging
 -z, --zapcache      Remove cache file if present, then exit
 -Z, --zaprun        First remove cache if present, then continue
 number              Only check files changed in the last number hours
@@ -527,7 +532,7 @@ display_config() {
     local lst
     local item
 
-    dbg_print "display_config()" "$dbglvl_lintscan_basic" 2
+    dbg_print "display_config()" "$dbglvl_lintscan_basic"
 
     echo "=== Configuration   ==="
     echo
@@ -754,7 +759,6 @@ defaults_for_prog_config_file() {
 }
 
 olint_venv_enable() {
-    dbg_print "olint_venv_enable()" 2
     # shellcheck disable=SC2154
     if [[ -d "$d_linting_venv" ]] &&
         [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
@@ -768,9 +772,7 @@ olint_venv_enable() {
 }
 
 olint_venv_disable() {
-    dbg_print "olint_venv_disable()" 2
     $b_olint_venv_enabled && {
-        dbg_print "deactivating alpine_linting_venv" 3
         echo "===  de-activating olint venv  ===" >/dev/stderr
         deactivate || error_msg "Failed to deactivate alpine linting venv"
     }
@@ -842,10 +844,14 @@ initialize_env() {
     #  Some debug level constants, to make it easier to limit what
     #  is displayed
 
-    dbglvl_cache_events_basic=4
+    dbglvl_no_changes=2
+    dbglvl_major_tasks=3
+    dbglvl_cache_events_basic=6
     dbglvl_cache_events_more="$((dbglvl_cache_events_basic + 1))"
-    dbglvl_lintscan_basic=4
+    dbglvl_lintscan_basic=6
     dbglvl_lintscan_details="$((dbglvl_lintscan_basic + 1))"
+    dbglvl_lint_file_basic=7
+    dbglvl_lint_file=8
     dbglvl_data_types=9
 }
 
@@ -865,22 +871,27 @@ env_cleanup() {
     proj_lint_tasks_completed=""
 
     cache_write
-    [[ -n "$t_app_start" ]] && $do_lint_files && {
-        duration=$(($(date +%s) - t_app_start))
-        printf '\nProcessing time: '
-        display_time_elapsed "$duration"
-        printf '\n'
-        echo
-        echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
-        [[ "$verbosity_lvl" -lt 1 ]] && echo "run with -v 1 to see cached files listed"
-    }
     rm -f "$f_linter_output"
+
+    olint_venv_disable
+
     [[ $ex_code -gt 1 ]] && {
         echo
         echo "*****  olint exited with an error  *****"
+        echo
     }
-    olint_venv_disable
 
+    [[ -n "$t_app_start" ]] && $do_lint_files && {
+        duration=$(($(date +%s) - t_app_start))
+        printf 'olint processing time: '
+        display_time_elapsed "$duration"
+        printf '\n'
+        [[ "$verbosity_lvl" -ge 1 ]] && {
+            echo
+            echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
+            [[ "$verbosity_lvl" -lt 2 ]] && echo "run with -v 2 to see cached files listed"
+        }
+    }
     exit "$ex_code"
 }
 
@@ -889,14 +900,14 @@ source_file() {
     local f_name="$1"
     local dbg_indent=$dbg_indent
 
-    dbg_print "source_file($f_name)" 3
+    dbg_print "source_file($f_name)" "$dbglvl_lintscan_details"
     # only indent if func name is displayed
     [[ "$verbosity_lvl" -gt 2 ]] && ((dbg_indent++))
 
     if [[ -f "$f_name" ]]; then
         # shellcheck source=/dev/null
         source "$f_name" || error_msg "Failed to source: $f_name"
-        dbg_print "Sourced: $f_name" 2
+        dbg_print "Sourced: $f_name" "$dbglvl_lintscan_details"
         return 0
     else
         dbg_print "source_file() - File not found: $f_name" 1
@@ -909,7 +920,7 @@ read_config_file() {
     local found_issue=false
     local msg
 
-    dbg_print "read_config_file($f_config)" 2
+    dbg_print "read_config_file($f_config)" "$dbglvl_major_tasks"
 
     source_file "$f_config" || {
         error_msg "Failed to source config file: $f_config"
@@ -955,7 +966,7 @@ read_config_file() {
 get_proj_config_recursive() {
     local dbg_indent=$dbg_indent
 
-    dbg_print "get_proj_config_recursive()" 2
+    dbg_print "get_proj_config_recursive()" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
 
     # Traverse up until a project conf is found
@@ -965,15 +976,15 @@ get_proj_config_recursive() {
     # Traverse up the directory tree
     while [[ "$dir" != "/" ]]; do
         olint_cfg_proj="$dir"/"$bname_proj_config"
-        dbg_print "Checking for config in: $dir" 2
+        dbg_print "Checking for config in: $dir" "$dbglvl_major_tasks"
         if [[ -f "$olint_cfg_proj" ]]; then
             cd "$dir" || {
                 error_msg "get_proj_config_recursive() failed to cd into: $dir"
             }
             read_config_file "$olint_cfg_proj"
-            dbg_print "Using Project file: $olint_cfg_proj" 1
+            dbg_print "Using Project file: $olint_cfg_proj" "$dbglvl_major_tasks"
             f_cache_file="$dir/$bname_cache"
-            dbg_print "Will use cache file: $f_cache_file" 1
+            dbg_print "Will use cache file: $f_cache_file" "$dbglvl_major_tasks"
             return
         fi
         dir=$(dirname "$dir")
@@ -1006,7 +1017,7 @@ filter_hidden_vs_actually_excluded_patterns() {
 get_config() {
     local dbg_indent=$dbg_indent
 
-    dbg_print "get_config()" 2
+    dbg_print "get_config()" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
 
     mkdir -p "$olint_cfg_dir" || {
@@ -1138,7 +1149,7 @@ process_linter_overrides() {
     local new_cmd
     local cmd_ok
 
-    dbg_print "process_linter_overrides()" 2
+    dbg_print "process_linter_overrides()" "$dbglvl_major_tasks"
     for linter_override in "${!override_linter_cmd[@]}"; do
         if ! str_in_array "$linter_override" "${linter_order[@]}" &&
             ! str_in_array "$linter_override" "${proj_linter_order[@]}"; then
@@ -1170,14 +1181,14 @@ check_linter_plugins() {
     local plugin_count=0
     local file_type
 
-    printf 'Gathering available linters: '
+    [[ "$verbosity_lvl" -ge 1 ]] && printf 'Gathering available linters: '
     if [[ -z "$d_plugins" ]]; then
         error_msg "check_linter_plugins() - called with no param"
     elif [[ ! -d "$d_plugins" ]]; then
         error_msg "Plugin folder missing: $d_plugins"
     fi
 
-    dbg_print "check_linter_plugins($d_plugins)" 2
+    dbg_print "check_linter_plugins($d_plugins)" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
 
     # Loop through each file in alphabetical order
@@ -1191,16 +1202,18 @@ check_linter_plugins() {
         f_plugin_override="$d_plugin_overrides/$_p"
         if [[ -f "$f_plugin_override" ]]; then
             dbg_print "using plugin_override: $f_plugin_override" 1
-            parse_plugin_file "$f_plugin_override" && printf '+'
+            parse_plugin_file "$f_plugin_override" && [[ "$verbosity_lvl" -ge 1 ]] && {
+                printf '+'
+            }
         else
-            parse_plugin_file "$plugin_def" && printf '.'
+            parse_plugin_file "$plugin_def" && [[ "$verbosity_lvl" -ge 1 ]] && printf '.'
         fi
     done
     [[ "$plugin_count" -eq 0 ]] && {
         error_msg "No plugins found in: $d_plugins"
     }
     process_linter_overrides
-    echo " done!"
+    [[ "$verbosity_lvl" -ge 1 ]] && echo " done!"
 }
 
 parse_plugin_file() {
@@ -1431,7 +1444,7 @@ verify_lint_cmd() {
     else
         error_msg "Failed to parse lint cmd: $lint_cmd"
     fi
-    # dbg_print "result [$cmd_parsed]" 2
+    # dbg_print "result [$cmd_parsed]" "$dbglvl_lintscan_details"
 }
 
 sort_linters() {
@@ -1473,7 +1486,7 @@ handle_linting_error() {
     #  Either write out already processed files to cache and then exit
     #  or continue based upon
     #
-    dbg_print "handle_linting_error()" 2
+    dbg_print "handle_linting_error()" "$dbglvl_major_tasks"
     $lint_continue && return
     env_cleanup 2
 }
@@ -1507,8 +1520,8 @@ lint_file() {
     local lint_pid
     local lint_exit_status
 
-    dbg_print "lint_file($linter, $fname)" 4
-    dbg_print " running: ${linter_cmd["$linter"]} $fname" 8
+    dbg_print "lint_file($linter, $fname)" "$dbglvl_lint_file_basic"
+    dbg_print " running: ${linter_cmd["$linter"]} $fname" "$dbglvl_lint_file"
 
     #
     #  In order to avoid some linters untrapping Ctrl-C
@@ -1549,7 +1562,7 @@ lint_by_ext() {
     local linter_found_issue
     local linter
 
-    dbg_print "lint_by_ext($fname)" 3
+    dbg_print "lint_by_ext($fname)" "$dbglvl_lintscan_details"
     ((dbg_indent++)) # increase indent until this returns
 
     extension="${fname##*.}"
@@ -1576,7 +1589,7 @@ lint_by_ext() {
             }
             linter_found=true
             $do_lint_files || {
-                dbg_print "$not_linting_msg" 4
+                dbg_print "$not_linting_msg" "$dbglvl_lint_file_basic"
                 return 0 # True - next file
             }
             show_linter_action "$linter" "$fname"
@@ -1584,7 +1597,7 @@ lint_by_ext() {
             show_linter_time
         done
         if $linter_found; then
-            dbg_print "processed by ext handler - $fname" 3
+            dbg_print "processed by ext handler - $fname" "$dbglvl_lintscan_details"
             $linter_found_issue || {
                 cache_add "$fname"
             }
@@ -1603,7 +1616,7 @@ lint_by_file_type() {
     local lf_type
     local linter
 
-    dbg_print "lint_by_file_type($file_type)" 3
+    dbg_print "lint_by_file_type($file_type)" "$dbglvl_lintscan_basic"
     ((dbg_indent++)) # increase indent until this returns
 
     linter_found_issue=false
@@ -1621,7 +1634,7 @@ lint_by_file_type() {
             }
             linter_found=true
             $do_lint_files || {
-                dbg_print "$not_linting_msg" 4
+                dbg_print "$not_linting_msg" "$dbglvl_lint_file_basic"
                 return 0 # True - next file
             }
             show_linter_action "$linter" "$fname"
@@ -1639,7 +1652,7 @@ lint_by_file_type() {
         }
         return 0 # True - next file
     fi
-    dbg_print "Unsupported file_type - $file_type" 4
+    dbg_print "Unsupported file_type - $file_type" "$dbglvl_lint_file_basic"
     return 1 # False - next file_type
 
 }
@@ -1649,8 +1662,8 @@ lint_proj() {
     local lint_pid
     local lint_exit_status
 
-    dbg_print "lint_proj($linter)" 4
-    dbg_print " running: ${linter_cmd["$linter"]}" 8
+    dbg_print "lint_proj($linter)" "$dbglvl_lint_file_basic"
+    dbg_print " running: ${linter_cmd["$linter"]}" "$dbglvl_lint_file"
 
     show_linter_action "$linter_name" "=====  entire project  ====="
     #
@@ -1758,9 +1771,9 @@ generate_list_of_files_to_process() {
     #  Sets all_files to be a reverse chronological order list
     #  of all files in the current file tree
     #
-    dbg_print "generate_list_of_files_to_process()" 2
+    dbg_print "generate_list_of_files_to_process()" "$dbglvl_data_types"
 
-    printf "Generating sorted tree of all files..."
+    [[ "$verbosity_lvl" -ge 1 ]] && printf "Generating sorted tree of all files..."
 
     if [[ $kernel_name == "Darwin" ]]; then
         # macOS version
@@ -1780,11 +1793,11 @@ generate_list_of_files_to_process() {
                 sort -n -r -k1,1 | cut -d' ' -f2-)
         fi
     fi
-    dbg_print "all_files:" 2
+    dbg_print "all_files:" "$dbglvl_data_types"
     for f in "${all_files[@]}"; do
-        dbg_print "  $f" 2
+        dbg_print "  $f" "$dbglvl_data_types"
     done
-    echo "done!"
+    [[ "$verbosity_lvl" -ge 1 ]] && echo "done!"
 }
 
 process_file_tree() {
@@ -1802,7 +1815,7 @@ process_file_tree() {
     local file_types
     local file_type
 
-    dbg_print "process_file_tree()" 2
+    dbg_print "process_file_tree()" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
 
     generate_list_of_files_to_process
@@ -1821,19 +1834,19 @@ process_file_tree() {
         should_fname_be_excluded "$fname" && continue
         $show_excluded && continue
 
-        dbg_print "Examining file: $fname" 2
+        dbg_print "Examining file: $fname" "$dbglvl_major_tasks"
         ((dbg_indent++)) # increase indent until this returns
 
         # abort if a time limit was set
         recent_enough "$fname" || {
-            dbg_print "too old to be processed" 4
+            dbg_print "too old to be processed" "$dbglvl_lint_file_basic"
             # maintain file in new cache
             $use_cache && filename_is_cached "$fname"
             continue
         }
 
         $use_cache && filename_is_cached "$fname" && {
-            $do_lint_files && dbg_print "no changes: $fname" 1
+            $do_lint_files && dbg_print "no changes: $fname" "$dbglvl_no_changes"
             continue
         }
 
