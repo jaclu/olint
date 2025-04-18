@@ -1444,7 +1444,7 @@ show_linter_action() {
     local fname="$2"
 
     # Print using printf with fixed-width formatting
-    printf "%-14s: %s" "$linter" "$fname"
+    printf "%-14s: %s " "$linter" "$fname"
     t_lint_start="$(date +%s)"
 }
 
@@ -1493,6 +1493,7 @@ lint_file() {
     if [[ "$lint_exit_status" -eq 0 ]]; then
         return 0
     else
+        echo  # start error display on new line
         if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
             #
             # prepending output with linter and file name, since when
