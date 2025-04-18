@@ -1479,7 +1479,7 @@ show_linter_time() {
     local duration
 
     duration=$(($(date +%s) - t_lint_start))
-    if [[ "$duration" -gt 1 ]]; then
+    if [[ "$duration" -gt 3 ]]; then
         printf '  - '
         display_time_elapsed "$duration"
     fi
