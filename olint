@@ -1493,7 +1493,7 @@ lint_file() {
     if [[ "$lint_exit_status" -eq 0 ]]; then
         return 0
     else
-        echo  # start error display on new line
+        printf '\n\n' # start error display on new line
         if [[ "$(wc -l <"$f_linter_output")" -gt 30 ]]; then
             #
             # prepending output with linter and file name, since when
