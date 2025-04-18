@@ -1167,7 +1167,7 @@ check_linter_plugins() {
     local plugin_count=0
     local file_type
 
-    printf 'Gathering available plugins: '
+    printf 'Gathering available linters: '
     if [[ -z "$d_plugins" ]]; then
         error_msg "check_linter_plugins() - called with no param"
     elif [[ ! -d "$d_plugins" ]]; then
