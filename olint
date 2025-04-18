@@ -1441,9 +1441,9 @@ show_linter_action() {
     local linter="$1"
     local fname="$2"
 
-    t_lint_start="$(date +%s)"
     # Print using printf with fixed-width formatting
     printf "%-14s: %s" "$linter" "$fname"
+    t_lint_start="$(date +%s)"
 }
 
 show_linter_time() {
@@ -1452,6 +1452,10 @@ show_linter_time() {
     duration=$(($(date +%s) - t_lint_start))
     if [[ "$duration" -gt 1 ]]; then
         if ((duration >= 15)); then
+            #
+            # Show long times in h:m:s notation even if time hasn't passed the
+            # minute mark, in order to make them stand out
+            #
             local hours minutes seconds
 
             hours=$((duration / 3600))
@@ -1638,7 +1642,7 @@ lint_proj() {
             # visible
             #
             printf '0a\nProject linter used:\n%s\n\n.\nw\n' \
-                   "${proj_linter_cmd["$linter"]}" | ed -s "$f_linter_output"
+                "${proj_linter_cmd["$linter"]}" | ed -s "$f_linter_output"
             less -R "$f_linter_output"
         else
             cat "$f_linter_output"
