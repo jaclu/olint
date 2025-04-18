@@ -504,8 +504,7 @@ $(display_hidden_excludes)
                     To avoid a long running process lossing all progress due to
                     a lost connection.
 -v, --verbose       Set verbosity level, level must also be supplied
-                    1 - Show gathering of available plugins,
-                        Total processing times, nr of files linted
+                    1 - Show gathering of available plugins & nr of files linted
                     2 - List files already linted (cached)
                     Higher levels are mostly for debugging
 -z, --zapcache      Remove cache file if present, then exit
