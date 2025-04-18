@@ -6,7 +6,7 @@
 
 # Installation methods;
 #   brew install jsonlint
-#   pip3 install jsonlint (installs but doesn't seem to provide any binary) 
+#   pip3 install jsonlint (installs but doesn't seem to provide any binary)
 #   (Ubuntu)
 #      sudo apt install nodejs npm
 #      sudo npm install -g jsonlint
@@ -21,4 +21,5 @@ plugin_extensions=(
 # file-types this plugin handles
 plugin_file_types=(
     "JSON data"
+    "JSON text data"
 )
