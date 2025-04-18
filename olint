@@ -1471,7 +1471,7 @@ show_linter_action() {
     local fname="$2"
 
     # Print using printf with fixed-width formatting
-    printf "%-14s: %s " "$linter" "$fname"
+    printf "%-16s: %s " "$linter" "$fname"
     t_lint_start="$(date +%s)"
 }
 
@@ -1857,7 +1857,7 @@ process_file_tree() {
     done
     trap '' INT # abort capturing Ctrl-C
 
-    ! $show_excluded && [[ ${#proj_linter_order[@]} -gt 0 ]] && {
+    $do_lint_files && ! $show_excluded && [[ ${#proj_linter_order[@]} -gt 0 ]] && {
         for linter_name in "${proj_linter_order[@]}"; do
             [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
 
