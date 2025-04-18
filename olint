@@ -671,9 +671,27 @@ display_hidden_excludes() {
     done
 }
 
+display_time_elapsed() {
+    local duration="$1"
+    if ((duration >= 15)); then
+        #
+        # Show long times in h:m:s notation even if time hasn't passed the
+        # minute mark, in order to make them stand out
+        #
+        local hours minutes seconds
+
+        hours=$((duration / 3600))
+        minutes=$(((duration % 3600) / 60))
+        seconds=$((duration - hours * 3600 - minutes * 60))
+        printf '%02d:%02d:%02d' "$hours" "$minutes" "$seconds"
+    else
+        printf '%ss' "$duration"
+    fi
+}
+
 #---------------------------------------------------------------
 #
-#   Setup env
+#   Handle env
 #
 #---------------------------------------------------------------
 
@@ -841,22 +859,29 @@ env_cleanup() {
     #    9 - error_msg no param
     #
     #
-    ex_code="${1:-1}"
+    local duration
+    local ex_code="${1:-1}"
 
     # when completed, clear this so that on next run all proj linters are run
     proj_lint_tasks_completed=""
 
     cache_write
-    echo
-    echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
-    [[ "$verbosity_lvl" -lt 1 ]] && echo "run with -v 1 to see cached files listed"
-
+    [[ -n "$t_app_start" ]] && $do_lint_files && {
+        duration=$(($(date +%s) - t_app_start))
+        printf '\nProcessing time: '
+        display_time_elapsed "$duration"
+        printf '\n'
+        echo
+        echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
+        [[ "$verbosity_lvl" -lt 1 ]] && echo "run with -v 1 to see cached files listed"
+    }
     rm -f "$f_linter_output"
     [[ $ex_code -gt 1 ]] && {
         echo
         echo "*****  olint exited with an error  *****"
     }
     consider_disabling_alpine_linting_venv
+
     exit "$ex_code"
 }
 
@@ -1038,10 +1063,12 @@ parse_cmd_line() {
         -e | --excluded)
             show_excluded=true
             skip_common_excludes=true
+            do_lint_files=false
             ;;
         -E | --excluded-all)
             show_excluded=true
             skip_common_excludes=false
+            do_lint_files=false
             ;;
         -m | --mime-type) mime_type_limit=true ;;
         -n | --no-linter) do_lint_files=false ;;
@@ -1453,20 +1480,8 @@ show_linter_time() {
 
     duration=$(($(date +%s) - t_lint_start))
     if [[ "$duration" -gt 1 ]]; then
-        if ((duration >= 15)); then
-            #
-            # Show long times in h:m:s notation even if time hasn't passed the
-            # minute mark, in order to make them stand out
-            #
-            local hours minutes seconds
-
-            hours=$((duration / 3600))
-            minutes=$(((duration % 3600) / 60))
-            seconds=$((duration - hours * 3600 - minutes * 60))
-            printf '  - %02d:%02d:%02d' "$hours" "$minutes" "$seconds"
-        else
-            printf '  - %ss' "$duration"
-        fi
+        printf '  - '
+        display_time_elapsed "$duration"
     fi
     echo # always apply a LF
 }
@@ -1925,6 +1940,7 @@ $use_cache || {
 }
 echo
 
+t_app_start=$(date +%s)
 cache_read ### R
 process_file_tree
 env_cleanup 0
