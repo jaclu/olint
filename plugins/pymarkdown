@@ -13,8 +13,7 @@
 # plugins.md033.allowed_elements = "nbsp"
 
 plugin_cmd="pymarkdown scan"
-# If used on the whole project
-# proj_plugin_cmd="pymarkdown scan -r ."
+proj_plugin_cmd="pymarkdown scan -r ."
 
 # file extensions this plugin handles
 plugin_extensions=(

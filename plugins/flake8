@@ -32,11 +32,11 @@ if [[ -n "$(command -v ruff)" ]]; then
     #   missing: plugin_cmd
     #
     plugin_cmd="/dev/null"
+    proj_plugin_cmd="/dev/null"
 else
     _cmd="flake8 --color=always"
     plugin_cmd="$_cmd"
-    # If used on the whole project
-    # proj_plugin_cmd="$_cmd"
+    proj_plugin_cmd="$_cmd"
 
     # iSH doesn't support flake8 multiprocessing
     [[ -d /proc/ish ]] && [[ -n "$proj_plugin_cmd" ]] && proj_plugin_cmd+=" -j 1"

@@ -28,10 +28,10 @@ if [[ -n "$(command -v ruff)" ]]; then
     #   missing: plugin_cmd
     #
     plugin_cmd="/dev/null"
+    proj_plugin_cmd="/dev/null"
 else
     plugin_cmd="black"
-    # If used on the whole project
-    # proj_plugin_cmd="black ."
+    proj_plugin_cmd="black ."
 fi
 
 plugin_priority=60

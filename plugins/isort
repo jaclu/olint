@@ -22,10 +22,10 @@ if [[ -n "$(command -v ruff)" ]]; then
     #   missing: plugin_cmd
     #
     plugin_cmd="/dev/null"
+    proj_plugin_cmd="/dev/null"
 else
     plugin_cmd="isort"
-    # If used on the whole project
-    # proj_plugin_cmd="isort --gitignore ."
+    proj_plugin_cmd="isort --gitignore ."
 fi
 
 plugin_priority=58

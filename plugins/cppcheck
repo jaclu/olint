@@ -8,6 +8,7 @@
 #  (Alpine) sudo apk add cppcheck
 
 plugin_cmd="cppcheck"
+proj_plugin_cmd="cppcheck ."
 
 # file extensions this plugin handles
 plugin_extensions=(

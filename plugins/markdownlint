@@ -15,8 +15,7 @@
 # sample: https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
 
 plugin_cmd="markdownlint"
-# If used on the whole project
-# proj_plugin_cmd="markdownlint ."
+proj_plugin_cmd="markdownlint ."
 
 # file extensions this plugin handles
 plugin_extensions=(

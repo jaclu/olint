@@ -91,7 +91,11 @@ excluded_basename_prefixes+=(
     # test_  # Example: Exclude files that start with 'test_'.
 )
 
-# Per-project linter command overrides.
+# List linters that should run on the whole project, not on individual files
+project_linters+=(
+)
+
+# linter command overrides.
 # Use these overrides to customize how specific linters are executed for
 # this project.
 #

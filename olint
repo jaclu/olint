@@ -711,7 +711,7 @@ defaults_for_cmdline_options() {
     h_max_age=0                # no max file age for items to be processed
 }
 
-defaults_for_config_file_excludes() {
+defaults_for_prog_config_file() {
     ignore_project=no
 
     skip_linters=() # plugins to skip in this project
@@ -747,6 +747,9 @@ defaults_for_config_file_excludes() {
     )
     excluded_basename_prefixes=( # excludes by basename prefix
         \#
+    )
+    project_linters=(
+        codespell # Normally always used as a project linter
     )
 }
 
@@ -800,7 +803,7 @@ initialize_env() {
     b_olint_venv_enabled=false
 
     defaults_for_cmdline_options
-    defaults_for_config_file_excludes
+    defaults_for_prog_config_file
 
     #  -----   linting env   -----
 
@@ -1237,10 +1240,11 @@ parse_plugin_file() {
         }
     done
 
-    #
-    #  First check if it is a project wide lint command
-    #
-    [[ -n "$proj_plugin_cmd" ]] && {
+    if [[ " ${project_linters[*]} " == *" $plugin_name "* ]]; then
+        [[ -z "$proj_plugin_cmd" ]] && {
+            _m="$plugin_name listed as project_linter, but no proj_plugin_cmd defined"
+            error_msg "$_m"
+        }
         cmd_ok="$(verify_lint_cmd "$proj_plugin_cmd")"
         [[ -n "$cmd_ok" ]] && {
             # Handle it as a project spanning linter
@@ -1248,7 +1252,20 @@ parse_plugin_file() {
             proj_linter_order+=("$plugin_name")
             return 0
         }
-    }
+        return 1
+    fi
+    # #
+    # #  First check if it is a project wide lint command
+    # #
+    # [[ -n "$proj_plugin_cmd" ]] && {
+    #     cmd_ok="$(verify_lint_cmd "$proj_plugin_cmd")"
+    #     [[ -n "$cmd_ok" ]] && {
+    #         # Handle it as a project spanning linter
+    #         proj_linter_cmd["$plugin_name"]="$cmd_ok"
+    #         proj_linter_order+=("$plugin_name")
+    #         return 0
+    #     }
+    # }
 
     #
     #  Handle it as a normal lint command
