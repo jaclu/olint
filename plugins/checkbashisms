@@ -6,7 +6,7 @@
 
 # Installation methods;
 #  brew install checkbashisms
-#  (Debian) sudo apt install devscripts (not avilable on Termux)
+#  (Debian) sudo apt install devscripts (not available on Termux)
 #  (Alpine) sudo apk add checkbashisms
 
 plugin_cmd="checkbashisms -n -x "
