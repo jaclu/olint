@@ -481,7 +481,8 @@ show_help() {
     prog_name=$(basename "$0")
     #region help text
     echo "
-Usage: $prog_name [-h] [-c] [-C] [--config-dir] [-e] [-E] [-m] [-n] [-N] [-s] [-u time] [-v verbosity_lvl] [-z] [-Z] [number]
+Usage: olint [-h] [-c] [-C] [--config-dir] [-e] [-E] [-m] [-n] [-N] [-s]
+                [-u time] [-v verbosity_lvl] [-z] [-Z] [number]
 
 Lint all files recursively in reverse chronological order.
 
@@ -1169,6 +1170,7 @@ check_linter_plugins() {
     local plugin_count=0
     local file_type
 
+    printf 'Gathering available plugins: '
     if [[ -z "$d_plugins" ]]; then
         error_msg "check_linter_plugins() - called with no param"
     elif [[ ! -d "$d_plugins" ]]; then
@@ -1181,23 +1183,33 @@ check_linter_plugins() {
     # Loop through each file in alphabetical order
     for plugin_def in "$d_plugins"/*; do
         [[ ! -f "$plugin_def" ]] && continue
-        ((plugin_count += 1))
-
         # skip files ending with ~
         [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
+
+        ((plugin_count += 1))
+        # printf '.'
         # Process the file here
         f_plugin_override="$d_plugin_overrides/$(basename "$plugin_def")"
         if [[ -f "$f_plugin_override" ]]; then
             dbg_print "using plugin_override: $f_plugin_override" 1
-            parse_plugin_file "$f_plugin_override"
+            if parse_plugin_file "$f_plugin_override"; then
+                printf '+'
+                pintf ' %s' "$f_plugin_override"
+            else
+                printf '\nnot using: %s [%s]\n' "$plugin_def" "$f_plugin_override"
+            fi
         else
-            parse_plugin_file "$plugin_def"
+            if parse_plugin_file "$plugin_def"; then
+                # printf '%s ' 
+                printf '.'
+            fi
         fi
     done
     [[ "$plugin_count" -eq 0 ]] && {
         error_msg "No plugins found in: $d_plugins"
     }
     process_linter_overrides
+    echo " - done!"
 }
 
 parse_plugin_file() {
@@ -1938,7 +1950,6 @@ $lint_continue && echo "Will continue with next file if linter found issues"
 $use_cache || {
     echo "Will not use cache for checked files"
 }
-echo
 
 t_app_start=$(date +%s)
 cache_read ### R
