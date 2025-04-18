@@ -476,9 +476,6 @@ cache_add() {
 #---------------------------------------------------------------
 
 show_help() {
-    local prog_name
-
-    prog_name=$(basename "$0")
     #region help text
     echo "
 Usage: olint [-h] [-c] [-C] [--config-dir] [-e] [-E] [-m] [-n] [-N] [-s]
@@ -1187,29 +1184,20 @@ check_linter_plugins() {
         [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
 
         ((plugin_count += 1))
-        # printf '.'
-        # Process the file here
-        f_plugin_override="$d_plugin_overrides/$(basename "$plugin_def")"
+        _p="$(basename "$plugin_def")"
+        f_plugin_override="$d_plugin_overrides/$_p"
         if [[ -f "$f_plugin_override" ]]; then
             dbg_print "using plugin_override: $f_plugin_override" 1
-            if parse_plugin_file "$f_plugin_override"; then
-                printf '+'
-                pintf ' %s' "$f_plugin_override"
-            else
-                printf '\nnot using: %s [%s]\n' "$plugin_def" "$f_plugin_override"
-            fi
+            parse_plugin_file "$f_plugin_override" && printf '+'
         else
-            if parse_plugin_file "$plugin_def"; then
-                # printf '%s ' 
-                printf '.'
-            fi
+            parse_plugin_file "$plugin_def" && printf '.'
         fi
     done
     [[ "$plugin_count" -eq 0 ]] && {
         error_msg "No plugins found in: $d_plugins"
     }
     process_linter_overrides
-    echo " - done!"
+    echo " done!"
 }
 
 parse_plugin_file() {
@@ -1928,7 +1916,6 @@ $do_show_help && {
     show_help || error_msg "show_help() failure"
     env_cleanup 0
 }
-
 
 olint_venv_enable
 if [[ -d "$olint_plugin_dir" ]]; then
