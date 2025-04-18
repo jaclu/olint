@@ -1917,6 +1917,8 @@ $do_show_help && {
     env_cleanup 0
 }
 
+
+olint_venv_enable
 if [[ -d "$olint_plugin_dir" ]]; then
     check_linter_plugins "$olint_plugin_dir"
 else
@@ -1940,6 +1942,5 @@ echo
 
 t_app_start=$(date +%s)
 cache_read ### R
-olint_venv_enable
 process_file_tree
 env_cleanup 0
