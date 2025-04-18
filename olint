@@ -267,7 +267,8 @@ maybe_update_cache() {
     t=$(("$(date +%s)" - t_cache_age))
     [[ "$t" -ge "$t_cashe_interval" ]] && {
         cache_write
-        printf ' - cache updated, files processed so far: %d\n' "${#cache_new[@]}"
+        printf '  %s - cache updated, files processed so far: %d\n' \
+            "$(date +'%Y-%m-%d %H:%M:%S')" "${#cache_new[@]}"
         cache_set_timer
     }
 }
