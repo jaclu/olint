@@ -752,23 +752,23 @@ defaults_for_config_file_excludes() {
     )
 }
 
-consider_alpine_linting_venv() {
-    dbg_print "consider_alpine_linting_venv()" 2
+olint_venv_enable() {
+    dbg_print "olint_venv_enable()" 2
     # shellcheck disable=SC2154
-    if [[ -f /etc/alpine-release ]] && [[ -d "$d_alpine_linting_venv" ]] &&
+    if [[ -d "$d_linting_venv" ]] &&
         [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
-        alpine_linting_venv_enabled=true
-        echo "===  olint Activating Alpine linting venv  ===" >/dev/stderr
+        b_olint_venv_enabled=true
+        echo "===  olint Activating olint venv  ===" >/dev/stderr
         # shellcheck source=/dev/null
-        . "$d_alpine_linting_venv"/bin/activate || {
-            error_msg "Failed to activate alpine linting venv"
+        . "$d_linting_venv/bin/activate" || {
+            error_msg "Failed to activate linting venv"
         }
     fi
 }
 
-consider_disabling_alpine_linting_venv() {
-    dbg_print "consider_disabling_alpine_linting_venv()" 2
-    $alpine_linting_venv_enabled && {
+olint_venv_disable() {
+    dbg_print "olint_venv_disable()" 2
+    $b_olint_venv_enabled && {
         dbg_print "deactivating alpine_linting_venv" 3
         echo "===  olint de-activating Alpine linting venv  ===" >/dev/stderr
         deactivate || error_msg "Failed to deactivate alpine linting venv"
@@ -798,10 +798,8 @@ initialize_env() {
     fi
     olint_plugin_dir="$olint_cfg_dir"/plugins
 
-    d_alpine_linting_venv=~/.config/olint/.venv
-    alpine_linting_venv_enabled=false
-
-    consider_alpine_linting_venv
+    d_linting_venv=~/.config/olint/.venv
+    b_olint_venv_enabled=false
 
     defaults_for_cmdline_options
     defaults_for_config_file_excludes
@@ -880,7 +878,7 @@ env_cleanup() {
         echo
         echo "*****  olint exited with an error  *****"
     }
-    consider_disabling_alpine_linting_venv
+    olint_venv_disable
 
     exit "$ex_code"
 }
@@ -1942,5 +1940,6 @@ echo
 
 t_app_start=$(date +%s)
 cache_read ### R
+olint_venv_enable
 process_file_tree
 env_cleanup 0
