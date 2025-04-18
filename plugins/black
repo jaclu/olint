@@ -47,9 +47,12 @@ plugin_file_types=(
     "Python script*"
 )
 
-# Handle entire project
-
-# conf file .bandit
-# bandit -r .
-# conf file pyproject.toml
-# bandit -c pyproject.toml -r .
+# Handle entire project, sample pyproject.toml block:
+#
+# [tool.black]
+# line-length = 92
+# exclude = '''
+# /(
+#     \.venv    # Match .venv directory
+# )/
+# '''

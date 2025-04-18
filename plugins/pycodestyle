@@ -27,7 +27,7 @@ if [[ -n "$(command -v flake8)" ]]; then
 else
     plugin_cmd="pycodestyle"
     # If used on the whole project
-    # proj_plugin_cmd="pycodestyle ."
+    # proj_plugin_cmd="pycodestyle --exclude=.venv ."
 fi
 
 plugin_priority=78
