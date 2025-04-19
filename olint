@@ -327,7 +327,7 @@ cache_write() {
     for key in "${!cache_old[@]}"; do
         value="${cache_old[$key]}"
         echo "$value|$key"
-        dbg_print "kept in cache: $key" forced
+        dbg_print "kept in cache: $key" "$dbglvl_no_changes"
     done >>"$f_cache_file"
 }
 
