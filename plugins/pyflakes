@@ -5,6 +5,9 @@
 #
 # Provided by flake8, don't use this if flake8 is used!
 #
+# Be aware that currently pyflakes doesn't seem to have an exclude
+# param, so might not be practical to use as a project linter....
+#
 
 # Installation methods;
 #  pip install pyflakes  # usable on iSH
