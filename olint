@@ -563,12 +563,14 @@ display_config() {
     # echo "---  Display configuration  ---"
     # echo
     # echo "== State variables =="
-    echo " verbosity_lvl:    $verbosity_lvl"
-    echo " cache update:     $t_cashe_interval seconds"
-    echo " ignore_project:   $ignore_project"
-    echo " mime_type_limit:  $mime_type_limit"
-    echo " lint_continue:    $lint_continue"
-    echo " olint_plugin_dir: $olint_plugin_dir"
+    echo " verbosity_lvl:     $verbosity_lvl"
+    echo " cache update:      $t_cashe_interval seconds"
+    echo " ignore_project:    $ignore_project"
+    echo " mime_type_limit:   $mime_type_limit"
+    echo " lint_continue:     $lint_continue"
+    echo " olint_plugin_dir:  $olint_plugin_dir"
+    echo " proj_linters_skip: $proj_linters_skip"
+    echo " proj_linters_only: $proj_linters_only"
     echo
 
     echo "==  Linters available  =="
