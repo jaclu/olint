@@ -1848,14 +1848,15 @@ process_file_tree() {
 
     dbg_print "process_file_tree()" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
-
-    generate_list_of_files_to_process
-
-    orig_dbg_indent=$dbg_indent
     trap 'handle_ctrl_c INT' INT
-    cache_set_timer
 
+    cache_set_timer
     ! $proj_linters_only && {
+        generate_list_of_files_to_process
+
+        orig_dbg_indent=$dbg_indent
+        cache_set_timer
+
         for fname in "${all_files[@]}"; do
             dbg_indent=$orig_dbg_indent
             [[ -z "$fname" ]] && continue
@@ -1916,7 +1917,6 @@ process_file_tree() {
                 }
             }
         done
-        trap '' INT # abort capturing Ctrl-C
     }
 
     $do_lint_files && ! $show_excluded && [[ ${#proj_linter_order[@]} -gt 0 ]] &&
