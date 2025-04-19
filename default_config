@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script is sourced. The fake shebang is included to help editors and linters.
 # shellcheck disable=SC2034  # Suppresses warnings about unused variables.
 #

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # don't warn about unused variables
 

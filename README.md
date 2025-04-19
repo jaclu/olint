@@ -82,7 +82,7 @@ global config file.
 Here's an example project configuration:
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 # This is sourced. Fake bang-path to help editors and linters
 
 # += means that local config is appended to global
