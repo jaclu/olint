@@ -18,8 +18,8 @@
 #   configurations where the global config includes many items that are
 #   irrelevant but need consideration for a specific project.
 #
-# By default, 'olint' ignores some common file patterns. You can override
-# these defaults by using '=' in your global or project-specific config file.
+# By default, olint ignores some common file patterns. You can override
+# these defaults by using = in your global or project-specific config file.
 # Running 'olint -c' will display the current settings. If the defaults
 # don't meet your needs, you can override them here.
 
@@ -32,6 +32,7 @@ skip_linters+=(
     # bashate         # Code style enforcement for bash programs
     # black           # Python code formatter
     # checkbashisms   # Checks for portability issues in shell scripts
+    # codespell       # Fix common misspellings in source code and text files
     # cppcheck        # Linter for C & C++
     # flake8          # Python linter; handles multiple PEP 8 violations
     # isort           # Sort Python imports automatically
@@ -41,7 +42,7 @@ skip_linters+=(
     # pycodestyle     # PEP 8 style checker; redundant if flake8 is used
     # pyflakes        # Passive checker of Python 3 programs
     # pylint          # Comprehensive Python code linter
-    # pylintrc        # Configuration file for pylint
+    # pylintrc        # Only checks the configuration file for pylint
     # pymarkdown      # Linter for Markdown files
     # pyright         # Static type checker for Python
     # rslint          # Linter for Rust code
@@ -54,31 +55,32 @@ skip_linters+=(
 
 # Patterns to exclude from linting, anything starting with this will be excluded
 excluded_prefixes+=(
-    # .git/  # Example: Exclude any .git directory from linting.
+    # dead_code/  # Example: Exclude anything in dead_code/ from linting.
+    # .git/  # Example: Exclude any .git directory from being listed.
 )
 
-# Patterns in this list, when matched with items in `excluded_prefixes`,
-# will be hidden from the output when running 'olint' with the `-e` option.
-# This prevents the `-e` output from being cluttered with potentially
+# Patterns in this list, when matched with items in excluded_prefixes,
+# will be hidden from the output when running olint with the -e option.
+# This prevents the -e output from being cluttered with potentially
 # hundreds or thousands of lines for common patterns like .git/, which
 # are typically unnecessary to display.
 #
-# When running 'olint' with the `-E` option, these patterns will be listed
+# When running olint with the -E option, these patterns will be listed
 # as explicitly excluded files or directories, providing visibility into
 # what is being suppressed.
 hidden_prefixes+=(
     # .git/  # Example: Exclude any .git directory from being listed.
 )
 
-# Exclude specific files by specifying their entire filename as listed by 'olint'.
-excludes+=(
-    # path/to/file  # Example: Exclude a specific file.
-)
-
 # Exclude files based on their filename suffix.
 # This is useful for skipping files with specific extensions or endings.
 excluded_suffixes+=(
     # .pyc  # Example: Exclude compiled Python files.
+)
+
+# Exclude specific files by specifying their entire filename as listed by 'olint'.
+excludes+=(
+    # path/to/file  # Example: Exclude a specific file.
 )
 
 # Exclude specific files based on their basename (filename without the path).

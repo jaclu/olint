@@ -208,8 +208,6 @@ recent_enough() {
     *) ;;
     esac
 
-    [[ "$h_max_age" = "0" ]] && return 0
-
     if [[ -z "$t_cutoff" ]]; then
         #
         #  For performance reasons only calculate once, and
@@ -290,7 +288,7 @@ cache_write() {
     local dbg_indent=$dbg_indent
     local key value
 
-    $use_cache || {
+    $b_use_cache || {
         # abort if not using cache
         dbg_print "cache_write() - aborted due to not using cache" 1
         return
@@ -299,7 +297,7 @@ cache_write() {
     dbg_print "cache_write()" "$dbglvl_cache_events_basic"
     ((dbg_indent++)) # increase indent until this returns
 
-    $do_lint_files || {
+    $b_lint_files || {
         dbg_print "$not_linting_msg" "$dbglvl_cache_events_basic"
         return
     }
@@ -347,7 +345,7 @@ cache_read() {
     local clear_cach_File=false
     local cache_version
 
-    $use_cache || {
+    $b_use_cache || {
         # abort if not using cache
         dbg_print "cache_read() - aborted due to not using cache" 1
         return
@@ -356,7 +354,7 @@ cache_read() {
     dbg_print "cache_read()" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
 
-    $do_lint_files || {
+    $b_lint_files || {
         dbg_print "$not_linting_msg" "$dbglvl_major_tasks"
         return
     }
@@ -437,7 +435,7 @@ filename_is_cached() {
     local f_to_check="$1"
     local dbg_indent=$dbg_indent
 
-    $use_cache || return 1
+    $b_use_cache || return 1
 
     dbg_print "filename_is_cached($f_to_check)" "$dbglvl_cache_events_more"
     ((dbg_indent++)) # increase indent until this returns
@@ -469,7 +467,7 @@ cache_add() {
     dbg_print "cache_add($f_name)" "$dbglvl_cache_events_basic"
     ((dbg_indent++)) # increase indent until this returns
 
-    $use_cache || return
+    $b_use_cache || return
     [[ -z "$f_mtime" ]] && f_mtime="$(get_mtime "$f_name")"
     [[ -z "$f_date" ]] && f_date="$(mtime_2_date "$f_mtime")"
 
@@ -555,7 +553,7 @@ display_config() {
             fi
         }
         [[ -n "$olint_cfg_proj" ]] && echo "Project conf: $olint_cfg_proj"
-        $use_cache && echo "Cache file:   $f_cache_file"
+        $b_use_cache && echo "Cache file:   $f_cache_file"
     else
         echo "Neither base nor project config found!"
     fi
@@ -566,11 +564,11 @@ display_config() {
     echo " verbosity_lvl:     $verbosity_lvl"
     echo " cache update:      $t_cashe_interval seconds"
     echo " ignore_project:    $ignore_project"
-    echo " mime_type_limit:   $mime_type_limit"
-    echo " lint_continue:     $lint_continue"
+    echo " b_mime_type_limit:   $b_mime_type_limit"
+    echo " b_lint_continue:     $b_lint_continue"
     echo " olint_plugin_dir:  $olint_plugin_dir"
-    echo " proj_linters_skip: $proj_linters_skip"
-    echo " proj_linters_only: $proj_linters_only"
+    echo " b_proj_linters_skip: $b_proj_linters_skip"
+    echo " b_proj_linters_only: $b_proj_linters_only"
     echo
 
     echo "==  Linters available  =="
@@ -592,7 +590,7 @@ display_config() {
         echo " '$file_type'  -  ${linter_file_types[$file_type]}"
     done
     echo
-    $show_config_short && return
+    $b_show_config_short && return
 
     echo "==  Supported extensions  =="
     keys=$(for ext in "${!linter_extensions[@]}"; do echo "$ext"; done | sort)
@@ -812,9 +810,10 @@ env_cleanup() {
         echo
     }
 
-    [[ -n "$t_app_start" ]] && $do_lint_files && {
+    [[ -n "$t_app_start" ]] && $b_lint_files && {
         duration=$(($(date +%s) - t_app_start))
-        [[ "$duration" -gt 0 ]] && {
+        [[ "$duration" -gt 2 ]] && {
+            # dont show time elapsed for very quick runs
             printf 'olint processing time: '
             display_time_elapsed "$duration"
             printf '\n'
@@ -833,21 +832,21 @@ env_cleanup() {
 defaults_for_cmdline_options() {
     #  -----   defaults for cmdline options   -----
 
-    show_config=false          # options: -c / -s
-    lint_continue=false        # option: -C
-    show_excluded=false        # options: -e / -E
-    skip_common_excludes=false # extra setting for: -e / -E
-    do_show_help=false         # option: -h
-    mime_type_limit=false      # option: -m
-    do_lint_files=true         # option: -n
-    use_cache=true             # option: -N
-    proj_linters_skip=false    # option: -p
-    proj_linters_only=false    # option: -P
-    show_config_short=false    # option: -s
-    t_cashe_interval=60        # option: -u
-    verbosity_lvl=0            # option: -v
-    zap_it=0                   # options: -z / -Z
-    h_max_age=0                # no max file age for items to be processed
+    b_show_config=false          # options: -c / -s
+    b_lint_continue=false        # option: -C
+    b_show_excluded=false        # options: -e / -E
+    b_skip_common_excludes=false # extra setting for: -e / -E
+    b_show_help=false            # option: -h
+    b_mime_type_limit=false      # option: -m
+    b_lint_files=true            # option: -n
+    b_use_cache=true             # option: -N
+    b_proj_linters_skip=false    # option: -p
+    b_proj_linters_only=false    # option: -P
+    b_show_config_short=false    # option: -s
+    t_cashe_interval=60          # option: -u
+    verbosity_lvl=0              # option: -v
+    zap_it=0                     # options: -z / -Z
+    h_max_age=0                  # no max file age for items to be processed
 }
 
 defaults_for_prog_config_file() {
@@ -864,7 +863,8 @@ defaults_for_prog_config_file() {
         .venv/
         .vscode/
     )
-    hidden_patterns=( # exclude from display of excluded_prefixes
+
+    hidden_patterns=( # exclude from display of excluded_prefixes unless -E is used
         __pycache__/
         .git/
         .mypy_cache/
@@ -873,13 +873,13 @@ defaults_for_prog_config_file() {
         .venv/
         .vscode/
     )
-    excludes=( # Specific excludes
-    )
     excluded_suffixes=( # excludes by filename suffix
         \~
         \#
         .pyc
         .tmp
+    )
+    excludes=( # Specific excludes
     )
     excluded_basenames=( # basename (filename without any path) excludes
         "$bname_cache"
@@ -916,32 +916,32 @@ parse_cmd_line() {
             # git_config is called
             #
             # shellcheck disable=SC2317
-            do_show_help=true
+            b_show_help=true
             ;;
-        -c | --config) show_config=true ;;
-        -C | --continue) lint_continue=true ;;
+        -c | --config) b_show_config=true ;;
+        -C | --continue) b_lint_continue=true ;;
         --config-dir) # Support for ./deploy - prints out the config dir
             echo "$olint_cfg_dir"
             exit 0
             ;;
         -e | --excluded)
-            show_excluded=true
-            skip_common_excludes=true
-            do_lint_files=false
+            b_show_excluded=true
+            b_skip_common_excludes=true
+            b_lint_files=false
             ;;
         -E | --excluded-all)
-            show_excluded=true
-            skip_common_excludes=false
-            do_lint_files=false
+            b_show_excluded=true
+            b_skip_common_excludes=false
+            b_lint_files=false
             ;;
-        -m | --mime-type) mime_type_limit=true ;;
-        -n | --no-linter) do_lint_files=false ;;
-        -N | --nocache) use_cache=false ;;
-        -p | --no-proj-lint) toggle_bool proj_linters_skip ;;
-        -P | --only-proj-lint) toggle_bool proj_linters_only ;;
+        -m | --mime-type) b_mime_type_limit=true ;;
+        -n | --no-linter) b_lint_files=false ;;
+        -N | --nocache) b_use_cache=false ;;
+        -p | --no-proj-lint) toggle_bool b_proj_linters_skip ;;
+        -P | --only-proj-lint) toggle_bool b_proj_linters_only ;;
         -s | --conffig-short)
-            show_config=true
-            show_config_short=true
+            b_show_config=true
+            b_show_config_short=true
             ;;
         -u | --update-cache)
             t="${2:-missing param}"
@@ -978,8 +978,8 @@ parse_cmd_line() {
         esac
         shift
     done
-    # echo "><> proj_linters_skip:$proj_linters_skip proj_linters_only: $proj_linters_only"
-    $proj_linters_skip && $proj_linters_only && {
+    # echo "><> b_proj_linters_skip:$b_proj_linters_skip b_proj_linters_only: $b_proj_linters_only"
+    $b_proj_linters_skip && $b_proj_linters_only && {
         error_msg "-p & -P are both true - invalid state."
     }
 }
@@ -1556,7 +1556,7 @@ lint_by_ext() {
     local dbg_indent=$dbg_indent
     local fname="$1"
     local extension
-    local linter_found
+    local b_linter_found
     local linter_found_issue
     local linter
 
@@ -1574,7 +1574,7 @@ lint_by_ext() {
     *) ;;
     esac
 
-    linter_found=false
+    b_linter_found=false
     [[ -n "$extension" ]] && {
         #
         #  Processing by extension
@@ -1585,8 +1585,8 @@ lint_by_ext() {
                 # linter has been disabled
                 continue
             }
-            linter_found=true
-            $do_lint_files || {
+            b_linter_found=true
+            $b_lint_files || {
                 dbg_print "$not_linting_msg" "$dbglvl_lint_file_basic"
                 return 0 # True - next file
             }
@@ -1594,7 +1594,7 @@ lint_by_ext() {
             lint_file "$linter" "$fname" || linter_found_issue=true
             show_linter_time
         done
-        if $linter_found; then
+        if $b_linter_found; then
             dbg_print "processed by ext handler - $fname" "$dbglvl_lintscan_details"
             $linter_found_issue || {
                 cache_add "$fname"
@@ -1610,7 +1610,7 @@ lint_by_file_type() {
     local fname="$1"
     local file_type="$2"
     local linter_found_issue
-    local linter_found
+    local b_linter_found
     local lf_type
     local linter
 
@@ -1618,7 +1618,7 @@ lint_by_file_type() {
     ((dbg_indent++)) # increase indent until this returns
 
     linter_found_issue=false
-    linter_found=false
+    b_linter_found=false
     for lf_type in "${!linter_file_types[@]}"; do
         # shellcheck disable=SC2053
         [[ "$file_type" == $lf_type ]] || {
@@ -1630,8 +1630,8 @@ lint_by_file_type() {
                 # linter has been disabled
                 continue
             }
-            linter_found=true
-            $do_lint_files || {
+            b_linter_found=true
+            $b_lint_files || {
                 dbg_print "$not_linting_msg" "$dbglvl_lint_file_basic"
                 return 0 # True - next file
             }
@@ -1644,7 +1644,7 @@ lint_by_file_type() {
             dbg_print "processed as '$lf_type' - $linter" 9
         done
     done
-    if $linter_found; then
+    if $b_linter_found; then
         $linter_found_issue || {
             cache_add "$fname"
         }
@@ -1702,7 +1702,7 @@ handle_linting_error() {
     #  or continue based upon
     #
     dbg_print "handle_linting_error()" "$dbglvl_major_tasks"
-    $lint_continue && return
+    $b_lint_continue && return
     env_cleanup 2
 }
 
@@ -1734,68 +1734,6 @@ show_linter_time() {
 #   Process files
 #
 #---------------------------------------------------------------
-
-show_exclude() {
-    local excl_type="$1"
-    local fname="$2"
-    printf "%-16s: %s\n" "$excl_type" "$fname"
-}
-
-should_fname_be_excluded() {
-    #
-    #  Check if fname matches exclusion rules
-    #
-    local fname="$1"
-    local item pattern rel_fname
-
-    # TODO: check skip_common_excludes & hidden_patterns
-    $skip_common_excludes && {
-        for item in "${hidden_patterns[@]}"; do
-            [[ $fname =~ $item ]] && return 0
-        done
-    }
-
-    # Check if the filename matches any pattern
-    for pattern in "${excluded_prefixes[@]}"; do
-        [[ "$fname" =~ $pattern ]] && {
-            $show_excluded && show_exclude "prefix" "$fname"
-            return 0
-        }
-    done
-
-    for item in "${excludes[@]}"; do
-        [[ "$fname" = "$item" ]] && {
-            $show_excluded && show_exclude "excludes" "$fname"
-            return 0
-        }
-    done
-
-    for item in "${excluded_suffixes[@]}"; do
-        [[ "$fname" = *"$item" ]] && {
-            $show_excluded && show_exclude "suffix" "$fname"
-            return 0
-        }
-    done
-
-    rel_fname="$(basename "$fname")"
-    for item in "${excluded_basenames[@]}"; do
-        [[ "$rel_fname" = "$item" ]] && {
-            $show_excluded && show_exclude "basename" "$fname"
-            return 0
-        }
-    done
-
-    for item in "${excluded_basename_prefixes[@]}"; do
-        [[ "$rel_fname" = "$item"* ]] && {
-            $show_excluded && {
-                show_exclude "basename prefix" "$fname"
-            }
-            return 0
-        }
-    done
-
-    return 1
-}
 
 generate_list_of_files_to_process() {
     #
@@ -1831,6 +1769,67 @@ generate_list_of_files_to_process() {
     [[ "$verbosity_lvl" -ge 1 ]] && echo "done!"
 }
 
+show_excluded_file() {
+    local excl_type="$1"
+    local fname="$2"
+    printf "%-16s: %s\n" "$excl_type" "$fname"
+}
+
+should_fname_be_excluded() {
+    #
+    #  Check if fname matches exclusion rules
+    #
+    local fname="$1"
+    local item pattern rel_fname
+
+    $b_skip_common_excludes && {
+        for item in "${hidden_patterns[@]}"; do
+            [[ $fname =~ $item ]] && return 0
+        done
+    }
+
+    # Check if the filename matches any pattern
+    for pattern in "${excluded_prefixes[@]}"; do
+        [[ "$fname" =~ $pattern ]] && {
+            $b_show_excluded && show_excluded_file "prefix" "$fname"
+            return 0
+        }
+    done
+
+    for item in "${excluded_suffixes[@]}"; do
+        [[ "$fname" = *"$item" ]] && {
+            $b_show_excluded && show_excluded_file "suffix" "$fname"
+            return 0
+        }
+    done
+
+    for item in "${excludes[@]}"; do
+        [[ "$fname" = "$item" ]] && {
+            $b_show_excluded && show_excluded_file "excludes" "$fname"
+            return 0
+        }
+    done
+
+    rel_fname="$(basename "$fname")"
+    for item in "${excluded_basenames[@]}"; do
+        [[ "$rel_fname" = "$item" ]] && {
+            $b_show_excluded && show_excluded_file "basename" "$fname"
+            return 0
+        }
+    done
+
+    for item in "${excluded_basename_prefixes[@]}"; do
+        [[ "$rel_fname" = "$item"* ]] && {
+            $b_show_excluded && {
+                show_excluded_file "basename prefix" "$fname"
+            }
+            return 0
+        }
+    done
+
+    return 1
+}
+
 process_file_tree() {
     #
     #  Loop over al files, sorted by file age, newest firtst.
@@ -1842,7 +1841,7 @@ process_file_tree() {
     local dbg_indent=$dbg_indent
     local all_files
     local fname
-    local linter_found
+    local b_linter_found
     local file_types
     local file_type
 
@@ -1850,8 +1849,7 @@ process_file_tree() {
     ((dbg_indent++)) # increase indent until this returns
     trap 'handle_ctrl_c INT' INT
 
-    cache_set_timer
-    ! $proj_linters_only && {
+    ! $b_proj_linters_only && {
         generate_list_of_files_to_process
 
         orig_dbg_indent=$dbg_indent
@@ -1861,33 +1859,30 @@ process_file_tree() {
             dbg_indent=$orig_dbg_indent
             [[ -z "$fname" ]] && continue
 
-            linter_found=false
+            b_linter_found=false
             [[ -d "$fname" ]] && continue
 
-            # [[ "$fname" = "files_to_check/base.py" ]] || continue
             should_fname_be_excluded "$fname" && continue
-            $show_excluded && continue
+            $b_show_excluded && continue # only show excluded files, dont lint anything
+
+            # abort if a time limit was set
+            recent_enough "$fname" || {
+                dbg_print "$fname too old to be processed" "$dbglvl_lint_file_basic"
+                env_cleanup 0
+            }
 
             dbg_print "Examining file: $fname" "$dbglvl_major_tasks"
             ((dbg_indent++)) # increase indent until this returns
 
-            # abort if a time limit was set
-            recent_enough "$fname" || {
-                dbg_print "too old to be processed" "$dbglvl_lint_file_basic"
-                # maintain file in new cache
-                $use_cache && filename_is_cached "$fname"
-                continue
-            }
-
-            $use_cache && filename_is_cached "$fname" && {
-                $do_lint_files && dbg_print "no changes: $fname" "$dbglvl_no_changes"
+            $b_use_cache && filename_is_cached "$fname" && {
+                $b_lint_files && dbg_print "no changes: $fname" "$dbglvl_no_changes"
                 continue
             }
 
             #
             #  Processing by file type
             #
-            if $mime_type_limit; then
+            if $b_mime_type_limit; then
                 file_cmd="file --mime-type -b"
             else
                 file_cmd="file -b"
@@ -1896,31 +1891,33 @@ process_file_tree() {
                 tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
             for file_type in "${file_types[@]}"; do
                 lint_by_file_type "$fname" "$file_type" && {
-                    linter_found=true
+                    b_linter_found=true
                     break
                 }
             done
-            $linter_found && continue
+            $b_linter_found && continue
 
             #
             #  Processing by file extension
             #
             lint_by_ext "$fname" && {
-                linter_found=true
+                b_linter_found=true
                 continue
             }
 
-            $do_lint_files || {
-                $linter_found || {
+            $b_lint_files || {
+                $b_linter_found || {
                     ((files_without_matching_linter++))
-                    show_exclude "= No linter =" "$fname"
+                    show_excluded_file "= No linter =" "$fname"
                 }
             }
         done
     }
 
-    $do_lint_files && ! $show_excluded && [[ ${#proj_linter_order[@]} -gt 0 ]] &&
-        ! $proj_linters_skip && {
+    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded &&
+        [[ ${#proj_linter_order[@]} -gt 0 ]] && {
+
+        ! $b_proj_linters_only && cache_set_timer
 
         for linter_name in "${proj_linter_order[@]}"; do
             [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
@@ -1946,6 +1943,8 @@ process_file_tree() {
 #   Main
 #
 #===============================================================
+
+t_real_app_start=$(date +%s)
 
 #  Dependencies
 [[ -z "$(command -v file)" ]] && error_msg "Missing dependency: file"
@@ -1976,7 +1975,7 @@ parse_cmd_line "$@"
 
 [[ "$verbosity_lvl" -gt 2 ]] && echo "Verbosity lvl is: $verbosity_lvl"
 
-$do_show_help && {
+$b_show_help && {
     # In order to show list of hidden excludes, get_config must be called first
     show_help || error_msg "show_help() failure"
     env_cleanup 0
@@ -1991,19 +1990,19 @@ else
     error_msg "$msg"
 fi
 
-$show_config && {
+$b_show_config && {
     display_config
     env_cleanup 0
 }
 
 should_project_be_ignored
 
-$lint_continue && echo "Will continue with next file if linter found issues"
-$use_cache || {
+$b_lint_continue && echo "Will continue with next file if linter found issues"
+$b_use_cache || {
     echo "Will not use cache for checked files"
 }
 
-t_app_start=$(date +%s)
+t_app_start="$t_real_app_start"
 cache_read ### R
 process_file_tree
 env_cleanup 0
