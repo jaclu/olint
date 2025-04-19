@@ -15,10 +15,10 @@
 #  Ideal for enforcing style and detecting common coding issues.
 
 # Installation methods;
-#  pip install flake8  # craches on iSH
+#  pip install flake8  # crashes on iSH
 #  brew install flake8
 #  (Ubuntu) sudo apt install flake8
-#  (Alpine) sudo apk add py3-flake8 # craches on iSH
+#  (Alpine) sudo apk add py3-flake8 # crashes on iSH
 
 # inline-excludes:  # noqa: F841
 # project config files: setup.cfg

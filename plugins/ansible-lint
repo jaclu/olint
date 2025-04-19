@@ -7,7 +7,7 @@
 #  brew install ansible-lint
 #  (Ubuntu) sudo apt install ansible-lint
 #  (Alpine) sudo apk add ansible-lint
-#        craches on iSH as of 25-04-19
+#        crashes on iSH as of 25-04-19
 
 # project config files: .ansible-lint.yml
 #  ---
