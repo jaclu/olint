@@ -812,7 +812,7 @@ env_cleanup() {
 
     [[ -n "$t_app_start" ]] && $b_lint_files && {
         duration=$(($(date +%s) - t_app_start))
-        [[ "$duration" -gt 2 ]] && {
+        [[ "$duration" -ge 4 ]] && {
             # dont show time elapsed for very quick runs
             printf 'olint processing time: '
             display_time_elapsed "$duration"
@@ -1944,7 +1944,7 @@ process_file_tree() {
 #
 #===============================================================
 
-t_real_app_start=$(date +%s)
+t_app_start=$(date +%s)
 
 #  Dependencies
 [[ -z "$(command -v file)" ]] && error_msg "Missing dependency: file"
@@ -2002,7 +2002,6 @@ $b_use_cache || {
     echo "Will not use cache for checked files"
 }
 
-t_app_start="$t_real_app_start"
 cache_read ### R
 process_file_tree
 env_cleanup 0
