@@ -11,10 +11,10 @@
 #      sudo apt install nodejs npm
 #      sudo npm install -g jsonlint
 
-_cmd="jsonlint -p"
+plugin_cmd="jsonlint -p"
 
-plugin_cmd="$_cmd"
-proj_plugin_cmd="$_cmd"
+# If run as a project linter, the process does nothing and idles forever...
+# proj_plugin_cmd="jsonlint -p"
 
 # file extensions this plugin handles
 plugin_extensions=(
