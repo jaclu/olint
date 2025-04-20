@@ -1714,7 +1714,7 @@ show_linter_action() {
     local fname="$2"
 
     # Print using printf with fixed-width formatting
-    printf "%-16s: %s " "$linter" "$fname"
+    printf '%-16s: %s  ' "$linter" "$fname"
     t_lint_start="$(date +%s)"
 }
 
@@ -1723,7 +1723,7 @@ show_linter_time() {
 
     duration=$(($(date +%s) - t_lint_start))
     if [[ "$duration" -gt 3 ]]; then
-        printf '  - '
+        printf ' - '
         display_time_elapsed "$duration"
     fi
     echo # always apply a LF
