@@ -687,7 +687,7 @@ display_hidden_excludes() {
 
 display_time_elapsed() {
     local duration="$1"
-    if ((duration >= 15)); then
+    if ((duration > 30)); then
         #
         # Show long times in h:m:s notation even if time hasn't passed the
         # minute mark, in order to make them stand out
