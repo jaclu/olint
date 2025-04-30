@@ -813,7 +813,7 @@ env_cleanup() {
 
     [[ -n "$t_app_start" ]] && $b_lint_files && {
         duration=$(($(date +%s) - t_app_start))
-        [[ "$duration" -ge 4 ]] && {
+        if [[ "$verbosity_lvl" -ge 1 ]] ||  [[ "$duration" -ge 4 ]]; then
             # dont show time elapsed for very quick runs
             printf 'olint processing time: '
             display_time_elapsed "$duration"
@@ -825,7 +825,7 @@ env_cleanup() {
                     echo "run with -v 2 to see cached files listed"
                 }
             }
-        }
+        fi
     }
     exit "$ex_code"
 }
