@@ -1012,6 +1012,7 @@ olint_venv_disable() {
 #---------------------------------------------------------------
 
 get_config() {
+    local param_1="$1"
     local dbg_indent=$dbg_indent
 
     dbg_print "get_config()" "$dbglvl_major_tasks"
@@ -1027,8 +1028,13 @@ get_config() {
         #  handling base configuration
         read_config_file "$olint_cfg_default"
     else
-        echo "Warning - no Global config file: $olint_cfg_default"
-        echo
+        [[ "$param_1" != "--config-dir" ]] && {
+            # Condition allows for displayal of default config location if
+            # the base config file has not yet been installed
+            echo "WARNING: Global config file not found: $olint_cfg_default"
+            echo "WARNING: Using app defaults"
+            echo
+        }
     fi
     get_proj_config_recursive
     de_duplicate_config
@@ -1950,7 +1956,7 @@ t_app_start=$(date +%s)
 [[ -z "$(command -v file)" ]] && error_msg "Missing dependency: file"
 
 initialize_env
-get_config
+get_config "$1"
 parse_cmd_line "$@"
 
 [[ "$zap_it" -ne 0 ]] && {
