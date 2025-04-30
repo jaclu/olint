@@ -82,36 +82,36 @@ get_app_destination() {
     fi
 }
 
-deploy_default_config() {
-    echo "---  Global olint config"
+#
+#  Actions
+#
 
+deploy_default_config() {
     d_default_conf="$("$REPO_DIR"/olint --config-dir)" || {
         echo "ERROR: Failed to extract config-dir"
         exit 1
     }
     mkdir -p "$d_default_conf"
-
     f_default_conf="$d_default_conf/olint.conf"
-    if $force_deploy || [ ! -f "$f_default_conf" ]; then
+
+    if [ ! -f "$f_default_conf" ]; then
+	echo "---  Global olint config"
         cp "$REPO_DIR"/default_config "$f_default_conf"
 
         echo "A default config has been copied to: $f_default_conf"
         echo "You should inspect it to ensure it matches your preferences."
         echo "As long as it is present, it will not be overwritten."
-
-    else
-        echo "Already present: $f_default_conf"
+	echo
     fi
-    echo
 }
 
-deploy_app() {
-    app="$1"
-    echo "---  Install: $app"
-    if rsync -ahP "$REPO_DIR/$app" "$d_app_dest" | grep -q "$app"; then
-        echo "Latest version installed: $d_app_dest/$app"
-    else
-        echo "Was current: $d_app_dest/$app"
+deploy_default_ignore() {
+    cfg_file="$HOME"/.olint.conf
+    if [ ! -f "$cfg_file" ]; then
+        echo "---  Default ignore"
+        echo "Deploying a default 'ignore_project=yes' to home-dir"
+        echo "ignore_project=yes" >"$cfg_file"
+        echo
     fi
 }
 
@@ -129,6 +129,7 @@ deploy_plugins() {
     if [ -n "$(ls -A "$d_plugins")" ] && ! $force_deploy; then
         echo "Plugin folder has content, will not be overwritten"
         echo "  $d_plugins"
+	echo
         return
     fi
 
@@ -143,15 +144,19 @@ deploy_plugins() {
         echo "$cmd_output"
         exit 1
     fi
+    echo
 }
 
-deploy_default_ignore() {
-    cfg_file="$HOME"/.olint.conf
-    if [ ! -f "$cfg_file" ] || $force_deploy; then
-        echo "---  Default ignore"
-        echo "Deploying a default 'ignore_project=yes' to home-dir"
-        echo "ignore_project=yes" >"$cfg_file"
-        echo
+deploy_app() {
+    app="$1"
+
+    if rsync -ahP "$REPO_DIR/$app" "$d_app_dest" | grep -q "$app"; then
+	echo "---  Install: $app"
+	echo "Latest version installed: $d_app_dest/$app"
+	echo
+    # elif $force_deploy; then
+    #     echo "---  Install: $app"
+    #     echo "Was current: $d_app_dest/$app"
     fi
 }
 
@@ -173,21 +178,24 @@ if [ "$1" = force ]; then
 elif [ "$1" = uninstall ]; then
     echo
     echo "-----   Uninstall olint   -----"
-    rm -f "$d_app_dest"/olint || echo "no app installed"
+    rm -f "$d_app_dest"/olint
+    rm -f "$d_app_dest"/bashate-wrapper
     rm -rf "$HOME"/.config/olint
     rm -f "$HOME"/.olint.conf
     echo "Uninstall completed"
     exit 0
 elif [ -n "$1" ]; then
-    echo "deploy [force/uninstall]"
+    echo "$0 [force / uninstall]"
     echo
     echo "ERROR: invalid option: $1"
     exit 1
 fi
 
 deploy_default_config
+deploy_default_ignore
+deploy_plugins
+
+# Without any plugins the app can't do anything, so to avoid a useless state
+# in case deploy was aborted only install the bins after plugins are available
 deploy_app olint
 deploy_app bashate-wrapper
-echo
-deploy_plugins
-deploy_default_ignore
