@@ -1950,7 +1950,7 @@ process_file_tree() {
 #
 #===============================================================
 
-t_app_start=$(date +%s)
+t_app_start=$(date +%s) # will be reset after a -Z cache clennse
 
 #  Dependencies
 [[ -z "$(command -v file)" ]] && error_msg "Missing dependency: file"
@@ -1977,7 +1977,10 @@ parse_cmd_line "$@"
         fi
     done
     [[ "$zap_it" -eq 1 ]] && env_cleanup 0
+    # restart timer after zapping to get correct linting time
+    t_app_start=$(date +%s)
 }
+
 
 [[ "$verbosity_lvl" -gt 2 ]] && echo "Verbosity lvl is: $verbosity_lvl"
 
