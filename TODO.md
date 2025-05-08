@@ -1,5 +1,7 @@
 # ToDo
 
+## Dont list files covered by project linters as `No linter`
+
 ## order project linter by prio
 
 initially just use the existing prio variable
