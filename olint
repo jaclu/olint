@@ -734,6 +734,8 @@ initialize_env() {
     d_linting_venv=~/.config/olint/.venv
     b_olint_venv_enabled=false
 
+    long_lint_time=5
+
     defaults_for_cmdline_options
     defaults_for_prog_config_file
 
@@ -813,7 +815,7 @@ env_cleanup() {
 
     [[ -n "$t_app_start" ]] && $b_lint_files && {
         duration=$(($(date +%s) - t_app_start))
-        if [[ "$verbosity_lvl" -ge 1 ]] ||  [[ "$duration" -ge 4 ]]; then
+        if [[ "$verbosity_lvl" -ge 1 ]] ||  [[ "$duration" -ge "$long_lint_time" ]]; then
             # dont show time elapsed for very quick runs
             printf 'olint processing time: '
             display_time_elapsed "$duration"
@@ -1728,7 +1730,7 @@ show_linter_time() {
     local duration
 
     duration=$(($(date +%s) - t_lint_start))
-    if [[ "$duration" -gt 3 ]]; then
+    if [[ "$duration" -ge "$long_lint_time" ]]; then
         printf ' - '
         display_time_elapsed "$duration"
     fi
