@@ -322,7 +322,6 @@ cache_write() {
         echo "$value|$key"
     done >>"$f_cache_file"
 
-
     # keep unprocessed items in cache
     for key in "${!cache_old[@]}"; do
         value="${cache_old[$key]}"
@@ -687,10 +686,9 @@ display_hidden_excludes() {
 
 display_time_elapsed() {
     local duration="$1"
-    if ((duration > 30)); then
+    if ((duration > 59)); then
         #
-        # Show long times in h:m:s notation even if time hasn't passed the
-        # minute mark, in order to make them stand out
+        # Show long times in hh:mm:ss notation in order to make them stand out
         #
         local hours minutes seconds
 
@@ -815,7 +813,7 @@ env_cleanup() {
 
     [[ -n "$t_app_start" ]] && $b_lint_files && {
         duration=$(($(date +%s) - t_app_start))
-        if [[ "$verbosity_lvl" -ge 1 ]] ||  [[ "$duration" -ge "$long_lint_time" ]]; then
+        if [[ "$verbosity_lvl" -ge 1 ]] || [[ "$duration" -ge "$long_lint_time" ]]; then
             # dont show time elapsed for very quick runs
             printf 'olint processing time: '
             display_time_elapsed "$duration"
@@ -1982,7 +1980,6 @@ parse_cmd_line "$@"
     # restart timer after zapping to get correct linting time
     t_app_start=$(date +%s)
 }
-
 
 [[ "$verbosity_lvl" -gt 2 ]] && echo "Verbosity lvl is: $verbosity_lvl"
 
