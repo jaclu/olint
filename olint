@@ -1235,6 +1235,9 @@ check_linter_plugins() {
         [[ "${plugin_def%"~"}" != "$plugin_def" ]] && continue
 
         ((plugin_count += 1))
+        [[ -z "$plugin_def" ]] && {
+            error_msg "check_linter_plugins() - found an empty \$plugin_def"
+        }
         _p="$(basename "$plugin_def")"
         f_plugin_override="$d_plugin_overrides/$_p"
         if [[ -f "$f_plugin_override" ]]; then
@@ -1271,6 +1274,9 @@ parse_plugin_file() {
     dbg_print "parse_plugin_file($plugin_def)" "$((dbglvl_lintscan_basic + 1))"
     ((dbg_indent++)) # increase indent until this returns
 
+    [[ -z "$plugin_def" ]] && {
+        error_msg "parse_plugin_file() - found an empty \$plugin_def"
+    }
     plugin_name=$(basename "$plugin_def") # defaults to fname of plugin
 
     source_file "$plugin_def"
@@ -1398,7 +1404,8 @@ add_plugin_file_type() {
     local item
 
     lc_file_type="${file_type,,}"
-    dbg_print "add_plugin_file_type($plugin, $lc_file_type)" "$((dbglvl_lintscan_basic + 1))"
+    dbg_print "add_plugin_file_type($plugin, $lc_file_type)" \
+              "$((dbglvl_lintscan_basic + 1))"
     ((dbg_indent++)) # increase indent until this returns
 
     if [[ -z "${linter_file_types[$lc_file_type]}" ]]; then
@@ -1816,6 +1823,9 @@ should_fname_be_excluded() {
         }
     done
 
+    [[ -z "$plugin_def" ]] && {
+        error_msg "check_linter_plugins() - found an empty \$fname"
+    }
     rel_fname="$(basename "$fname")"
     for item in "${excluded_basenames[@]}"; do
         [[ "$rel_fname" = "$item" ]] && {
