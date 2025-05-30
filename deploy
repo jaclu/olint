@@ -37,26 +37,6 @@ check_dependencies() {
     unset deps install_procedure
 }
 
-not_dependencies_alpine() { # should be deleted after check on Alpine iSH
-    install_procedure="apk add"
-
-    _s="$(command -v find)"
-    if [ -z "$_s" ]; then
-        deps="$deps findutils"
-    else
-        realpath "$_s" | grep -q busybox && {
-            echo "><> was busybox find"
-            deps="$deps findutils"
-        }
-    fi
-
-    [ -n "$deps" ] && {
-        echo "WARNING: Missing Alpine dependencies, solve by running"
-        echo "apk add $deps"
-        exit 1
-    }
-}
-
 get_app_destination() {
     #
     #  Exposed variables:
@@ -102,6 +82,7 @@ deploy_default_config() {
         echo "You should inspect it to ensure it matches your preferences."
         echo "As long as it is present, it will not be overwritten."
 	echo
+        files_changed=true
     fi
 }
 
@@ -112,6 +93,7 @@ deploy_default_ignore() {
         echo "Deploying a default 'ignore_project=yes' to home-dir"
         echo "ignore_project=yes" >"$cfg_file"
         echo
+        files_changed=true
     fi
 }
 
@@ -138,6 +120,7 @@ deploy_plugins() {
             "$d_plugins" 2>&1
     )"; then
         echo "Default plugins installed to: $d_plugins"
+        files_changed=true
     else
         echo "ERROR: copying plugins failed"
         echo
@@ -154,6 +137,7 @@ deploy_app() {
 	echo "---  Install: $app"
 	echo "Latest version installed: $d_app_dest/$app"
 	echo
+        files_changed=true
     # elif $force_deploy; then
     #     echo "---  Install: $app"
     #     echo "Was current: $d_app_dest/$app"
@@ -191,6 +175,8 @@ elif [ -n "$1" ]; then
     exit 1
 fi
 
+files_changed=false
+
 deploy_default_config
 deploy_default_ignore
 deploy_plugins
@@ -199,3 +185,9 @@ deploy_plugins
 # in case deploy was aborted only install the bins after plugins are available
 deploy_app olint
 deploy_app bashate-wrapper
+
+if [ "$files_changed" = true ]; then
+    exit 2 # indicate files changed
+else
+    exit 0 # no changes
+fi
