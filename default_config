@@ -23,7 +23,7 @@
 # Running 'olint -c' will display the current settings. If the defaults
 # don't meet your needs, you can override them here.
 
-#  Use 'skip_plugins' to disable specific linters from your workflow or
+#  Use 'skip_linters' to disable specific linters from your workflow or
 # for a specific project.
 #  Uncomment the linters you want to exclude from being run.
 skip_linters+=(
@@ -55,8 +55,13 @@ skip_linters+=(
 
 # Patterns to exclude from linting, anything starting with this will be excluded
 excluded_prefixes+=(
-    # dead_code/  # Example: Exclude anything in dead_code/ from linting.
-    # .git/  # Example: Exclude any .git directory from being listed.
+    __pycache__/
+    .git/
+    .mypy_cache/
+    .pytest_cache/
+    .ruff_cache/
+    .venv/
+    .vscode/
 )
 
 # Patterns in this list, when matched with items in excluded_prefixes,
@@ -68,14 +73,23 @@ excluded_prefixes+=(
 # When running olint with the -E option, these patterns will be listed
 # as explicitly excluded files or directories, providing visibility into
 # what is being suppressed.
-hidden_prefixes+=(
-    # .git/  # Example: Exclude any .git directory from being listed.
+hidden_patterns=( # exclude from display of excluded_prefixes unless -E is used
+    __pycache__/
+    .git/
+    .mypy_cache/
+    .pytest_cache/
+    .ruff_cache/
+    .venv/
+    .vscode/
 )
 
 # Exclude files based on their filename suffix.
 # This is useful for skipping files with specific extensions or endings.
-excluded_suffixes+=(
-    # .pyc  # Example: Exclude compiled Python files.
+excluded_suffixes=( # excludes by filename suffix
+    \~
+    \#
+    .pyc  # Example: Exclude compiled Python files.
+    .tmp
 )
 
 # Exclude specific files by specifying their entire filename as listed by 'olint'.
@@ -85,12 +99,12 @@ excludes+=(
 
 # Exclude specific files based on their basename (filename without the path).
 excluded_basenames+=(
-    # .gitignore  # Example: Exclude .gitignore files.
+    .cache.olint
 )
 
 # Exclude files based on their basename (filename without the path) prefix.
 excluded_basename_prefixes+=(
-    # test_  # Example: Exclude files that start with 'test_'.
+    \#
 )
 
 # List linters that should run on the whole project, not on individual files
