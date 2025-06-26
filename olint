@@ -41,11 +41,11 @@ error_msg() {
     # shellcheck disable=SC2059 # msg needs to be allowed to contain \n
     printf "\\n\\nERROR: $msg\\n\\n" >&2
     [[ "$exit_code" -gt -1 ]] && {
-	if [[ "$3" = "no_cleanup" ]]; then
-	    exit "$exit_code"
-	else
-	    env_cleanup "$exit_code"
-	fi
+        if [[ "$3" = "no_cleanup" ]]; then
+            exit "$exit_code"
+        else
+            env_cleanup "$exit_code"
+        fi
     }
 }
 
