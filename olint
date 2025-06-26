@@ -1005,8 +1005,6 @@ olint_venv_enable() {
 }
 
 olint_venv_disable() {
-    dbg_print "olint_venv_disable() b_olint_venv_enabled:$b_olint_venv_enabled"
-    exit 1
     $b_olint_venv_enabled && {
         echo "===  de-activating olint venv  ===" >/dev/stderr
         deactivate || error_msg "Failed to deactivate alpine linting venv"
