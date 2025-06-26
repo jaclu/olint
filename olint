@@ -40,7 +40,13 @@ error_msg() {
     fi
     # shellcheck disable=SC2059 # msg needs to be allowed to contain \n
     printf "\\n\\nERROR: $msg\\n\\n" >&2
-    [[ "$exit_code" -gt -1 ]] && env_cleanup "$exit_code"
+    [[ "$exit_code" -gt -1 ]] && {
+	if [ "$3" = "no_cleanup" ]; then
+	    exit "$exit_code"
+	else
+	    env_cleanup "$exit_code"
+	fi
+    }
 }
 
 dbg_print() {
@@ -709,7 +715,7 @@ display_time_elapsed() {
 #---------------------------------------------------------------
 
 initialize_env() {
-    # dbg_print "initialize_env()" forced
+    dbg_print "initialize_env()" forced
 
     kernel_name="$(uname -s)"
     dbg_indent=1 # used to indent printouts in dbg_print
@@ -999,6 +1005,8 @@ olint_venv_enable() {
 }
 
 olint_venv_disable() {
+    dbg_print "olint_venv_disable() b_olint_venv_enabled:$b_olint_venv_enabled"
+    exit 1
     $b_olint_venv_enabled && {
         echo "===  de-activating olint venv  ===" >/dev/stderr
         deactivate || error_msg "Failed to deactivate alpine linting venv"
@@ -1964,7 +1972,9 @@ process_file_tree() {
 t_app_start=$(date +%s) # will be reset after a -Z cache clennse
 
 #  Dependencies
-[[ -z "$(command -v file)" ]] && error_msg "Missing dependency: file"
+[[ -z "$(command -v file)" ]] && {
+    error_msg "Missing dependency: file" 1 no_cleanup
+}
 
 initialize_env
 get_config "$1"
