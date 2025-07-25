@@ -5,7 +5,7 @@
 # Purpose:
 #  Static type checking and linting (by Microsoft).
 # Strengths:
-#  Overlaps with Mypy but is less strict, making it more suitable for
+#  Overlaps with mypy but is less strict, making it more suitable for
 #  gradual adoption of type hints.
 #  Be aware: For CLI pyright makes sense, in vscode Pylance should be used,
 #  since it uses the pyright engine but offers better integration
@@ -26,8 +26,13 @@
 #     ],
 # }
 
-plugin_cmd="pyright"
-proj_plugin_cmd="pyright"
+if [[ -n "$(command -v mypy)" ]]; then
+    plugin_cmd="/dev/null"
+    proj_plugin_cmd="/dev/null"
+else
+    plugin_cmd="pyright"
+    proj_plugin_cmd="pyright"
+fi
 
 plugin_priority=55
 
