@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+#
+# Super simple and quick script tesster, will print out basic errors detected
+# so ideal to run as a first check.
+#
+plugin_cmd="bash -n"
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .sh
+    .bash
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+    "POSIX shell script*"
+    "Bourne-Again shell script*"
+)
+
+plugin_priority=95
