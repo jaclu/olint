@@ -2,12 +2,17 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # don't warn about unused variables
 
-#
+# Purpose:
+#  Fast static checker for Python that looks for actual code errors,
+#  not formatting issues or style violations.
+# Strengths:
+#  Blazingly fast
+
 # Provided by flake8, don't use this if flake8 is used!
-#
+
 # Be aware that currently pyflakes doesn't seem to have an exclude
 # param, so might not be practical to use as a project linter....
-#
+
 
 # Installation methods;
 #  pip install pyflakes  # usable on iSH
