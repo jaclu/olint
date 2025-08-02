@@ -548,7 +548,6 @@ display_config() {
     local item
 
     dbg_print "display_config()" "$dbglvl_lintscan_basic"
-
     echo "=== Configuration   ==="
     echo
     if [[ -n "$olint_cfg_default" ]] || [[ -n "$olint_cfg_proj" ]]; then
