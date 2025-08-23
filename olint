@@ -16,7 +16,7 @@
 #
 #
 
-# shellcheck disable=SC2329
+# shellcheck disable=SC2317,SC2329
 handle_ctrl_c() {
     trap '' INT # abort capturing Ctrl-C
     echo
