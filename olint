@@ -16,7 +16,7 @@
 #
 #
 
-# shellcheck disable=SC2317
+# shellcheck disable=SC2329
 handle_ctrl_c() {
     trap '' INT # abort capturing Ctrl-C
     echo
@@ -102,21 +102,21 @@ str_in_array() {
     return 1 # Return 1 (false) if not found
 }
 
-remove_duplicates_1() {
-    # Does not require associative arrays, which makes it compatible with older
-    # versions of bash (pre-4.0). Inefficient for large arrays.
-    local item
-    local result
+# remove_duplicates_1() {
+#     # Does not require associative arrays, which makes it compatible with older
+#     # versions of bash (pre-4.0). Inefficient for large arrays.
+#     local item
+#     local result
 
-    result=("$@") # can't send $@ as a param
-    result=()
-    for item in "$@"; do
-        if [[ ! " ${result[*]} " =~ $item ]]; then
-            result+=("$item")
-        fi
-    done
-    echo "${result[@]}"
-}
+#     result=("$@") # can't send $@ as a param
+#     result=()
+#     for item in "$@"; do
+#         if [[ ! " ${result[*]} " =~ $item ]]; then
+#             result+=("$item")
+#         fi
+#     done
+#     echo "${result[@]}"
+# }
 
 remove_duplicates_2() {
     # More efficient because it uses an associative array (declare -A),
@@ -148,18 +148,18 @@ remove_duplicates_2() {
     echo "${unique_array[@]}"
 }
 
-remove_duplicates_3() {
-    # Fully POSIX-compatible if you replace local -a with set to handle arrays.
-    # Slower than remove_duplicates_2 for large arrays due to linear search.
-    local item
-    local -a unique_array=()
-    for item in "$@"; do
-        if ! printf '%s\n' "${unique_array[@]}" | grep -qxF -- "$item"; then
-            unique_array+=("$item")
-        fi
-    done
-    echo "${unique_array[@]}"
-}
+# remove_duplicates_3() {
+#     # Fully POSIX-compatible if you replace local -a with set to handle arrays.
+#     # Slower than remove_duplicates_2 for large arrays due to linear search.
+#     local item
+#     local -a unique_array=()
+#     for item in "$@"; do
+#         if ! printf '%s\n' "${unique_array[@]}" | grep -qxF -- "$item"; then
+#             unique_array+=("$item")
+#         fi
+#     done
+#     echo "${unique_array[@]}"
+# }
 
 de_duplicate_config() {
     # Remove dupes
