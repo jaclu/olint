@@ -1,5 +1,9 @@
 # ToDo
 
+## order for shell check
+
+Shoulddn't bashate go before shellcheck?
+
 ## pyflakes
 
 supposedly redundant if flake8 is found, however flake8 seems unable
