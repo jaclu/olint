@@ -1,5 +1,9 @@
 # ToDo
 
+## pyflakes
+
+supposedly redundant if flake8 is found, however flake8 seems unable to find `#hepp` without complaining about missing space
+
 ## Dont list files covered by project linters as `No linter`
 
 ## order project linter by prio
