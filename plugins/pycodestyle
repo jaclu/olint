@@ -11,15 +11,15 @@
 #  brew install pycodestyle
 #  (Ubuntu) sudo apt install pycodestyle
 #  (Alpine) sudo apk add py3-pycodestyle
+# Redundant if flake8 is found
 
 # inline-excludes:  # noqa: E402
 # project config files: setup.cfg
 #  [pycodestyle]
 #  max-line-length = 92
 
-if [[ -n "$(command -v flake8)" ]]; then
+if [[ -n "$(command -v flake8)" ]] && [[ -n "$(command -v ruff)" ]]; then
     #
-    # Redundant if flake8 is found, this is part of flake8
     # set to /dev/null instead of "" to avoid warning
     #   missing: plugin_cmd
     #

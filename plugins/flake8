@@ -13,6 +13,7 @@
 #  (e.g., flake8-bugbear for additional checks). Less verbose than Pylint.
 # Use case:
 #  Ideal for enforcing style and detecting common coding issues.
+# Redundant if ruff is found
 
 # Installation methods;
 #  pip install flake8  # crashes on iSH
@@ -27,7 +28,6 @@
 
 if [[ -n "$(command -v ruff)" ]]; then
     #
-    # Redundant if ruff is found
     # set to /dev/null instead of "" to avoid warning
     #   missing: plugin_cmd
     #

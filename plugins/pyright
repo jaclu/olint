@@ -11,6 +11,7 @@
 #  since it uses the pyright engine but offers better integration
 # Use case:
 #  Provides type checks and basic linting as you write code.
+# Redundant if mypy is found
 
 # Installation methods;
 #  pip install pyright  # iSH can install but fails to run this

@@ -8,6 +8,7 @@
 #  Ensures imports are grouped and ordered correctly according to PEP 8.
 # Use case:
 #  Keeps imports organized and clean.
+# Redundant if ruff is found
 
 # Installation methods;
 #  pip install isort  # usable on iSH
@@ -17,7 +18,6 @@
 
 if [[ -n "$(command -v ruff)" ]]; then
     #
-    # Redundant if ruff is found
     # set to /dev/null instead of "" to avoid warning
     #   missing: plugin_cmd
     #

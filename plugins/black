@@ -8,6 +8,7 @@
 #  Enforces consistent formatting across your codebase.
 # Use case:
 #  Works well alongside linters like Flake8 and Pylint for a unified style.
+# Redundant if ruff is found
 
 # Installation methods;
 #  pip install black  # usable on iSH
@@ -23,7 +24,6 @@
 
 if [[ -n "$(command -v ruff)" ]]; then
     #
-    # Redundant if ruff is found
     # set to /dev/null instead of "" to avoid warning
     #   missing: plugin_cmd
     #
