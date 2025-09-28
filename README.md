@@ -239,11 +239,13 @@ If the cmd for a linter is not installed, that linter will be skipped.
 New linters can be added by creating a plugin definition file in the plugins
 folder, located where the global config file is, see below for details.
 
-## iSH Ksuggestions
+## iSH suggestions
+
+First of all be aware that Ansible 32-bit doesn't have shellcheck!
 
 ```sh
 pip install bandit black codespell isort pycodestyle pyflakes pylint pymarkdown yamllint
-pip install bashate mypy # really slow...
+pip install bashate mypy # to slow to be usable...
 ```
 
 skip_linters+=(
@@ -254,8 +256,8 @@ skip_linters+=(
     ruff     # segfaults on iSH
 
     # just to slow
-    checkbashisms  # 4-5 mins
-    mypy           # 10 mins
+    checkbashisms  # 4-5 mins / file
+    mypy           # 10 mins / file
 )
 
 ## Termuux suggestions
