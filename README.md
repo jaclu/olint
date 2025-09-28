@@ -239,7 +239,12 @@ If the cmd for a linter is not installed, that linter will be skipped.
 New linters can be added by creating a plugin definition file in the plugins
 folder, located where the global config file is, see below for details.
 
-## iSH recomendaions
+## iSH Ksuggestions
+
+```sh
+pip install bandit black codespell isort pycodestyle pyflakes pylint pymarkdown yamllint
+pip install bashate mypy # really slow...
+```
 
 skip_linters+=(
     # skipping seveal tools that are not usable on iSH
@@ -252,6 +257,33 @@ skip_linters+=(
     checkbashisms  # 4-5 mins
     mypy           # 10 mins
 )
+
+## Termuux suggestions
+
+Termux still allows global pip installs, so no venv is necessary
+
+Several plugins are only available as pips, so below is a suggested
+plugin install procedure
+
+recommended: `pip install pip-autoremove` and then use `pip-autoremove X`
+to remove dependencies
+
+```sh
+
+apt install ruff cppcheck shellcheck
+# pycodestyle pyflakes3 pylint 
+
+apt install nodejs npm
+npm install -g jsonlint
+# check installed using: npm list -g --depth=0
+
+
+# shellcheck 0.11.0
+
+pip install bandit bashate codespell pymarkdown mypy pycodestyle pyflakes \
+    pylint pymarkdownlnt yamllint
+
+```
 
 ## Contributing
 
