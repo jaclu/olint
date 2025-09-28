@@ -248,6 +248,9 @@ pip install bandit black codespell isort pycodestyle pyflakes pylint pymarkdown 
 pip install bashate mypy # to slow to be usable...
 ```
 
+Suggestion for ~/.config/olint/olint.conf
+
+```sh
 skip_linters+=(
     # skipping seveal tools that are not usable on iSH
 
@@ -259,6 +262,7 @@ skip_linters+=(
     checkbashisms  # 4-5 mins / file
     mypy           # 10 mins / file
 )
+```
 
 ## Termuux suggestions
 
