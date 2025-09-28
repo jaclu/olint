@@ -239,11 +239,19 @@ If the cmd for a linter is not installed, that linter will be skipped.
 New linters can be added by creating a plugin definition file in the plugins
 folder, located where the global config file is, see below for details.
 
-## iSH not usable plugins
+## iSH recomendaions
 
-- jsonlint
-- rslint
-- shellcheck
+skip_linters+=(
+    # skipping seveal tools that are not usable on iSH
+
+    flake8   # crashes on iSH
+    pyright  # iSH can install but fails to run this
+    ruff     # segfaults on iSH
+
+    # just to slow
+    checkbashisms  # 4-5 mins
+    mypy           # 10 mins
+)
 
 ## Contributing
 
