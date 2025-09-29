@@ -258,7 +258,8 @@ skip_linters+=(
     pyright  # iSH can install but fails to run this
     ruff     # segfaults on iSH
 
-    # just to slow - aprox time per file given as hint
+    # just to slow - approx time per file given as hint
+    bandit         #  40 seconds
     checkbashisms  # 4-5 mins
     mypy           #  10 mins
     pylint         # 1-2 mins
