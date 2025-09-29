@@ -2,9 +2,9 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # don't warn about unused variables
 
-#
-# Provided by flake8, don't use this if flake8 is used!
-#
+# Purpose:
+#  Python style guide checker (formerly called pep8)
+# Redundant if flake8 & ruff is found
 
 # Installation methods;
 #  pip install pycodestyle  # usable on iSH

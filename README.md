@@ -262,6 +262,9 @@ skip_linters+=(
     checkbashisms  # 4-5 mins
     mypy           #  10 mins
     pylint         # 1-2 mins
+
+    black      # not needed on a slow env
+    pylintrc   # not slow but pointless when not using pylint
 )
 ```
 
