@@ -282,7 +282,7 @@ to remove dependencies
 ```sh
 
 apt install ruff cppcheck shellcheck
-# reduntant if ruff is found: pycodestyle pyflakes3 pylint 
+# redundant if ruff is found: pycodestyle pyflakes3 pylint 
 
 apt install nodejs npm
 npm install -g jsonlint
