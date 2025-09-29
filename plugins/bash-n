@@ -5,7 +5,12 @@
 # Super simple and quick script tesster, will print out basic errors detected
 # so ideal to run as a first check.
 #
-plugin_cmd="bash --norc -n"
+
+if [[ -n "$(command -v shellcheck)" ]]; then
+    plugin_cmd="/dev/null"
+else
+    plugin_cmd="bash --norc -n"
+fi
 
 # file extensions this plugin handles
 plugin_extensions=(
