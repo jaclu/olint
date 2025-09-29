@@ -244,8 +244,8 @@ folder, located where the global config file is, see below for details.
 First of all be aware that Ansible 32-bit doesn't have shellcheck!
 
 ```sh
-pip install bandit black codespell isort pycodestyle pyflakes pylint pymarkdown yamllint
-pip install bashate mypy # to slow to be usable...
+pip install basate codespell isort pycodestyle pyflakes pymarkdown yamllint
+pip install bandit black bashate mypy pylint # to slow to be usable...
 ```
 
 Suggestion for ~/.config/olint/olint.conf
@@ -282,7 +282,7 @@ to remove dependencies
 ```sh
 
 apt install ruff cppcheck shellcheck
-# pycodestyle pyflakes3 pylint 
+# reduntant if ruff is found: pycodestyle pyflakes3 pylint 
 
 apt install nodejs npm
 npm install -g jsonlint
