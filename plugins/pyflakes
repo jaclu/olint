@@ -7,12 +7,10 @@
 #  not formatting issues or style violations.
 # Strengths:
 #  Blazingly fast
-
-# Provided by flake8, don't use this if flake8 is used!
-
-# Be aware that currently pyflakes doesn't seem to have an exclude
-# param, so might not be practical to use as a project linter....
-
+# Issues:
+#  pyflakes doesn't seem to have an exclude param, so might not be practical
+#  to use as a project linter....
+# Redundant if flake8 or ruff is found
 
 # Installation methods;
 #  pip install pyflakes  # usable on iSH
@@ -22,7 +20,7 @@
 
 # inline-excludes:  # noqa: F401,F403
 
-if [[ -n "$(command -v flake8)" ]]; then
+if [[ -n "$(command -v flake8)" ]] || [[ -n "$(command -v ruff)" ]]; then
     #
     # Redundant if flake8 is found, this is part of flake8
     # set to /dev/null instead of "" to avoid warning
