@@ -995,7 +995,7 @@ parse_cmd_line() {
 olint_venv_enable() {
     # shellcheck disable=SC2154
     if [[ -d "$d_linting_venv" ]]; then
-        if [[ $(command -v python3) == "$d_venv/"* ]]; then
+        if [[ $(command -v python3) == "$d_linting_venv/"* ]]; then
             echo "---  Already using olint venv  ---"
             return
         fi
