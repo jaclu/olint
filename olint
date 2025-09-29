@@ -994,14 +994,18 @@ parse_cmd_line() {
 
 olint_venv_enable() {
     # shellcheck disable=SC2154
-    if [[ -d "$d_linting_venv" ]] &&
-        [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
-        b_olint_venv_enabled=true
+    if [[ -d "$d_linting_venv" ]]; then
+        if [[ $(command -v python3) == "$d_venv/"* ]]; then
+            echo "---  Already using olint venv  ---"
+            return
+        fi
+        # [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
         echo "===  Activating olint venv  ===" >/dev/stderr
         # shellcheck source=/dev/null
         . "$d_linting_venv/bin/activate" || {
             error_msg "Failed to activate linting venv"
         }
+        b_olint_venv_enabled=true
     fi
 }
 
