@@ -1976,6 +1976,7 @@ t_app_start=$(date +%s) # will be reset after a -Z cache clennse
 }
 
 initialize_env
+olint_venv_enable  # Needs to happen before get_config
 get_config "$1"
 parse_cmd_line "$@"
 
@@ -2009,7 +2010,6 @@ $b_show_help && {
     env_cleanup 0
 }
 
-olint_venv_enable
 if [[ -d "$olint_plugin_dir" ]]; then
     check_linter_plugins "$olint_plugin_dir"
 else
