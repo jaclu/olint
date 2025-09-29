@@ -998,10 +998,12 @@ olint_venv_enable() {
         [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
         b_olint_venv_enabled=true
         echo "===  Activating olint venv  ===" >/dev/stderr
+        org_pwd="$(pwd)"
         # shellcheck source=/dev/null
         . "$d_linting_venv/bin/activate" || {
             error_msg "Failed to activate linting venv"
         }
+        [[ "$(pwd)" != "$org_pwd" ]] && error_msg "pw changed: $(pwd)"
     fi
 }
 
