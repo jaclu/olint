@@ -308,14 +308,16 @@ file for details.
 
 ## python
 
-95 pyflakes Fast static checker for Python that looks for actual code errors,
+95 pyflakes flake8||ruff - Fast static checker for Python that looks for actual
+           code errors,
 90 ruff    Extremely fast Python linter, written in Rust
-85 flake8  Lightweight tool for enforcing PEP 8 style guide compliance.
-80 pycodestyle Python style guide checker (formerly called pep8)
+85 flake8  ruff - Lightweight tool for enforcing PEP 8 style guide compliance.
+80 pycodestyle flake8||ruff -  Python style guide checker (formerly called pep8)
 75 pylint  Detects potential bugs, enforces coding standards, and warns about
            unused imports or variables.
-45 black   Enforces consistent formatting across your codebase.
-40 isort   Ensures imports are grouped and ordered correctly according to PEP 8.
-35 pyright Overlaps with mypy but is less strict
+45 black   ruff - Enforces consistent formatting across your codebase.
+40 isort   riff - Ensures imports are grouped and ordered correctly according to
+           PEP 8.
+35 pyright mypy - Overlaps with mypy but is less strict
 30 mypy    Ensures type correctness when using type hints.
 25 bandit  Identifies security vulnerabilities (e.g., usage of insecure functions
