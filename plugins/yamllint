@@ -18,9 +18,12 @@
 plugin_cmd="yamllint -s" # -s trigger error on warnings
 proj_plugin_cmd="yamllint -s ."
 
+plugin_priority=70
+
 # file extensions this plugin handles
 plugin_extensions=(
     .yml
+    .yaml
 )
 
 # file-types this plugin handles
