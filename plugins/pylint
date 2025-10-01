@@ -33,7 +33,7 @@
 plugin_cmd="pylint"
 proj_plugin_cmd="pylint --ignore-paths .venv/ ."
 
-plugin_priority=40
+plugin_priority=75
 
 # file extensions this plugin handles
 plugin_extensions=(

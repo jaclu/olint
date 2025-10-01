@@ -305,3 +305,17 @@ request, please open an issue or submit a pull request.
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE)
 file for details.
+
+## python
+
+95 pyflakes Fast static checker for Python that looks for actual code errors,
+90 ruff    Extremely fast Python linter, written in Rust
+85 flake8  Lightweight tool for enforcing PEP 8 style guide compliance.
+80 pycodestyle Python style guide checker (formerly called pep8)
+75 pylint  Detects potential bugs, enforces coding standards, and warns about
+           unused imports or variables.
+45 black   Enforces consistent formatting across your codebase.
+40 isort   Ensures imports are grouped and ordered correctly according to PEP 8.
+35 pyright Overlaps with mypy but is less strict
+30 mypy    Ensures type correctness when using type hints.
+25 bandit  Identifies security vulnerabilities (e.g., usage of insecure functions
