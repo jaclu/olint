@@ -316,7 +316,7 @@ file for details.
 75 pylint  Detects potential bugs, enforces coding standards, and warns about
            unused imports or variables.
 45 black   ruff - Enforces consistent formatting across your codebase.
-40 isort   riff - Ensures imports are grouped and ordered correctly according to
+40 isort   ruff - Ensures imports are grouped and ordered correctly according to
            PEP 8.
 35 pyright mypy - Overlaps with mypy but is less strict
 30 mypy    Ensures type correctness when using type hints.
