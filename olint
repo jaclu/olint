@@ -1710,7 +1710,7 @@ lint_proj() {
     lint_pid=$!
     wait "$lint_pid"
     lint_exit_status=$?
-    show_linter_time
+    show_linter_time "proj"
 
     if [[ "$lint_exit_status" -eq 0 ]]; then
         proj_lint_tasks_completed+=" $linter"
@@ -1756,15 +1756,22 @@ show_linter_action() {
 }
 
 log_processing_statistics() {
+    local l_fname
+    if [[ -n "$1" ]]; then
+        l_fname="$1" # if param is provided use instead of fname
+    else
+        l_fname="$fname"
+    fi
     # printf 'linter: %s \t%s \t%s\n' "$duration" "$linter" "$fname"
-    sql_log_lint_stats "$linter" "$fname" "$duration"
+    sql_log_lint_stats "$linter" "$l_fname" "$duration"
 }
 
 show_linter_time() {
+    local fname_override="$1"
     local duration
 
     duration=$(($(date +%s) - t_lint_start))
-    $b_use_statistics && log_processing_statistics
+    $b_use_statistics && log_processing_statistics "$fname_override"
     if [[ "$duration" -ge "$long_lint_time" ]]; then
         printf ' - '
         display_time_elapsed "$duration"
