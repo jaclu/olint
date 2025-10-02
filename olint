@@ -860,7 +860,7 @@ defaults_for_cmdline_options() {
     b_proj_linters_skip=false    # option: -p
     b_proj_linters_only=false    # option: -P
     b_show_config_short=false    # option: -s
-    b_use_statistics=False       # option: -S
+    b_use_statistics=false       # option: -S
     t_cashe_interval=60          # option: -u
     verbosity_lvl=0              # option: -v
     zap_it=0                     # options: -z / -Z
