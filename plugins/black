@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Code formatter.
+#  Code formatter. - Be aware: Modifies the code!
 # Strengths:
 #  Enforces consistent formatting across your codebase.
 # Use case:

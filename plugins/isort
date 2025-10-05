@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Checks and formats import statements.
+#  Checks and formats import statements. - Be aware: Modifies the code!
 # Strengths:
 #  Ensures imports are grouped and ordered correctly according to PEP 8.
 # Use case:
