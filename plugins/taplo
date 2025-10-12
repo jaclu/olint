@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+#
+# Purpose:
+#  TOML toolkit written in Rust
+#
+# Installation methods
+#  brew install taplo
+#  npm install -g @taplo/cli
+#  yarn global add @taplo/cli
+#  pnpm install -g @taplo/cli
+
+# project config: .taplo.toml
+# Global config: ~/.config/taplo/config.toml / $XDG_CONFIG_HOME/taplo/config.toml
+
+#
+# Reformat toml file: taplo format file.toml
+#
+
+if [[ -n "$(command -v taplo)" ]]; then
+    plugin_cmd="taplo lint"
+fi
+
+# plugin_priority=50
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .toml
+)
+
+# file-types this plugin handles
+#plugin_file_types=(
+#)
