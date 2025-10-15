@@ -20,6 +20,8 @@
 
 if [[ -n "$(command -v taplo)" ]]; then
     plugin_cmd="taplo lint"
+else
+    plugin_cmd=/dev/null
 fi
 
 # plugin_priority=50
