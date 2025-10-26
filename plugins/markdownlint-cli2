@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+
+# Installation methods;
+#  For python, consider pymarkdown
+#  brew install markdownlint-cli2
+# project config file: .markdownlint.yaml
+
+plugin_cmd="markdownlint-cli2"
+proj_plugin_cmd="markdownlint-cli2 ."
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .md
+)
