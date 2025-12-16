@@ -493,7 +493,7 @@ cache_add() {
 show_help() {
     #region help text
     echo "
-Usage: olint [-h] [-c] [-C] [--config-dir] [-e] [-E] [-m] [-n] [-N] [-p] [-P] [-s]
+Usage: olint [-h] [-c] [-C] [-d] [-e] [-E] [-m] [-n] [-N] [-p] [-P] [-s] [-S]
                 [-u time] [-v verbosity_lvl] [-z] [-Z] [number]
 
 Lint all files recursively in reverse chronological order.
@@ -501,31 +501,36 @@ Lint all files recursively in reverse chronological order.
 Available options:
 
 -h, --help              Print this help and exit
--c, --config            List supported and used linters and excluded file patterns
+-m, --mime-type         When scanning files, only identify by mime-type
+-n, --no-linter         Lists all files without a matching linter
+-p, --no-proj-lint      toggles 'Skip all project linters'
+-P, --only-proj-lint    toggles 'Only run project linters'
+-S, --statistics        Store linting times in SQL DB
+-v, --verbose           Set verbosity level, level must also be supplied
+                        1 - Show gathering of available plugins & nr of files linted
+                        2 - List files already linted (cached)
+                        Higher levels are mostly for debugging
 -C, --continue          Continue with the next file after linter issues are found
-    --config-dir        Prints out where global config files are located
+
+--  Display configuration  --
+-c, --config            List supported and used linters and excluded file patterns
+-s, --conffig-short     Only show config up to linters defined
 -e, --excluded          List all files that are excluded, except typically
                         uninteresting items, currently:
 $(display_hidden_excludes)
 -E, --excluded-all      Really list all files that are excluded
--m, --mime-type         When scanning files, only identify by mime-type
--n, --no-linter         Lists all files without a matching linter
+-d,  --config-dir        Prints out where global config files are located
+
+--  Cache related  --
 -N, --nocache           Don't use caching for successfully linted files
--p, --no-proj-lint      toggles 'Skip all project linters'
--P, --only-proj-lint    toggles 'Only run project linters'
--s, --conffig-short     Only show config up to linters defined
--S, --statistics        Store linting times in SQL DB
 -u, --update-cache      How often cache should be saved (default: ${t_cashe_interval}s)
                         On all normal errors, cache will be saved on exit.
                         This is mostly useful when running in remote sessions.
                         To avoid a long running process lossing all progress due to
                         a lost connection.
--v, --verbose           Set verbosity level, level must also be supplied
-                        1 - Show gathering of available plugins & nr of files linted
-                        2 - List files already linted (cached)
-                        Higher levels are mostly for debugging
 -z, --zapcache          Remove cache file if present, then exit
 -Z, --zaprun            First remove cache if present, then continue
+
 number                  Only check files changed in the last number hours
 
 If a file is successfully linted, the filename and time of the latest change
@@ -689,7 +694,7 @@ display_config() {
 display_hidden_excludes() {
     local item
     for item in "${hidden_patterns[@]}"; do
-        echo "                      $item"
+        echo "                          $item"
     done
 }
 
@@ -940,7 +945,7 @@ parse_cmd_line() {
             ;;
         -c | --config) b_show_config=true ;;
         -C | --continue) b_lint_continue=true ;;
-        --config-dir) # Support for ./deploy - prints out the config dir
+        -d | --config-dir) # Support for ./deploy - prints out the config dir
             echo "$olint_cfg_dir"
             exit 0
             ;;
