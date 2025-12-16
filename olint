@@ -758,6 +758,8 @@ initialize_env() {
     files_without_matching_linter=0
     not_linting_msg="skipped task due to no-linters display being selected"
 
+    # used as a temp file during one linting cmd to capture output
+    # to be displayed in case of issue
     f_linter_output=/"${TMPDIR:-tmp}"/olint["$$"]-linter-output
 
     declare -g -A linter_cmd
