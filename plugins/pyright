@@ -27,13 +27,8 @@
 #     ],
 # }
 
-if [[ -n "$(command -v mypy)" ]]; then
-    plugin_cmd="/dev/null"
-    proj_plugin_cmd="/dev/null"
-else
-    plugin_cmd="pyright"
-    proj_plugin_cmd="pyright"
-fi
+plugin_cmd="pyright"
+proj_plugin_cmd="pyright ."
 
 plugin_priority=35
 
