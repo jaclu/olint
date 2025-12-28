@@ -34,9 +34,8 @@ if [[ -n "$(command -v ruff)" ]]; then
     plugin_cmd="/dev/null"
     proj_plugin_cmd="/dev/null"
 else
-    _cmd="flake8 --color=always"
-    plugin_cmd="$_cmd"
-    proj_plugin_cmd="$_cmd"
+    plugin_cmd="flake8 --color=always"
+    proj_plugin_cmd="$plugin_cmd --exclude './.venv'"
 
     # iSH doesn't support flake8 multiprocessing
     [[ -d /proc/ish ]] && [[ -n "$proj_plugin_cmd" ]] && proj_plugin_cmd+=" -j 1"
