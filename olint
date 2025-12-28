@@ -591,9 +591,9 @@ display_config() {
     done
     echo
 
-    [[ ${#proj_linter_order[@]} -gt 0 ]] && {
+    [[ ${#proj_linters[@]} -gt 0 ]] && {
         echo "==  Linters handling the entire project  =="
-        for linter_name in "${proj_linter_order[@]}"; do
+        for linter_name in "${proj_linters[@]}"; do
             echo " $linter_name  - ${proj_linter_cmd[$linter_name]}"
         done
         echo
@@ -775,7 +775,7 @@ initialize_env() {
     declare -g -A linter_extensions
     declare -g -A linter_file_types
     linter_order=() # used to display them in alphabetical order
-    proj_linter_order=()
+    proj_linters=()
 
     #  -----   caching env   -----
 
@@ -1219,7 +1219,7 @@ process_linter_overrides() {
     log_it "process_linter_overrides()" "$dbglvl_major_tasks"
     for linter_override in "${!override_linter_cmd[@]}"; do
         if ! str_in_array "$linter_override" "${linter_order[@]}" &&
-            ! str_in_array "$linter_override" "${proj_linter_order[@]}"; then
+            ! str_in_array "$linter_override" "${proj_linters[@]}"; then
 
             # linter not used, ignore override
             continue
@@ -1236,7 +1236,7 @@ process_linter_overrides() {
         }
         if str_in_array "$linter_override" "${linter_order[@]}"; then
             override_cmd "$linter_override" "$cmd_ok"
-        elif str_in_array "$linter_override" "${proj_linter_order[@]}"; then
+        elif str_in_array "$linter_override" "${proj_linters[@]}"; then
             override_proj_cmd "$linter_override" "$cmd_ok"
         fi
     done
@@ -1248,6 +1248,8 @@ check_linter_plugins() {
     local d_plugins="$1"
     local plugin_count=0
     local file_type
+    local unsorted
+    local sorted_items
 
     [[ "$verbosity_lvl" -ge 1 ]] && printf 'Gathering available linters: '
     if [[ -z "$d_plugins" ]]; then
@@ -1284,6 +1286,16 @@ check_linter_plugins() {
         error_msg "No plugins found in: $d_plugins"
     }
     process_linter_overrides
+
+    # Sort project linters
+    unsorted=()
+    for itm in "${proj_linters[@]}"; do
+        unsorted+=("$itm")
+    done
+    sorted_items="$(sort_linters unsorted)"
+    # shellcheck disable=SC2206 # in this case the string should be split
+    proj_linters=($sorted_items)
+
     [[ "$verbosity_lvl" -ge 1 ]] && echo " done!"
 }
 
@@ -1327,6 +1339,9 @@ parse_plugin_file() {
         }
     done
 
+    # Save priorities before figuring out if it is a project or file linter
+    linter_priorities["$plugin_name"]="$plugin_priority"
+
     if [[ " ${project_linters[*]} " == *" $plugin_name "* ]]; then
         [[ -z "$proj_plugin_cmd" ]] && {
             _m="$plugin_name listed as project_linter, but no proj_plugin_cmd defined"
@@ -1336,23 +1351,11 @@ parse_plugin_file() {
         [[ -n "$cmd_ok" ]] && {
             # Handle it as a project spanning linter
             proj_linter_cmd["$plugin_name"]="$cmd_ok"
-            proj_linter_order+=("$plugin_name")
+            proj_linters+=("$plugin_name")
             return 0
         }
         return 1
     fi
-    # #
-    # #  First check if it is a project wide lint command
-    # #
-    # [[ -n "$proj_plugin_cmd" ]] && {
-    #     cmd_ok="$(verify_lint_cmd "$proj_plugin_cmd")"
-    #     [[ -n "$cmd_ok" ]] && {
-    #         # Handle it as a project spanning linter
-    #         proj_linter_cmd["$plugin_name"]="$cmd_ok"
-    #         proj_linter_order+=("$plugin_name")
-    #         return 0
-    #     }
-    # }
 
     #
     #  Handle it as a normal lint command
@@ -1380,8 +1383,6 @@ parse_plugin_file() {
 
     linter_cmd["$plugin_name"]="$cmd_ok"
     linter_order+=("$plugin_name")
-
-    linter_priorities["$plugin_name"]="$plugin_priority"
 
     [[ ${#plugin_extensions[@]} -eq 0 ]] &&
         [[ ${#plugin_file_types[@]} -eq 0 ]] && {
@@ -1527,7 +1528,7 @@ sort_linters() {
     local -n linters_array=$1
     local sorted_linters=()
 
-    log_it "sort_linters(${linters_array[*]}" "$dbglvl_lintscan_details"
+    log_it "sort_linters(${linters_array[*]})" "$dbglvl_lintscan_details"
 
     if test -d /proc/ish; then
         #
@@ -1758,7 +1759,7 @@ show_linter_action() {
     local fname="$2"
 
     # Print using printf with fixed-width formatting
-    printf '%-16s: %s  ' "$linter" "$fname"
+    printf '%-17s: %s  ' "$linter" "$fname"
     t_lint_start="$(date +%s)"
 }
 
@@ -2125,11 +2126,11 @@ process_file_tree() {
     }
 
     $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded &&
-        [[ ${#proj_linter_order[@]} -gt 0 ]] && {
+        [[ ${#proj_linters[@]} -gt 0 ]] && {
 
         ! $b_proj_linters_only && cache_set_timer
 
-        for linter_name in "${proj_linter_order[@]}"; do
+        for linter_name in "${proj_linters[@]}"; do
             [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
 
             # it would look ridiculous to first flush the cache then imeditally
