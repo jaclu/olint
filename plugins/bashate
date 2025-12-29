@@ -17,7 +17,11 @@
 plugin_cmd="bashate"
 
 if command -v "$plugin_cmd" >/dev/null; then
-    if command -v bashate-wrapper >/dev/null; then
+    if command -v shfmt >/dev/null; then
+        # In this case shfmt does the heavy lifting and bashate is only used
+        # for residual policy checks
+        pligin_cmd="$plugin_cmd --ignore=E003,E006,E010,E011,E020,E021,E022,E023,E024"
+    elif command -v bashate-wrapper >/dev/null; then
         # this reads .bashateconfig
         plugin_cmd="bashate-wrapper"
     fi
@@ -27,12 +31,13 @@ fi
 # give a meaningful error. such as missing a } somewhere will just
 # be reported as unexpected end of file.
 # so better to run after shellcheck
-plugin_priority=30
+plugin_priority=20
 
 #  file-types this plugin handles
 plugin_file_types=(
     "Bourne-Again shell script*"
     "Paul Falstad's zsh script"
+    "POSIX shell script*"
 )
 
 plugin_extensions=(

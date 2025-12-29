@@ -19,7 +19,7 @@ plugin_cmd="checkbashisms -n -x "
 #
 #plugin_cmd_actual="checkbashisms"
 
-plugin_priority=60
+plugin_priority=40
 
 #  file-types this plugin handles
 plugin_file_types=(
