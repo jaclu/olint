@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Static type checking and linting (by Microsoft).
+#  Static type checking
 # Strengths:
 #  Overlaps with mypy but is less strict, making it more suitable for
 #  gradual adoption of type hints.
@@ -30,7 +30,7 @@
 plugin_cmd="pyright"
 proj_plugin_cmd="pyright ."
 
-plugin_priority=80
+plugin_priority=40
 
 # file extensions this plugin handles
 plugin_extensions=(

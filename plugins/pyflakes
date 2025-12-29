@@ -3,6 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  lightweight linting: undefined names, unused imports etc
 #  Fast static checker for Python that looks for actual code errors,
 #  not formatting issues or style violations.
 # Strengths:
@@ -39,7 +40,7 @@ else
     proj_plugin_cmd="$_cmd ."
 fi
 
-plugin_priority=95
+plugin_priority=60
 
 # file extensions this plugin handles
 plugin_extensions=(

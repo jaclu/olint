@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Python style guide checker (formerly called pep8)
+#  style issues not fixed by black (formerly called pep8)
 # Redundant if flake8 & ruff is found
 
 # Installation methods;
@@ -30,7 +30,7 @@ else
     proj_plugin_cmd="pycodestyle --exclude=.venv ."
 fi
 
-plugin_priority=80
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(

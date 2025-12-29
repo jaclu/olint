@@ -23,7 +23,7 @@ that should be linted, such as ~/.config/common_pull_config
 ## CtrlC
 
 - jsonlint ignores ctrl c
-- rslint  ignores ctrl c
+- rslint ignores ctrl c
 
 ## Linter pips
 
@@ -33,3 +33,33 @@ jsonlint
 pycodestyle
 pylint
 yamllint
+
+90 - ruff
+
+40 - pyright
+30 - mypy
+20 - pylint
+10 - bandit
+
+## no ruff
+
+90 - isort
+80 - black
+70 - flake8
+
+40 - pyright
+30 - mypy
+20 - pylint
+10 - bandit
+
+## no ruff or flake
+
+90 - isort
+80 - black
+70 - pycodestyle - no ruff or flake
+60 - pyflakes - no ruff or flake
+
+40 - pyright
+30 - mypy
+20 - pylint
+10 - bandit

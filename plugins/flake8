@@ -41,7 +41,7 @@ else
     [[ -d /proc/ish ]] && [[ -n "$proj_plugin_cmd" ]] && proj_plugin_cmd+=" -j 1"
 fi
 
-plugin_priority=85
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(
