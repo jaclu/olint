@@ -2055,7 +2055,7 @@ ish_sysload_check() {
     # until load is reasonable
     if [[ -x "$ish_uptime" ]]; then
         while [[ "$($ish_uptime -l | cut -d. -f1)" -ge "$load_trigger" ]]; do
-            echo "iSH sysload is > $load_trigger, waiting ${sleep_time}s"
+            echo "***  iSH sysload is > $load_trigger, waiting ${sleep_time}s  ***"
             sleep "$sleep_time"
         done
     else
