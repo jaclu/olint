@@ -727,6 +727,11 @@ initialize_env() {
     kernel_name="$(uname -s)"
     dbg_indent=1 # used to indent printouts in log_it
 
+    # cache if this is running on iSH, since skipping a syscall on iSH makes a difference
+    IS_ISH=0
+    if [[ -d /proc/ish ]]; then
+        IS_ISH=1
+    fi
     # local folder for plugin overrides
     d_plugin_overrides="$(pwd)"/.olint_plugin_overrides
 
@@ -1530,7 +1535,7 @@ sort_linters() {
 
     log_it "sort_linters(${linters_array[*]})" "$dbglvl_lintscan_details"
 
-    if test -d /proc/ish; then
+    if [[ "$IS_ISH" -eq 1 ]]; then
         #
         #  iSH kernel doesn't support enough of /proc to make mapfile work
         #
@@ -1958,7 +1963,7 @@ generate_list_of_files_to_process() {
         mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + \
             | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
     else
-        if test -d /proc/ish; then
+        if [[ "$IS_ISH" -eq 1 ]]; then
             #
             #  iSH kernel doesn't support enough of /proc to make mapfile work
             #
@@ -2041,6 +2046,21 @@ should_fname_be_excluded() {
     return 1
 }
 
+ish_sysload_check() {
+    local ish_uptime=/usr/local/bin/uptime
+
+    # iSH crashes if sysload goes up to much, this pauses
+    # until load is reasonable
+    if [[ -x "$ish_uptime" ]]; then
+        while [[ "$($ish_uptime -l | cut -d. -f1)" -gt 3 ]]; do
+            echo "iSH uptime is high, waiting a bit"
+            sleep 3
+        done
+    else
+        echo "iSH platform, no custom uptime"
+    fi
+}
+
 process_file_tree() {
     #
     #  Loop over al files, sorted by file age, newest firtst.
@@ -2050,7 +2070,6 @@ process_file_tree() {
     #  the file tree is globally sorted by age
     #
     local dbg_indent=$dbg_indent
-    local ish_uptime=/usr/local/bin/uptime
     local all_files
     local fname
     local b_linter_found
@@ -2062,14 +2081,8 @@ process_file_tree() {
     trap 'handle_ctrl_c INT' INT
 
     ! $b_proj_linters_only && {
-        [[ -d /proc/ish ]] && [[ -x "$ish_uptime" ]] && {
-            # iSH crashes if sysload goes up to much, this pauses
-            # until load is reasonable
-            while [[ "$($ish_uptime -l | cut -d. -f1)" -gt 3 ]]; do
-                echo "iSH uptime is high, waiting a bit"
-                sleep 3
-            done
-        }
+        [[ "$IS_ISH" -eq 1 ]] && ish_sysload_check
+
         generate_list_of_files_to_process
 
         orig_dbg_indent=$dbg_indent
@@ -2078,6 +2091,8 @@ process_file_tree() {
         for fname in "${all_files[@]}"; do
             dbg_indent=$orig_dbg_indent
             [[ -z "$fname" ]] && continue
+
+            [[ "$IS_ISH" -eq 1 ]] && ish_sysload_check
 
             b_linter_found=false
             [[ -d "$fname" ]] && continue
@@ -2142,6 +2157,7 @@ process_file_tree() {
         for linter_name in "${proj_linters[@]}"; do
             [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
 
+            [[ "$IS_ISH" -eq 1 ]] && ish_sysload_check
             # it would look ridiculous to first flush the cache then imeditally
             # write it again, so lets do it before the project lint
             maybe_update_cache
