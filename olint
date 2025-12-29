@@ -769,7 +769,7 @@ initialize_env() {
     #  -----   iSH specifics   -----
 
     ish_max_load=5
-    ish_high_load_sleep=30
+    ish_high_load_sleep=60
 
     #  -----   linting env   -----
 
