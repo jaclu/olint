@@ -30,7 +30,6 @@ fi
 
 plugin_priority=40
 
-
 # file extensions this plugin handles
 plugin_extensions=(
     .py

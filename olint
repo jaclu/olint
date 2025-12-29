@@ -210,9 +210,9 @@ recent_enough() {
     ((dbg_indent++)) # increase indent until this returns
 
     case "$h_max_age" in
-    0) return 0 ;;  # Return right away if no max age is used
-    -1) return 1 ;; # Always fail in -s mode
-    *) ;;
+        0) return 0 ;;  # Return right away if no max age is used
+        -1) return 1 ;; # Always fail in -s mode
+        *) ;;
     esac
 
     if [[ -z "$t_cutoff" ]]; then
@@ -257,8 +257,8 @@ mtime_2_date() {
     fi
 
     case "$kernel_name" in
-    "Darwin") as_date="$(date -r "$f_mtime" +'%Y-%m-%d %H:%M:%S')" ;;
-    *) as_date="$(date -d "@$f_mtime" +'%Y-%m-%d %H:%M:%S')" ;;
+        "Darwin") as_date="$(date -r "$f_mtime" +'%Y-%m-%d %H:%M:%S')" ;;
+        *) as_date="$(date -d "@$f_mtime" +'%Y-%m-%d %H:%M:%S')" ;;
     esac
 
     log_it "result [$as_date]" "$((dbglvl_data_types + 1))"
@@ -920,12 +920,12 @@ defaults_for_prog_config_file() {
 should_project_be_ignored() {
     #  Abort Check
     case "$(lowercase_it "$ignore_project")" in
-    1 | "true" | "yes")
-        echo "olint - Project ignored due to ignore_project=$ignore_project"
-        echo "        Defined in: $olint_cfg_proj"
-        env_cleanup 0
-        ;;
-    *) ;;
+        1 | "true" | "yes")
+            echo "olint - Project ignored due to ignore_project=$ignore_project"
+            echo "        Defined in: $olint_cfg_proj"
+            env_cleanup 0
+            ;;
+        *) ;;
     esac
 }
 
@@ -935,73 +935,73 @@ parse_cmd_line() {
     # log_it "parse_cmd_line()" forced
     while [[ -n "$1" ]]; do
         case $1 in
-        -h | --help)
-            #
-            # only toggle a switch now, help will be displayed after
-            # git_config is called
-            #
-            # shellcheck disable=SC2317
-            b_show_help=true
-            ;;
-        -c | --config) b_show_config=true ;;
-        -C | --continue) b_lint_continue=true ;;
-        -d | --config-dir) # Support for ./deploy - prints out the config dir
-            echo "$olint_cfg_dir"
-            exit 0
-            ;;
-        -e | --excluded)
-            b_show_excluded=true
-            b_skip_common_excludes=true
-            b_lint_files=false
-            ;;
-        -E | --excluded-all)
-            b_show_excluded=true
-            b_skip_common_excludes=false
-            b_lint_files=false
-            ;;
-        -m | --mime-type) b_mime_type_limit=true ;;
-        -n | --no-linter) b_lint_files=false ;;
-        -N | --nocache) b_use_cache=false ;;
-        -p | --no-proj-lint) toggle_bool b_proj_linters_skip ;;
-        -P | --only-proj-lint) toggle_bool b_proj_linters_only ;;
-        -s | --conffig-short)
-            b_show_config=true
-            b_show_config_short=true
-            ;;
-        -S | --statistics)
-            b_use_statistics=true
-            ;;
-        -u | --update-cache)
-            t="${2:-missing param}"
-            [[ "$t" = "missing param" ]] && {
-                error_msg "-u/--update-cache without time param"
-            }
-            is_integer "$t" || error_msg "-u/--update-cache is no int: [$t]"
-            t_cashe_interval="$t"
-            shift # pop update interval
-            ;;
-        -v | --verbose)
-            lvl="${2:-missing param}"
-            [[ "$lvl" = "missing param" ]] && {
-                error_msg "-v/--verbose without verbosity lvl param"
-            }
-            is_integer "$lvl" || error_msg "verbosity_lvl is not int: [$lvl]"
-            verbosity_lvl="$lvl"
-            shift # pop debug level
-            ;;
-        -z | --zapcache)
-            zap_it=1 # zap then exit
-            ;;
-        -Z | --zaprun)
-            zap_it=2 # zap then run
-            ;;
-        *[!0-9]*) error_msg "Unrecognized option: $1" ;;
+            -h | --help)
+                #
+                # only toggle a switch now, help will be displayed after
+                # git_config is called
+                #
+                # shellcheck disable=SC2317
+                b_show_help=true
+                ;;
+            -c | --config) b_show_config=true ;;
+            -C | --continue) b_lint_continue=true ;;
+            -d | --config-dir) # Support for ./deploy - prints out the config dir
+                echo "$olint_cfg_dir"
+                exit 0
+                ;;
+            -e | --excluded)
+                b_show_excluded=true
+                b_skip_common_excludes=true
+                b_lint_files=false
+                ;;
+            -E | --excluded-all)
+                b_show_excluded=true
+                b_skip_common_excludes=false
+                b_lint_files=false
+                ;;
+            -m | --mime-type) b_mime_type_limit=true ;;
+            -n | --no-linter) b_lint_files=false ;;
+            -N | --nocache) b_use_cache=false ;;
+            -p | --no-proj-lint) toggle_bool b_proj_linters_skip ;;
+            -P | --only-proj-lint) toggle_bool b_proj_linters_only ;;
+            -s | --conffig-short)
+                b_show_config=true
+                b_show_config_short=true
+                ;;
+            -S | --statistics)
+                b_use_statistics=true
+                ;;
+            -u | --update-cache)
+                t="${2:-missing param}"
+                [[ "$t" = "missing param" ]] && {
+                    error_msg "-u/--update-cache without time param"
+                }
+                is_integer "$t" || error_msg "-u/--update-cache is no int: [$t]"
+                t_cashe_interval="$t"
+                shift # pop update interval
+                ;;
+            -v | --verbose)
+                lvl="${2:-missing param}"
+                [[ "$lvl" = "missing param" ]] && {
+                    error_msg "-v/--verbose without verbosity lvl param"
+                }
+                is_integer "$lvl" || error_msg "verbosity_lvl is not int: [$lvl]"
+                verbosity_lvl="$lvl"
+                shift # pop debug level
+                ;;
+            -z | --zapcache)
+                zap_it=1 # zap then exit
+                ;;
+            -Z | --zaprun)
+                zap_it=2 # zap then run
+                ;;
+            *[!0-9]*) error_msg "Unrecognized option: $1" ;;
 
-        *) # only remaining param type is an int
-            h_max_age="$1"
-            is_integer "$h_max_age" || error_msg "Max age is not int: $h_max_age"
-            echo "Will only check files changed in the last $h_max_age hours"
-            ;;
+            *) # only remaining param type is an int
+                h_max_age="$1"
+                is_integer "$h_max_age" || error_msg "Max age is not int: $h_max_age"
+                echo "Will only check files changed in the last $h_max_age hours"
+                ;;
 
         esac
         shift
@@ -1218,8 +1218,8 @@ process_linter_overrides() {
 
     log_it "process_linter_overrides()" "$dbglvl_major_tasks"
     for linter_override in "${!override_linter_cmd[@]}"; do
-        if ! str_in_array "$linter_override" "${linter_order[@]}" &&
-            ! str_in_array "$linter_override" "${proj_linters[@]}"; then
+        if ! str_in_array "$linter_override" "${linter_order[@]}" \
+            && ! str_in_array "$linter_override" "${proj_linters[@]}"; then
 
             # linter not used, ignore override
             continue
@@ -1384,8 +1384,8 @@ parse_plugin_file() {
     linter_cmd["$plugin_name"]="$cmd_ok"
     linter_order+=("$plugin_name")
 
-    [[ ${#plugin_extensions[@]} -eq 0 ]] &&
-        [[ ${#plugin_file_types[@]} -eq 0 ]] && {
+    [[ ${#plugin_extensions[@]} -eq 0 ]] \
+        && [[ ${#plugin_file_types[@]} -eq 0 ]] && {
 
         msg="Plugin $plugin_def - neither plugin_extensions"
         msg+=" nor plugin_file_types defined"
@@ -1501,8 +1501,8 @@ do_parse_linter_def() {
         options=""
     }
 
-    [[ -n "$verif_cmd" ]] && [[ -n "$options" ]] &&
-        verif_cmd="$verif_cmd $options"
+    [[ -n "$verif_cmd" ]] && [[ -n "$options" ]] \
+        && verif_cmd="$verif_cmd $options"
     echo "$verif_cmd"
     return 0
 }
@@ -1615,8 +1615,8 @@ lint_by_ext() {
         return 1 # False - next linter
     fi
     case "$extension" in
-    *"/"*) return 1 ;; # . was in part of path
-    *) ;;
+        *"/"*) return 1 ;; # . was in part of path
+        *) ;;
     esac
 
     b_linter_found=false
@@ -1814,39 +1814,39 @@ sqlite_err_handling() {
     if $b_log_sql; then # set to true to log sql queries
         # this does some filtering to give a more meaningful summary
         local sql_filtered
-        sql_filtered="$(echo "$sql" |
-            sed 's/BEGIN TRANSACTION; -- Start the transaction//' |
-            tr -d '\n' | tr -s ' ' | sed 's/^ //' | sed 's/ ;/;/g' |
-            sed 's/; /;/g' | cut -c 1-50)"
+        sql_filtered="$(echo "$sql" \
+            | sed 's/BEGIN TRANSACTION; -- Start the transaction//' \
+            | tr -d '\n' | tr -s ' ' | sed 's/^ //' | sed 's/ ;/;/g' \
+            | sed 's/; /;/g' | cut -c 1-50)"
         log_it "SQL:$sql_filtered" -1
     fi
 
     # shellcheck disable=SC2034
-    sqlite_result="$(sqlite3 "$f_sqlite_db" "$sql" 2> "$f_sqlite_error")"
+    sqlite_result="$(sqlite3 "$f_sqlite_db" "$sql" 2>"$f_sqlite_error")"
     sqlite_exit_code=$?
 
     case "$sqlite_exit_code" in
-    0)
-        [[ -f "$f_sqlite_error" ]] && {
-            log_it "><> present: $f_sqlite_error"
-        }
-    ;; # no error
-    *)
-        #  log error but leave handling error up to caller
-        local e_msg
-        e_msg="sqlite_err_handling()\n$sql\nerror code: $sqlite_exit_code\n"
-        e_msg+="error msg:  $(cat "$f_sqlite_error")"
-        error_msg "$e_msg" -1
+        0)
+            [[ -f "$f_sqlite_error" ]] && {
+                log_it "><> present: $f_sqlite_error"
+            }
+            ;; # no error
+        *)
+            #  log error but leave handling error up to caller
+            local e_msg
+            e_msg="sqlite_err_handling()\n$sql\nerror code: $sqlite_exit_code\n"
+            e_msg+="error msg:  $(cat "$f_sqlite_error")"
+            error_msg "$e_msg" -1
 
-        [[ ! -s "$f_sqlite_db" ]] && [[ -f "$f_sqlite_db" ]] && {
-            #
-            #  If DB was removed, then a sql action would fail but lead
-            #  to an empty DB. By removing such, next call to
-            #  display_losses will recreate it and restart monitoring
-            #
-            error_msg "DB empty, terminating"
-        }
-        ;;
+            [[ ! -s "$f_sqlite_db" ]] && [[ -f "$f_sqlite_db" ]] && {
+                #
+                #  If DB was removed, then a sql action would fail but lead
+                #  to an empty DB. By removing such, next call to
+                #  display_losses will recreate it and restart monitoring
+                #
+                error_msg "DB empty, terminating"
+            }
+            ;;
     esac
 
     return "$sqlite_exit_code"
@@ -1955,19 +1955,19 @@ generate_list_of_files_to_process() {
     if [[ $kernel_name == "Darwin" ]]; then
         # macOS version
         # shellcheck disable=SC2207
-        mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + |
-            sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+        mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + \
+            | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
     else
         if test -d /proc/ish; then
             #
             #  iSH kernel doesn't support enough of /proc to make mapfile work
             #
             # shellcheck disable=SC2207
-            all_files=($(find . -type f -printf '%T@ %P\n' |
-                sort -n -r -k1,1 | cut -d' ' -f2-))
+            all_files=($(find . -type f -printf '%T@ %P\n' \
+                | sort -n -r -k1,1 | cut -d' ' -f2-))
         else
-            mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' |
-                sort -n -r -k1,1 | cut -d' ' -f2-)
+            mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' \
+                | sort -n -r -k1,1 | cut -d' ' -f2-)
         fi
     fi
     log_it "all_files:" "$dbglvl_data_types"
@@ -2098,8 +2098,8 @@ process_file_tree() {
             else
                 file_cmd="file -b"
             fi
-            IFS='|' read -r -a file_types <<<"$($file_cmd "$fname" |
-                tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
+            IFS='|' read -r -a file_types <<<"$($file_cmd "$fname" \
+                | tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
             for file_type in "${file_types[@]}"; do
                 lint_by_file_type "$file_type" "$fname" && {
                     b_linter_found=true
@@ -2125,8 +2125,8 @@ process_file_tree() {
         done
     }
 
-    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded &&
-        [[ ${#proj_linters[@]} -gt 0 ]] && {
+    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
+        && [[ ${#proj_linters[@]} -gt 0 ]] && {
 
         ! $b_proj_linters_only && cache_set_timer
 
@@ -2163,7 +2163,7 @@ t_app_start=$(date +%s) # will be reset after a -Z cache clennse
 }
 
 initialize_env
-olint_venv_enable  # Needs to happen before get_config
+olint_venv_enable # Needs to happen before get_config
 get_config "$1"
 parse_cmd_line "$@"
 

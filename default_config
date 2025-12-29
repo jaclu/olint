@@ -30,8 +30,8 @@ skip_linters+=(
     # ansible-lint  # Checks ansible playbooks for practices and behaviour
     # bandit        # Security linter for Python code
     # bashate       # Code style enforcement for bash programs
-    bash-n          # Extremely basic check, should only be enabled
-                    #   if shellcheck is unavailable
+    bash-n # Extremely basic check, should only be enabled
+    #        if shellcheck is unavailable
     # black         # Python code formatter
     # checkbashisms # Checks for portability issues in shell scripts
     # codespell     # Fix common misspellings in source code and text files
@@ -90,7 +90,7 @@ hidden_patterns=( # exclude from display of excluded_prefixes unless -E is used
 excluded_suffixes=( # excludes by filename suffix
     \~
     \#
-    .pyc  # Example: Exclude compiled Python files.
+    .pyc # Example: Exclude compiled Python files.
     .tmp
 )
 

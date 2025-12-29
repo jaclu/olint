@@ -29,7 +29,6 @@
 #  [base.py]
 #  disable=R0904
 
-
 plugin_cmd="pylint"
 proj_plugin_cmd="pylint --ignore-paths .venv/ ."
 

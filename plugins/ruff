@@ -16,7 +16,6 @@
 #  brew install ruff
 #  (Alpine) sudo apk add ruff # segfaults on iSH
 
-
 # inline-excludes:  # noqa: F403,F401
 
 plugin_cmd="ruff check"

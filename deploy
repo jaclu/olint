@@ -75,13 +75,13 @@ deploy_default_config() {
     f_default_conf="$d_default_conf/olint.conf"
 
     if [ ! -f "$f_default_conf" ]; then
-	echo "---  Global olint config"
+        echo "---  Global olint config"
         cp "$REPO_DIR"/default_config "$f_default_conf"
 
         echo "A default config has been copied to: $f_default_conf"
         echo "You should inspect it to ensure it matches your preferences."
         echo "As long as it is present, it will not be overwritten."
-	echo
+        echo
         files_changed=true
     fi
 }
@@ -111,7 +111,7 @@ deploy_plugins() {
     if [ -n "$(ls -A "$d_plugins")" ] && ! $force_deploy; then
         echo "Plugin folder has content, will not be overwritten"
         echo "  $d_plugins"
-	echo
+        echo
         return
     fi
 
@@ -134,9 +134,9 @@ deploy_app() {
     app="$1"
 
     if rsync -ahP "$REPO_DIR/$app" "$d_app_dest" | grep -q "$app"; then
-	echo "---  Install: $app"
-	echo "Latest version installed: $d_app_dest/$app"
-	echo
+        echo "---  Install: $app"
+        echo "Latest version installed: $d_app_dest/$app"
+        echo
         files_changed=true
     # elif $force_deploy; then
     #     echo "---  Install: $app"
