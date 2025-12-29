@@ -366,6 +366,8 @@ cache_read() {
         return
     }
 
+    [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
+
     # Check if the file exists and is readable
     if [[ -r "$f_cache_file" ]]; then
         log_it "found cache file: $f_cache_file" "$dbglvl_cache_events_basic"
