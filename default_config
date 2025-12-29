@@ -101,7 +101,6 @@ excludes+=(
 
 # Exclude specific files based on their basename (filename without the path).
 excluded_basenames+=(
-    .cache.olint
 )
 
 # Exclude files based on their basename (filename without the path) prefix.

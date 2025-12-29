@@ -1,323 +1,202 @@
 # Olint
 
-Olint is a standalone linting tool designed to operate independently of git
-cycles. It detects available linting tools and scans the entire file tree,
-starting from the current working directory, to process recently changed
-files first, regardless of their location.
+Olint is a standalone linting tool designed to operate independently of Git.
+It detects available linters and scans the file tree starting from the current
+working directory, prioritizing recently changed files.
 
-Ideally suited when examining an already checked out project, or some local
-code, not in any repository.
+It is ideal for examining already checked-out projects or local code not in a repository.
 
-If a file is successfully linted, Olint saves its filename and the time of
-its latest change in a cache. On subsequent runs, Olint skips files that
-haven't changed.
+Successfully linted files are recorded in a cache with their last modification time.
+On subsequent runs, unchanged files are skipped.
 
 ## Installation
 
-To install Olint, follow these steps:
-
 1. Download the latest release or clone the repository.
-2. Run `./deploy` this is used both to install and to update.
-3. Execute `olint -c` to list available linters, and install any missing
-   ones from the supported list that you plan to use.
+2. Run:
 
-## Usage
-
-To use Olint, simply run the `olint` command followed by any options or
-arguments you want to pass. For example:
-
-```shell
-olint 4 -C
+```sh
+./deploy
 ```
 
-This command checks files changed in the last 4 hours and continues with the
-next file after linting issues are found.
+to install or update Olint.
 
-```shell
+1. List available linters:
+
+```sh
 olint -c
 ```
 
-This command lists detected linters and filters.
+Install any missing linters you plan to use.
+
+## Usage
+
+Run Olint:
+
+```sh
+olint [options]
+```
+
+Example:
+
+```sh
+olint -s
+```
+
+This lists all detected linters (excluding those in `.olint.conf`) and the file types they process.
 
 ## Supported Linters
 
-Olint supports the following linters out of the box:
+- **Ansible:** `ansible-lint`
+- **Python:** `bandit`, `black`, `flake8`, `isort`, `mypy`, `pycodestyle`, `pyflakes`,
+  `pylint`, `pyright`, `ruff`
+- **Bash/Posix:** `bashate`, `checkbashisms`, `shellcheck`
+- **C/C++:** `cppcheck`
+- **JavaScript/TypeScript:** `rslint`
+- **Markdown:** `markdownlint`, `markdownlint-cli2`, `pymarkdown`
+- **JSON:** `jsonlint`
+- **TOML:** `taplo`
+- **YAML:** `yamllint`
+- **Spelling checks:** `codespell` (checks comments for typos)
 
-- ansible-lint (ansible)
-- bandit (python)
-- bashate (bash)
-- black (python)
-- checkbashisms (bash, posix)
-- codespell (checks comments for typos)
-- cppcheck (c, c++)
-- flake8 (python)
-- isort (python)
-- jsonlint (json)
-- markdownlint (markdown)
-- mypy (python)
-- pycodestyle (python)
-- pyflakes (python)
-- pylint (python)
-- pymarkdown (markdown)
-- pyright (python)
-- rslint (JavaScript and TypeScript)
-- ruff (python)
-- shellcheck (bash, posix)
-- yamllint (yaml)
-
-In plugins/extras there are some additional linter plugins, not used by default
+Additional linters can be added via plugins in the `plugins` folder.
+Linters not installed are skipped automatically.
 
 ## Configuration
 
-olint first checks for a configuration file in the base configuration
-directory.
-If `$XDG_CONFIG_HOME` is defined, olint looks for the configuration file at
-`$XDG_CONFIG_HOME/olint/olint.conf`; otherwise, it checks
-`~/.config/olint/olint.conf`.
+Olint reads configuration in this order:
 
-Once this base configuration is parsed, olint examines the local project
-configuration file, `.olint.conf`, so this file can override what is in the
-global config file.
+1. Global: `$XDG_CONFIG_HOME/olint/olint.conf` or `~/.config/olint/olint.conf`
+2. Project: `.olint.conf` in the project root (overrides global settings)
 
-Here's an example project configuration:
+A project must have an `.olint.conf` (can be empty) to define its root.
+This prevents accidental linting of the entire filesystem.
+
+### Example `.olint.conf`
 
 ```bash
 #!/usr/bin/env bash
 # This is sourced. Fake bang-path to help editors and linters
 
-# += means that local config is appended to global
-#    If global should be replaced, use = instead
-
-# Only linters that are installed needs to be excluded,
-# in order to prevent them from being used in this project
+# Skip specific installed linters
 skip_linters+=(
     markdownlint
 )
 
-# Filter by prefix, as listed by olint
+# Exclude paths by prefix
 excluded_prefixes+=(
-    __pycache__/
-    .git/
+    test/
     .venv/
 )
 
-# Explicit excludes, give entire filename as listed by olint
-excludes+=(
-    data/packet_loss.sqlite
-)
-
-# Filter by end of filename
+# Exclude paths by suffix
 excluded_suffixes+=(
-    .tmp
-    \~
+    .sqlite
 )
 
-# Filter by basename prefix
-excluded_basename_prefixes=(
+# Explicitly exclude files
+excludes+=(
+    data/dead_code.py
+)
+
+# Exclude by basename prefix
+excluded_basename_prefixes+=(
     \#
 )
-
-override_linter_cmd["codespell"]="codespell -L THIS"
 ```
 
-## Cache File
+### Custom Linter Commands
 
-The `.cache.olint` file stores information about already linted files
-to optimize olint's performance, each line in the cache file contains the
-file's modification time, human readable timestamp, and relative filepath,
-This means that after a first run, only changed files will be linted.
-
-## Plugins
-
-For each linter one plugin file must be defined, this should contain
-Bash style variable definitions and be saved in the folder `plugins` located
-in the same folder as the global config file.
-
-When it starts olint checks if it can run the first word in plugin_cmd, if it
-is not found, that plugin is ignored.
-
-### Optionals
-
-#### Project wide linters
-
-Some linters are more suited to be run on the project as a whole, perhaps
-there aren't any specific file extensions/mime types that would be practical.
-
-In such cases instead of defining it using `plugin_cmd` instead use `proj_plugin_cmd`
-in the plugin file for that linter.
-
-Linters defined this way will be processing the entire project, any limitations
-would have to be given either in `proj_plugin_cmd` for global scope, or if a
-change is needed on a per project basis use `override_linter_cmd` in that projects
-`.olint.conf`
-
-#### plugin_priority (default is 50)
-
-If multiple plugins can handle the same file, they will be processed starting
-with the one with highest priority.
-
-For example shellcheck has higher priority than checkbashisms, since if
-a script fails shellcheck, those issues should be addressed first.
-
-If more than one plugin has the same priority, the order is left to olint.
-
-Sample:
-
-```shell
-plugin_priority=20
-```
-
-#### plugin_extensions
-
-Listing all file extensions the plugin can handle
-
-Sample:
-
-```shell
-plugin_extensions=(
-    .sh
-    .bash
-)
-```
-
-#### plugin_file_types
-
-Lists all file types the plugin handles, defined as in the output of
-`file -b filename`. When processed this is comma-separated, so don't use
-the entire output in the definition!
-
-Since some Operating Systems use only lowercase for this, the definitions
-are converted to lowercase for comparisons, and thus are case insensitive.
-Wildcards can be used.
-
-Sample:
-
-```shell
-plugin_file_types=(
-    "POSIX shell script*"
-    "Bourne-Again shell script*"
-)
-```
-
-#### Custom settings for a linter command
-
-In some cases a special parameter might be needed for a linter to handle a specific
-project. Add this type of line to that projects `.olint.conf`
+Can be added to `.olint.conf` to give project specific command-line options
 
 ```bash
 override_linter_cmd["codespell"]="codespell -L THIS"
+override_linter_cmd["flake8"]="flake8 --color=always --exclude './.venv,./test'"
 ```
 
-## Suggested order for python linting
+### Project-wide Linters
 
-This order will be used by default based on `plugin_priority` settings
-
-- ruff 90
-- bandit 55
-- pyright 50
-- mypy 40
-- pylint 30
-
-If ruff is not used, the suggested order is:
-
-- black 85
-- isort 65
-- flake8 60
-- bandit 55
-- pyright 50
-- mypy 40
-- pylint 30
-
-This is the default order, and black, isort, flake8 will not be used if ruff is
-found.
-
-Unwanted linters can be excluded, either by simply deleting the plugin definition
-file from plugins/ or by skipping it in the global or the project config.
-
-If the cmd for a linter is not installed, that linter will be skipped.
-
-New linters can be added by creating a plugin definition file in the plugins
-folder, located where the global config file is, see below for details.
-
-## iSH suggestions
-
-First of all be aware that Ansible 32-bit doesn't have shellcheck!
-
-```sh
-pip install basate codespell isort pycodestyle pyflakes pymarkdown yamllint
-pip install bandit black bashate mypy pylint # to slow to be usable...
-```
-
-Suggestion for ~/.config/olint/olint.conf
-
-```sh
-skip_linters+=(
-    # skipping seveal tools that are not usable on iSH
-
-    flake8   # crashes on iSH
-    pyright  # iSH can install but fails to run this
-    ruff     # segfaults on iSH
-
-    # just to slow - approx time per file given as hint
-    bandit         #  40 seconds
-    checkbashisms  # 4-5 mins
-    mypy           #  10 mins
-    pylint         # 1-2 mins
-
-    black      # not needed on a slow env
-    pylintrc   # not slow but pointless when not using pylint
+```bash
+project_linters+=(
+    bandit
+    black
+    flake8
+    isort
+    markdownlint
+    mypy
+    pycodestyle
+    pyright
+    ruff
 )
 ```
 
-## Termuux suggestions
+## Cache
 
-Termux still allows global pip installs, so no venv is necessary
+Olint stores a cache in `.cache.olint` with each file's modification time and relative path.
+On subsequent runs, unchanged files are skipped.
 
-Several plugins are only available as pips, so below is a suggested
-plugin install procedure
+## Plugins
 
-recommended: `pip install pip-autoremove` and then use `pip-autoremove X`
-to remove dependencies
+Plugins define linter behavior via Bash variables in the `plugins` folder.
+
+Optional plugin settings:
+
+- **`plugin_priority`**: Determines which linter runs first if multiple match a file
+  (default: 50, higher are executed first)
+- **`proj_plugin_cmd`**: Command used when the linter runs as a project-wide tool
+- **`plugin_extensions`**: List of handled file extensions
+- **`plugin_file_types`**: File types (from `file -b`) that the plugin handles;
+  case-insensitive, supports wildcards
+
+## olint venv
+
+if there is a venv present in in `~/.config/olint/.venv` this venv will be activated
+and used during the run of `olint`. Ideal place to store python linters, in order to not
+have to add them on a project bases.
+
+## Limited systems
+
+Examples how to use this on more limited systems
+
+### iSH Recommendations
+
+Ansible 32-bit does not support `shellcheck`.
+Create a virtual environment and install usable linters:
 
 ```sh
+sudo apk add cppcheck checkbashisms
+pip install bashate codespell isort pycodestyle pyflakes pymarkdown yamllint \
+    bandit black  mypy pylint
+```
 
-apt install ruff cppcheck shellcheck
-# redundant if ruff is found: pycodestyle pyflakes3 pylint 
+Example `~/.config/olint/olint.conf` for iSH:
 
-apt install nodejs npm
+```bash
+skip_linters+=(
+    # skipping seveal tools that are not usable on iSH
+
+    # crashes on iSH
+    ansible-lint
+    flake8
+    pyright  # iSH can install but fails to run this
+    ruff     # segfaults on iSH
+)
+```
+
+### Termux Recommendations
+
+Termux supports global pip installs, no virtual environment required. Example setup:
+
+```sh
+apt install ruff cppcheck shellcheck nodejs npm
 npm install -g jsonlint
-# check installed using: npm list -g --depth=0
 
-
-# shellcheck 0.11.0
-
-pip install bandit bashate codespell pymarkdown mypy pycodestyle pyflakes \
-    pylint pymarkdownlnt yamllint
-
+pip install bandit bashate codespell pymarkdown mypy pycodestyle pyflakes pylint yamllint
 ```
 
 ## Contributing
 
-Contributions to Olint are welcome! If you find a bug or have a feature
-request, please open an issue or submit a pull request.
+Contributions are welcome. Report issues or submit pull requests.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE)
-file for details.
-
-## python
-
-95 pyflakes flake8||ruff - Fast static checker for Python that looks for actual
-           code errors,
-90 ruff    Extremely fast Python linter, written in Rust
-85 flake8  ruff - Lightweight tool for enforcing PEP 8 style guide compliance.
-80 pycodestyle flake8||ruff -  Python style guide checker (formerly called pep8)
-75 pylint  Detects potential bugs, enforces coding standards, and warns about
-           unused imports or variables.
-45 black   ruff - Enforces consistent formatting across your codebase.
-40 isort   ruff - Ensures imports are grouped and ordered correctly according to
-           PEP 8.
-35 pyright mypy - Overlaps with mypy but is less strict
-30 mypy    Ensures type correctness when using type hints.
-25 bandit  Identifies security vulnerabilities (e.g., usage of insecure functions
+Olint is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
