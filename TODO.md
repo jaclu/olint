@@ -59,7 +59,23 @@ yamllint
 70 - pycodestyle - no ruff or flake
 60 - pyflakes - no ruff or flake
 
-40 - pyright
-30 - mypy
-20 - pylint
+    40 - pyright
+    30 - mypy
+    20 - pylint
+
 10 - bandit
+
+posix
+70 shfmt
+50 shellcheck
+30 checkbashisms
+
+bash
+70 shfmt
+50 shellcheck
+30 bashate
+
+zsh
+70 shfmt
+50 shellcheck
+zsh-init
