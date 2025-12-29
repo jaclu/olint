@@ -1695,6 +1695,7 @@ lint_by_file_type() {
                 log_it "$not_linting_msg" "$dbglvl_lint_file_basic"
                 return 0 # True - next file
             }
+            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
             show_linter_action "$linter" "$fname"
             lint_file "$linter" "$fname" || linter_found_issue=true
             show_linter_time
