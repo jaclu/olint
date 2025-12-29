@@ -2050,6 +2050,7 @@ process_file_tree() {
     #  the file tree is globally sorted by age
     #
     local dbg_indent=$dbg_indent
+    local ish_uptime=/usr/local/bin/uptime
     local all_files
     local fname
     local b_linter_found
@@ -2061,6 +2062,14 @@ process_file_tree() {
     trap 'handle_ctrl_c INT' INT
 
     ! $b_proj_linters_only && {
+        [[ -d /proc/ish ]] && [[ -x "$ish_uptime" ]] && {
+            # iSH crashes if sysload goes up to much, this pauses
+            # until load is reasonable
+            while [[ "$($ish_uptime -l | cut -d. -f1)" -gt 3 ]]; do
+                echo "iSH uptime is high, waiting a bit"
+                sleep 3
+            done
+        }
         generate_list_of_files_to_process
 
         orig_dbg_indent=$dbg_indent
