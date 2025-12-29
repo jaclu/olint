@@ -2053,7 +2053,7 @@ ish_sysload_check() {
     # iSH crashes if sysload goes up to much, this pauses
     # until load is reasonable
     if [[ -x "$ish_uptime" ]]; then
-        while [[ "$($ish_uptime -l | cut -d. -f1)" -gt "$load_trigger" ]]; do
+        while [[ "$($ish_uptime -l | cut -d. -f1)" -ge "$load_trigger" ]]; do
             echo "iSH sysload is > $load_trigger, waiting a bit"
             sleep 3
         done
