@@ -2099,8 +2099,6 @@ process_file_tree() {
             dbg_indent=$orig_dbg_indent
             [[ -z "$fname" ]] && continue
 
-            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
-
             b_linter_found=false
             [[ -d "$fname" ]] && continue
 
@@ -2132,6 +2130,7 @@ process_file_tree() {
             IFS='|' read -r -a file_types <<<"$($file_cmd "$fname" \
                 | tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
             for file_type in "${file_types[@]}"; do
+                [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
                 lint_by_file_type "$file_type" "$fname" && {
                     b_linter_found=true
                     break
@@ -2164,11 +2163,11 @@ process_file_tree() {
         for linter_name in "${proj_linters[@]}"; do
             [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
 
-            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
             # it would look ridiculous to first flush the cache then imeditally
             # write it again, so lets do it before the project lint
             maybe_update_cache
 
+            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
             lint_proj "$linter_name"
         done
     }
