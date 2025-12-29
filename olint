@@ -2232,6 +2232,7 @@ $b_show_help && {
     env_cleanup 0
 }
 
+[[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
 if [[ -d "$olint_plugin_dir" ]]; then
     check_linter_plugins "$olint_plugin_dir"
 else
