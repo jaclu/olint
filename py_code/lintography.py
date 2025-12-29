@@ -22,10 +22,10 @@ class LinterCore:
 
     # list of defined linters self.usable_mthds[] will contain
     # all linters found to be usable at run-time
-    linters = ()
-    file_patterns = ()
-    include_ext = ()
-    exclude_patterns = ()
+    linters: tuple[str, ...] = ()
+    file_patterns: tuple[str, ...] = ()
+    include_ext: tuple[str, ...] = ()
+    exclude_patterns: tuple[str, ...] = ()
 
     def __init__(self, skip_linters=()):
         self.usable_linters = []
