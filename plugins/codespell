@@ -8,14 +8,15 @@
 #  (Ubuntu) sudo apt install codespell
 #  (Alpine) sudo apk add py3-codespell
 
-# plugin_cmd="codespell"
-proj_plugin_cmd="codespell -H -S './.git,./.venv,./.mypy_cache'"
-
-# Custom overrides,  add this in the global or project config
-# to see all codespell options, run: codespell -h
-#
 # if there are terms that should be accepted
 # override_linter_cmd["codespell"]="codespell -L THIS"
 #
 # If there are files that should not be linted by codespell, add this
 # override_linter_cmd["codespell"]="codespell -S file1,file2"
+
+
+# plugin_cmd="codespell"
+proj_plugin_cmd="codespell -H -S './.git,./.venv,./.mypy_cache'"
+
+# extremely fast tool, so might as well run early
+plugin_priority=95
