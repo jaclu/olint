@@ -2049,13 +2049,14 @@ should_fname_be_excluded() {
 ish_sysload_check() {
     local ish_uptime=/usr/local/bin/uptime
     local load_trigger=5
+    local sleep_time=30
 
     # iSH crashes if sysload goes up to much, this pauses
     # until load is reasonable
     if [[ -x "$ish_uptime" ]]; then
         while [[ "$($ish_uptime -l | cut -d. -f1)" -ge "$load_trigger" ]]; do
-            echo "iSH sysload is > $load_trigger, waiting a bit"
-            sleep 30
+            echo "iSH sysload is > $load_trigger, waiting ${sleep_time}s"
+            sleep "$sleep_time"
         done
     else
         echo "iSH platform, no custom uptime"
