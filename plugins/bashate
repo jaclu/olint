@@ -37,7 +37,6 @@ plugin_priority=20
 plugin_file_types=(
     "Bourne-Again shell script*"
     "Paul Falstad's zsh script"
-    "POSIX shell script*"
 )
 
 plugin_extensions=(
