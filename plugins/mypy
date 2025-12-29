@@ -31,7 +31,7 @@ proj_plugin_cmd="mypy --namespace-packages --explicit-package-bases ."
 
 # do this plugin late, since if other plugins find issues
 # on next run the mypy cache might cause issues
-plugin_priority=30
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(

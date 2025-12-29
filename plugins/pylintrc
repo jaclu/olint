@@ -8,6 +8,8 @@
 #
 plugin_cmd="pylint --help"
 
+plugin_priority=19
+
 # file extensions this plugin handles
 plugin_extensions=(
     .pylintrc
