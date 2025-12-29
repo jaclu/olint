@@ -30,7 +30,7 @@ if [[ -f /etc/debian_version ]] && grep -q 10 /etc/debian_version; then
     plugin_cmd="shellcheck -a -x  --color=always -e SC1117,SC2250,SC2312"
 fi
 
-plugin_priority=70
+plugin_priority=50
 
 # file extensions this plugin handles
 plugin_extensions=(

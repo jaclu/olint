@@ -25,7 +25,7 @@
 # sometimes it causes shellcheck to eat all available ram
 plugin_cmd="shfmt -i 4 -ci -bn -w"
 
-plugin_priority=30
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(
