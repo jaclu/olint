@@ -20,7 +20,7 @@ if command -v "$plugin_cmd" >/dev/null; then
     if command -v shfmt >/dev/null; then
         # In this case shfmt does the heavy lifting and bashate is only used
         # for residual policy checks
-        pligin_cmd="$plugin_cmd --ignore=E003,E006,E010,E011,E020,E021,E022,E023,E024"
+        plugin_cmd="bashate --ignore=E003,E006,E010,E011,E020,E021,E022,E023,E024"
     elif command -v bashate-wrapper >/dev/null; then
         # this reads .bashateconfig
         plugin_cmd="bashate-wrapper"
