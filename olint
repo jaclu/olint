@@ -2055,7 +2055,7 @@ ish_sysload_check() {
     if [[ -x "$ish_uptime" ]]; then
         while [[ "$($ish_uptime -l | cut -d. -f1)" -ge "$load_trigger" ]]; do
             echo "iSH sysload is > $load_trigger, waiting a bit"
-            sleep 5
+            sleep 10
         done
     else
         echo "iSH platform, no custom uptime"
