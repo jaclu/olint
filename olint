@@ -728,9 +728,9 @@ initialize_env() {
     dbg_indent=1 # used to indent printouts in log_it
 
     # cache if this is running on iSH, since skipping a syscall on iSH makes a difference
-    IS_ISH=0
+    running_on_ish=0
     if [[ -d /proc/ish ]]; then
-        IS_ISH=1
+        running_on_ish=1
         ish_ift_uptime=/usr/local/bin/uptime
         [[ ! -x "$ish_ift_uptime" ]] && ish_ift_uptime=""
     fi
@@ -1543,7 +1543,7 @@ sort_linters() {
 
     log_it "sort_linters(${linters_array[*]})" "$dbglvl_lintscan_details"
 
-    if [[ "$IS_ISH" -eq 1 ]]; then
+    if [[ "$running_on_ish" -eq 1 ]]; then
         #
         #  iSH kernel doesn't support enough of /proc to make mapfile work
         #
@@ -1971,7 +1971,7 @@ generate_list_of_files_to_process() {
         mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + \
             | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
     else
-        if [[ "$IS_ISH" -eq 1 ]]; then
+        if [[ "$running_on_ish" -eq 1 ]]; then
             #
             #  iSH kernel doesn't support enough of /proc to make mapfile work
             #
@@ -2086,7 +2086,7 @@ process_file_tree() {
     trap 'handle_ctrl_c INT' INT
 
     ! $b_proj_linters_only && {
-        [[ "$IS_ISH" -eq 1 ]] && ish_sysload_check
+        [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
 
         generate_list_of_files_to_process
 
@@ -2097,7 +2097,7 @@ process_file_tree() {
             dbg_indent=$orig_dbg_indent
             [[ -z "$fname" ]] && continue
 
-            [[ "$IS_ISH" -eq 1 ]] && ish_sysload_check
+            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
 
             b_linter_found=false
             [[ -d "$fname" ]] && continue
@@ -2162,7 +2162,7 @@ process_file_tree() {
         for linter_name in "${proj_linters[@]}"; do
             [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
 
-            [[ "$IS_ISH" -eq 1 ]] && ish_sysload_check
+            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
             # it would look ridiculous to first flush the cache then imeditally
             # write it again, so lets do it before the project lint
             maybe_update_cache
