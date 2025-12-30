@@ -131,7 +131,7 @@ project_linters+=(
 #
 # iSH specific overrides (displaying defaults)
 # ish_max_load=5         # pause new tasks if sysload-1 is this or higher
-# ish_high_load_sleep=60 # sleep this long if sysload too high
+# ish_high_load_sleep=30 # sleep this long if sysload too high
 
 #
 # Use this to override the location of plugins.
