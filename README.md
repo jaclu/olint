@@ -160,25 +160,38 @@ Examples how to use this on more limited systems
 ### iSH Recommendations
 
 Ansible 32-bit does not support `shellcheck`.
-Create a virtual environment and install usable linters:
+
+In recent versions many linters can be installed via apk
 
 ```sh
-sudo apk add cppcheck checkbashisms
-pip install bashate codespell isort pycodestyle pyflakes pymarkdown yamllint \
-    bandit black  mypy pylint
+sudo apk add black checkbashisms cppcheck py3-codespell py3-flake8 py3-isort py3-mypy \
+    py3-pycodestyle py3-pyflakes py3-pylint yamllint
 ```
 
-Example `~/.config/olint/olint.conf` for iSH:
+Some of those missing can be installed via pip (create a virtual environment in
+`~/.config/olint/.venv`)
+
+```sh
+pip install black codespell flake8 isort mypy pycodestyle pyflakes pylint \
+     yamllint
+```
+
+Some linters are only available via pip
+
+```sh
+pip install bashate bandit pymarkdown
+```
+
+Example `~/.config/olint/olint.conf` snippet for iSH:
 
 ```bash
 skip_linters+=(
-    # skipping seveal tools that are not usable on iSH
+    # skipping several tools that are not usable on iSH
 
     # crashes on iSH
     ansible-lint
-    flake8
-    pyright  # iSH can install but fails to run this
-    ruff     # segfaults on iSH
+    pyright
+    ruff
 )
 ```
 

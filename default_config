@@ -130,7 +130,7 @@ project_linters+=(
 # debug_level=9        # Set the verbosity of debug output.
 #
 # iSH specific overrides (displaying defaults)
-# ish_max_load=5 # pause new tasks if sysload-1 is this or higher
+# ish_max_load=5         # pause new tasks if sysload-1 is this or higher
 # ish_high_load_sleep=60 # sleep this long if sysload too high
 
 #
