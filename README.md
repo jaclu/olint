@@ -164,8 +164,8 @@ Ansible 32-bit does not support `shellcheck`.
 In recent versions many linters can be installed via apk
 
 ```sh
-sudo apk add black checkbashisms cppcheck py3-codespell py3-flake8 py3-isort py3-mypy \
-    py3-pycodestyle py3-pyflakes py3-pylint yamllint
+sudo apk add black checkbashisms cppcheck shfmt py3-codespell py3-flake8 py3-isort \
+    py3-mypy py3-pycodestyle py3-pyflakes py3-pylint yamllint
 ```
 
 Some of those missing can be installed via pip (create a virtual environment in
