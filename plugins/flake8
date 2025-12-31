@@ -34,7 +34,9 @@ if [[ -n "$(command -v ruff)" ]]; then
     plugin_cmd="/dev/null"
     proj_plugin_cmd="/dev/null"
 else
-    plugin_cmd="flake8 --color=always"
+    # avoiding parallelism is normally not a performance bottle neck
+    # and avoids flake8 to fail on limited systems
+    plugin_cmd="flake8 --color=always --jobs=1"
     proj_plugin_cmd="$plugin_cmd --exclude './.venv'"
 
     # iSH doesn't support flake8 multiprocessing
