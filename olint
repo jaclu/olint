@@ -780,7 +780,7 @@ initialize_env() {
 
     # used as a temp file during one linting cmd to capture output
     # to be displayed in case of issue
-    f_linter_output=/"${TMPDIR:-tmp}"/olint["$$"]-linter-output
+    f_linter_output=/"${TMPDIR:-tmp}"/olint-linter-output-["$$"]
 
     declare -g -A linter_cmd
     declare -g -A proj_linter_cmd
