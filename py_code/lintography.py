@@ -8,7 +8,6 @@ Uses predefined linters to check files.
 Autoscans file tree for matching items.
 """
 
-
 import glob
 import os
 import sys

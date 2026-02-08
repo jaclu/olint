@@ -505,8 +505,9 @@ Available options:
 -h, --help              Print this help and exit
 -m, --mime-type         When scanning files, only identify by mime-type
 -n, --no-linter         Lists all files without a matching linter
+-o, --only-proj-lint    toggles 'Only run project linters'
 -p, --no-proj-lint      toggles 'Skip all project linters'
--P, --only-proj-lint    toggles 'Only run project linters'
+-P, --force-proj-lint   Always run proj-linters
 -S, --statistics        Store linting times in SQL DB
 -v, --verbose           Set verbosity level, level must also be supplied
                         1 - Show gathering of available plugins & nr of files linted
@@ -879,8 +880,9 @@ defaults_for_cmdline_options() {
     b_mime_type_limit=false      # option: -m
     b_lint_files=true            # option: -n
     b_use_cache=true             # option: -N
+    b_proj_linters_only=false    # option: -o
     b_proj_linters_skip=false    # option: -p
-    b_proj_linters_only=false    # option: -P
+    b_changed_file_found=false   # option: -P
     b_show_config_short=false    # option: -s
     b_use_statistics=false       # option: -S
     t_cashe_interval=60          # option: -u
@@ -977,8 +979,12 @@ parse_cmd_line() {
             -m | --mime-type) b_mime_type_limit=true ;;
             -n | --no-linter) b_lint_files=false ;;
             -N | --nocache) b_use_cache=false ;;
+            -o | --only-proj-lint)
+                toggle_bool b_proj_linters_only
+                b_changed_file_found=true
+                ;;
             -p | --no-proj-lint) toggle_bool b_proj_linters_skip ;;
-            -P | --only-proj-lint) toggle_bool b_proj_linters_only ;;
+            -P | --force-proj-lint) b_changed_file_found=true ;;
             -s | --conffig-short)
                 b_show_config=true
                 b_show_config_short=true
@@ -2134,6 +2140,7 @@ process_file_tree() {
                 [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
                 lint_by_file_type "$file_type" "$fname" && {
                     b_linter_found=true
+                    b_changed_file_found=true
                     break
                 }
             done
@@ -2144,8 +2151,13 @@ process_file_tree() {
             #
             lint_by_ext "$fname" && {
                 b_linter_found=true
+                b_changed_file_found=true
                 continue
             }
+
+            # If we got here the file was neither linted nor excluded, so
+            # porj linters if defined should be run
+            b_changed_file_found=true
 
             $b_lint_files || {
                 $b_linter_found || {
@@ -2156,7 +2168,14 @@ process_file_tree() {
         done
     }
 
-    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
+    #
+    #  Conditions
+    #   b_lint_files - files should be linted
+    #   b_proj_linters_skip.  - skip all proj linters
+    #   b_show_excluded - just list excluded files
+    #   b_changed_file_found  - at least one changed file was found
+    #
+    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded && $b_changed_file_found \
         && [[ ${#proj_linters[@]} -gt 0 ]] && {
 
         ! $b_proj_linters_only && cache_set_timer
