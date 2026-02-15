@@ -186,12 +186,19 @@ Example `~/.config/olint/olint.conf` snippet for iSH:
 
 ```bash
 skip_linters+=(
-    # skipping several tools that are not usable on iSH
-
     # crashes on iSH
     ansible-lint
-    pyright
-    ruff
+    pyright # iSH can install but fails to run this
+    ruff    # segfaults on iSH
+
+    # painfully slow on A16 iSH
+    checkbashisms
+
+    # painfully slow on pre A16 iSH
+    bashate
+    mypy
+    pylint
+    pylintrc
 )
 ```
 
