@@ -16,10 +16,10 @@
 # Redundant if ruff is found
 
 # Installation methods;
-#  pip install flake8  # crashes on iSH
+#  pip install flake8
 #  brew install flake8
 #  (Ubuntu) sudo apt install flake8
-#  (Alpine) sudo apk add py3-flake8 # crashes on iSH
+#  (Alpine) sudo apk add py3-flake8
 
 # inline-excludes:  # noqa: F841
 # project config files: setup.cfg
