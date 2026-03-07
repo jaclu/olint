@@ -2,11 +2,11 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # don't warn about unused variables
 
-# python markdown linter, could be used when brew is not available
+# python markdown linter, could be used when brew can not provide markdownlint-cli2
 # drawback, typically has to be installed in a venv
 
 # Installation methods;
-#  pip install pymarkdownlnt
+#  pip install pymarkdownlnt - Do NOT install pymarkdown pkg!
 
 # project config file: pyproject.toml
 #
