@@ -36,7 +36,7 @@ plugin_priority=30
 #  file-types this plugin handles
 plugin_file_types=(
     "Bourne-Again shell script*"
-    "Paul Falstad's zsh script"
+    "Paul Falstad's zsh script*"
 )
 
 plugin_extensions=(
