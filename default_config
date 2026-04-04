@@ -41,6 +41,7 @@ skip_linters+=(
     # jsonlint      # JSON file linter
     # markdownlint  # Linter for Markdown files
     # mypy          # Static type checker for Python
+    # openrc        # Limied OpenRC service script linting via shellcheck
     # pycodestyle   # PEP 8 style checker; redundant if flake8 is used
     # pyflakes      # Passive checker of Python 3 programs
     # pylint        # Comprehensive Python code linter
