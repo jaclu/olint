@@ -19,6 +19,6 @@ plugin_extensions=(
 
 # file-types this plugin handles
 plugin_file_types=(
-    "a /sbin/openrc-run script"
+    "a /sbin/openrc-run script*"
     "OpenRC script"
 )
