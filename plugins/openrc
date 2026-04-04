@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+
+# Installation methods;
+#  pip install shellcheck-py  # fails to install on iSH
+#  brew install shellcheck
+#  (Ubuntu) sudo apt install shellcheck
+#  (Alpine edge) sudo apk add shellcheck
+
+# Limied OpenRC service script linting
+plugin_cmd="shellcheck -a -x -o all -e SC1008,SC2154,SC2250,SC2034,SC2292,SC2312"
+
+plugin_priority=50
+
+# file extensions this plugin handles
+plugin_extensions=(
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+    "a /sbin/openrc-run script"
+    "OpenRC script"
+)
