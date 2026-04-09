@@ -23,4 +23,7 @@ plugin_extensions=(
 plugin_file_types=(
     "POSIX shell script*"
     "Bourne-Again shell script*"
+
+    "a /sbin/openrc-run script*"
+    "OpenRC script"
 )

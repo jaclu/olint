@@ -37,6 +37,9 @@ plugin_priority=30
 plugin_file_types=(
     "Bourne-Again shell script*"
     "Paul Falstad's zsh script*"
+
+    "a /sbin/openrc-run script*"
+    "OpenRC script"
 )
 
 plugin_extensions=(
