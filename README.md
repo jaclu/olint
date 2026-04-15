@@ -198,7 +198,6 @@ skip_linters+=(
     bashate
     mypy
     pylint
-    pylintrc
 )
 ```
 
