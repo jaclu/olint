@@ -781,7 +781,7 @@ initialize_env() {
 
     # used as a temp file during one linting cmd to capture output
     # to be displayed in case of issue
-    f_linter_output=/"${TMPDIR:-tmp}"/olint-linter-output-["$$"]
+    f_linter_output=/"${TMPDIR:-tmp}/olint-linter-output-$$"
 
     declare -g -A linter_cmd
     declare -g -A proj_linter_cmd
@@ -840,7 +840,7 @@ env_cleanup() {
     proj_lint_tasks_completed=""
 
     cache_write
-    rm -f "$f_linter_output"
+    [[ -f "$f_linter_output" ]] && rm -f "$f_linter_output"
 
     olint_venv_disable
 
