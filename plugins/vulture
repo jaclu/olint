@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+
+# Purpose:
+#  Dead code finder.
+# Strengths:
+#  Identifies unused functions, classes, variables and imports across the
+#  project. Complements type checkers and style linters which don't detect
+#  dead code.
+# Use case:
+#  Keeping codebases clean by surfacing code that can be safely removed.
+#  Best run as a project linter - per-file analysis produces false positives
+#  for symbols that are unused locally but referenced elsewhere.
+
+# Installation methods;
+#  pip install vulture  # usable on iSH
+#  brew install vulture
+#  (Ubuntu) no apt package - use pip
+#  (Alpine) no apk package - use pip
+
+# inline-excludes: not supported - use a whitelist file instead:
+#  vulture --make-whitelist . > whitelist.py
+#  Then reference it via override_linter_cmd:
+#  override_linter_cmd["vulture"]="vulture --min-confidence 80 . whitelist.py"
+
+# project config files: pyproject.toml
+#  [tool.vulture]
+#  min_confidence = 80
+#  paths = ["."]
+#  ignore_names = ["setUp", "tearDown", "visit_*"]
+
+plugin_cmd="vulture --min-confidence 80"
+proj_plugin_cmd="vulture --min-confidence 80 ."
+
+plugin_priority=25
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .py
+    .py3
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+    "Python script*"
+)
