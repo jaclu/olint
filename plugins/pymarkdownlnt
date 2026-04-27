@@ -21,8 +21,9 @@
 # [tool.pymarkdown.plugins.md024]
 # enabled = false
 
-pugin_cmd="pymarkdown scan"
+plugin_cmd="pymarkdown scan"
 proj_plugin_cmd="pymarkdown scan -r ."
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(

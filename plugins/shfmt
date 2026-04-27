@@ -11,7 +11,7 @@
 
 plugin_cmd="shfmt -i 4 -ci -bn -w"
 
-plugin_priority=70
+plugin_priority=85
 
 # file extensions this plugin handles
 plugin_extensions=(

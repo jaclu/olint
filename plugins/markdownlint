@@ -16,6 +16,7 @@
 
 plugin_cmd="markdownlint"
 proj_plugin_cmd="markdownlint ."
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(

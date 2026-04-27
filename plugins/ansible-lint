@@ -18,9 +18,8 @@
 plugin_cmd=ansible-lint
 proj_plugin_cmd=ansible-lint
 
-# This is a slow one, so make it run towards
-# the end of any chain
-plugin_priority=30
+# Slow and comprehensive; belongs in the deep-analysis tier
+plugin_priority=15
 
 # file extensions this plugin handles
 plugin_extensions=(

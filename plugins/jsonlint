@@ -12,6 +12,7 @@
 #      sudo npm install -g jsonlint
 
 plugin_cmd="jsonlint -p"
+plugin_priority=70
 
 # If run as a project linter, the process does nothing and idles forever...
 # proj_plugin_cmd="jsonlint -p"

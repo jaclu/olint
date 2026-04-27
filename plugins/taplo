@@ -24,7 +24,7 @@ else
     plugin_cmd=/dev/null
 fi
 
-# plugin_priority=50
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(
