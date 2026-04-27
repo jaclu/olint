@@ -253,7 +253,7 @@ mtime_2_date() {
         f_mtime="$1"
     else
         # Assume it is a file name
-        f_mtime="$(get_mtime "$1"))"
+        f_mtime="$(get_mtime "$1")"
     fi
 
     case "$kernel_name" in
@@ -482,7 +482,7 @@ cache_add() {
 
     cache_is_changed=true
     cache_new["$f_name"]="$f_mtime|$f_date"
-    log_it "added $f_name = $f_mtime|$f_date" "dbglvl_cache_events_more"
+    log_it "added $f_name = $f_mtime|$f_date" "$dbglvl_cache_events_more"
     maybe_update_cache
 }
 
@@ -781,7 +781,7 @@ initialize_env() {
 
     # used as a temp file during one linting cmd to capture output
     # to be displayed in case of issue
-    f_linter_output=/"${TMPDIR:-tmp}/olint-linter-output-$$"
+    f_linter_output="${TMPDIR:-/tmp}/olint-linter-output-$$"
 
     declare -g -A linter_cmd
     declare -g -A proj_linter_cmd
@@ -1028,7 +1028,7 @@ parse_cmd_line() {
         shift
     done
     $b_proj_linters_skip && $b_proj_linters_only && {
-        error_msg "-p & -P are both true - invalid state."
+        error_msg "-p & -o are both true - invalid state."
     }
 }
 
@@ -1188,7 +1188,7 @@ get_proj_config_recursive() {
         dir=$(dirname "$dir")
     done
     olint_cfg_proj=""
-    log_it "get_proj_config_recursive() - No Project config (.olint_conf) found!" 1
+    log_it "get_proj_config_recursive() - No Project config (.olint.conf) found!" 1
 }
 
 filter_hidden_vs_actually_excluded_patterns() {
@@ -1309,10 +1309,7 @@ check_linter_plugins() {
     process_linter_overrides
 
     # Sort project linters
-    unsorted=()
-    for itm in "${proj_linters[@]}"; do
-        unsorted+=("$itm")
-    done
+    unsorted=("${proj_linters[@]}")
     sorted_items="$(sort_linters unsorted)"
     # shellcheck disable=SC2206 # in this case the string should be split
     proj_linters=($sorted_items)
@@ -1728,9 +1725,9 @@ lint_proj() {
     local lint_exit_status
 
     log_it "lint_proj($linter)" "$dbglvl_lint_file_basic"
-    log_it " running: ${linter_cmd["$linter"]}" "$dbglvl_lint_file"
+    log_it " running: ${proj_linter_cmd["$linter"]}" "$dbglvl_lint_file"
 
-    show_linter_action "$linter_name" "=====  entire project  ====="
+    show_linter_action "$linter" "=====  entire project  ====="
     #
     #  In order to avoid some linters untrapping Ctrl-C
     #  they are run in the background. Then some code to ensure the
@@ -2040,8 +2037,8 @@ should_fname_be_excluded() {
         }
     done
 
-    [[ -z "$plugin_def" ]] && {
-        error_msg "check_linter_plugins() - found an empty \$fname"
+    [[ -z "$fname" ]] && {
+        error_msg "should_fname_be_excluded() - called with empty fname"
     }
     rel_fname="$(basename "$fname")"
     for item in "${excluded_basenames[@]}"; do
@@ -2101,14 +2098,17 @@ process_file_tree() {
 
         orig_dbg_indent=$dbg_indent
         cache_set_timer
+        if $b_mime_type_limit; then
+            file_cmd="file --mime-type -b"
+        else
+            file_cmd="file -b"
+        fi
 
         for fname in "${all_files[@]}"; do
             dbg_indent=$orig_dbg_indent
             [[ -z "$fname" ]] && continue
 
             b_linter_found=false
-            [[ -d "$fname" ]] && continue
-
             should_fname_be_excluded "$fname" && continue
             $b_show_excluded && continue # only show excluded files, dont lint anything
 
@@ -2129,11 +2129,6 @@ process_file_tree() {
             #
             #  Processing by file type
             #
-            if $b_mime_type_limit; then
-                file_cmd="file --mime-type -b"
-            else
-                file_cmd="file -b"
-            fi
             IFS='|' read -r -a file_types <<<"$($file_cmd "$fname" \
                 | tr '[:upper:]' '[:lower:]' | sed 's#, #|#g')"
             for file_type in "${file_types[@]}"; do
