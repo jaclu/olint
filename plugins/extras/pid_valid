@@ -2,11 +2,20 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # don't warn about unused variables
 
-#
-#  Examins pid-files, alerts if a pid-file points to a non-existing
-#  process.
-#
+# Purpose:
+#  Validates pid files, alerting if the referenced process no longer exists.
+# Strengths:
+#  Catches stale pid files left behind by crashed or stopped processes.
+# Use case:
+#  Projects that manage long-running processes via pid files.
+
+# No installation needed - implemented as a shell function below.
+# Since this plugin is already sourced into the olint environment, defining
+# the logic as a function avoids a separate script that could be misplaced.
+
 plugin_cmd=is_pid_file_valid
+
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(
@@ -19,12 +28,12 @@ plugin_file_types=(
 
 is_pid_file_valid() {
     local filename="$1"
+    local proc_id
     proc_id="$(cat "$filename")"
-    # shellcheck disable=SC2009
-    if ! ps -x "$proc_id" | grep -q "$proc_id"; then
+    if ! ps -p "$proc_id" >/dev/null 2>&1; then
         echo
         echo "Dead pidfile! - process [$proc_id] does not exist"
         echo
-        exit 1
+        return 1
     fi
 }
