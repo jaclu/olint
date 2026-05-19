@@ -22,17 +22,22 @@
 # project config files: pyproject.toml $XDG_CONFIG_HOME/black (~/.config/ if not set)
 #  [tool.black]
 
-if [[ -n "$(command -v ruff)" ]]; then
-    #
-    # set to /dev/null instead of "" to avoid warning
-    #   missing: plugin_cmd
-    #
-    plugin_cmd="/dev/null"
-    proj_plugin_cmd="/dev/null"
-else
-    plugin_cmd="black"
-    proj_plugin_cmd="black ."
-fi
+# Be aware many think black is redundant if ruff is found
+# but here the assumption is if both are installed, both should be used
+# if you don't want this semi-duplication
+# enable the ruff opt out lines below:
+
+#if [[ -n "$(command -v ruff)" ]]; then
+#    #
+#    # set to /dev/null instead of "" to avoid warning
+#    #   missing: plugin_cmd
+#    #
+#    plugin_cmd="/dev/null"
+#    proj_plugin_cmd="/dev/null"
+#else
+plugin_cmd="black"
+proj_plugin_cmd="black ."
+#fi
 
 plugin_priority=80
 

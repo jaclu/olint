@@ -16,17 +16,22 @@
 #  (Ubuntu) sudo apt install isort
 #  (Alpine) sudo apk add py3-isort
 
-if [[ -n "$(command -v ruff)" ]]; then
-    #
-    # set to /dev/null instead of "" to avoid warning
-    #   missing: plugin_cmd
-    #
-    plugin_cmd="/dev/null"
-    proj_plugin_cmd="/dev/null"
-else
-    plugin_cmd="isort"
-    proj_plugin_cmd="isort --gitignore ."
-fi
+# Be aware many think isort is redundant if ruff is found
+# but since it is so fast, by default I keep both if found.
+# If you don't want this semi-duplication
+# enable the ruff opt out lines below:
+
+#if [[ -n "$(command -v ruff)" ]]; then
+#    #
+#    # set to /dev/null instead of "" to avoid warning
+#    #   missing: plugin_cmd
+#    #
+#    plugin_cmd="/dev/null"
+#    proj_plugin_cmd="/dev/null"
+#else
+plugin_cmd="isort"
+proj_plugin_cmd="isort --gitignore ."
+#fi
 
 plugin_priority=90
 

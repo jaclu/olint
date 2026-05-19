@@ -8,7 +8,7 @@
 # project config file: .markdownlint.yaml
 
 plugin_cmd="markdownlint-cli2"
-proj_plugin_cmd="markdownlint-cli2 ."
+proj_plugin_cmd="markdownlint-cli2 \"**.{md,markdown}\""
 plugin_priority=70
 
 # file extensions this plugin handles
