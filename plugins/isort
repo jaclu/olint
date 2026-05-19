@@ -18,8 +18,7 @@
 
 # Be aware many think isort is redundant if ruff is found
 # but since it is so fast, by default I keep both if found.
-# If you don't want this semi-duplication
-# enable the ruff opt out lines below:
+# If you don't want this semi-duplication, uncomment the lines below:
 
 #if [[ -n "$(command -v ruff)" ]]; then
 #    #

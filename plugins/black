@@ -23,9 +23,8 @@
 #  [tool.black]
 
 # Be aware many think black is redundant if ruff is found
-# but here the assumption is if both are installed, both should be used
-# if you don't want this semi-duplication
-# enable the ruff opt out lines below:
+# Black is noticeably slower than ruff, but both run by default if installed
+# If you want to give ruff precedence, uncomment the lines below:
 
 #if [[ -n "$(command -v ruff)" ]]; then
 #    #
