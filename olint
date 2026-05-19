@@ -54,7 +54,7 @@ log_it() {
     #  Displays info to /dev/stderr, if 2nd param is: forced
     #  This will always be printed, practical to use early on in the
     #  program before verbosity_lvl & dbg_indent has been defined
-    #  For such line, comment them out if not desired
+    #  For such lines, comment them out if not desired
     #
     local msg="$1"
     local this_verbose_level="${2:-1}"
@@ -140,7 +140,7 @@ remove_duplicates_2() {
             # Mark the value as seen
             seen[$value]=1
         else
-            log_it "filter_duplicates() - found duplicate: $value" >/dev/stderr
+            log_it "remove_duplicates_2() - found duplicate: $value" >/dev/stderr
         fi
     done
 
@@ -408,7 +408,7 @@ cache_read() {
 
 get_cache_item() {
     #
-    #  Returns true ands sets the following global variables
+    #  Returns true and sets the following global variables
     #  if item matching f_to_check is present in the old cache
     #
     #   f_name
@@ -465,7 +465,7 @@ filename_is_cached() {
 
 cache_add() {
     #
-    #  If available, iving f_mtime and f_date saves a recalculation
+    #  If available, providing f_mtime and f_date saves a recalculation
     #  and boosts performance.
     #
     local dbg_indent=$dbg_indent
@@ -1081,7 +1081,7 @@ get_config() {
         read_config_file "$olint_cfg_default"
     else
         [[ "$param_1" != "--config-dir" ]] && {
-            # Condition allows for displayal of default config location if
+            # Condition allows for display of default config location if
             # the base config file has not yet been installed
             echo "WARNING: Global config file not found: $olint_cfg_default"
             echo "WARNING: Using app defaults"
@@ -2061,7 +2061,7 @@ should_fname_be_excluded() {
 }
 
 ish_sysload_check() {
-    # iSH crashes if sysload goes up to much, this pauses
+    # iSH crashes if sysload goes up too much, this pauses
     # until load is reasonable
 
     [[ -z "$ish_ift_uptime" ]] && return
@@ -2074,7 +2074,7 @@ ish_sysload_check() {
 
 process_file_tree() {
     #
-    #  Loop over al files, sorted by file age, newest firtst.
+    #  Loop over all files, sorted by file age, newest first.
     #  Then identifying filetype using: file -b
     #  grouping by type, and linting files suitable for such
     #  as they come up. Thereby minimizing pointless wait time, since
@@ -2178,7 +2178,7 @@ process_file_tree() {
         for linter_name in "${proj_linters[@]}"; do
             [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
 
-            # it would look ridiculous to first flush the cache then imeditally
+            # it would look ridiculous to first flush the cache then immediately
             # write it again, so lets do it before the project lint
             maybe_update_cache
 
@@ -2201,7 +2201,7 @@ process_file_tree() {
 #
 #===============================================================
 
-t_app_start=$(date +%s) # will be reset after a -Z cache clennse
+t_app_start=$(date +%s) # will be reset after a -Z cache cleanse
 
 #  Dependencies
 [[ -z "$(command -v file)" ]] && {
