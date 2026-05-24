@@ -29,8 +29,17 @@
 #  [base.py]
 #  disable=R0904
 
-plugin_cmd="pylint"
-proj_plugin_cmd="pylint --ignore-paths .venv/ ."
+if [[ -n "$(command -v ruff)" ]]; then
+    #
+    # set to /dev/null instead of "" to avoid warning
+    #   missing: plugin_cmd
+    #
+    plugin_cmd="/dev/null"
+    proj_plugin_cmd="/dev/null"
+else
+    plugin_cmd="pylint"
+    proj_plugin_cmd="pylint --ignore-paths .venv/ ."
+fi
 
 plugin_priority=20
 
