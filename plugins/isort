@@ -20,7 +20,7 @@
 # but since it is so fast, by default I keep both if found.
 # If you don't want this semi-duplication, uncomment the lines below:
 
-if command -v ruff >/dev/null && ruff config lint.select | grep -q '"I"'; then
+if command -v ruff >/dev/null && ruff check --show-settings | grep -q I001; then
     # Only disable isort if local env has ruff installed and configured
     # to handle the task
     #
