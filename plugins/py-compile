@@ -7,7 +7,7 @@
 #  but says nothing about good coding style
 # Strengths:
 # Use case:
-#  Rapid code validation, if it cant even be compiled, not much point in running linters
+#  Rapid code validation, if it can't even be compiled, not much point in running linters
 #  on it
 
 plugin_cmd="python3 -m py_compile"
