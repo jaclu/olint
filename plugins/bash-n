@@ -24,4 +24,4 @@ plugin_file_types=(
     "Bourne-Again shell script*"
 )
 
-plugin_priority=95
+plugin_priority=90

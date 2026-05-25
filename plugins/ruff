@@ -22,7 +22,8 @@ plugin_cmd="ruff check --fix"
 proj_plugin_cmd="ruff check --fix ."
 
 # really fast so run early
-plugin_priority=90
+# if --fix is used use priority 95, to indicate this changes code, otherwise 85
+plugin_priority=85
 
 # file extensions this plugin handles
 plugin_extensions=(

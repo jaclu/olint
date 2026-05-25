@@ -22,7 +22,7 @@ plugin_cmd="ruff format"
 proj_plugin_cmd="ruff format"
 
 # run as one of the last steps
-plugin_priority=10
+plugin_priority=97
 
 # file extensions this plugin handles
 plugin_extensions=(
