@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+
+# Purpose:
+#  compiling the module to ensure syntactic correctness - really fast initial test
+#  but says nothing about good coding style
+# Strengths:
+# Use case:
+#  Rapid code validation, if it cant even be compiled, not much point in running linters
+#  on it
+
+plugin_cmd="python3 -m py_compile"
+proj_plugin_cmd="/dev/null"
+
+# really fast so run early
+plugin_priority=90
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .py
+    .py3
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+    "Python script*"
+)
