@@ -20,19 +20,18 @@
 # but since it is so fast, by default I keep both if found.
 # If you don't want this semi-duplication, uncomment the lines below:
 
-if command -v ruff >/dev/null && ruff check --show-settings | grep -q I001; then
-    # Only disable isort if local env has ruff installed and configured
-    # to handle the task
-    #
-    # set to /dev/null instead of "" to avoid warning
-    #   missing: plugin_cmd
-    #
-    plugin_cmd="/dev/null"
-    proj_plugin_cmd="/dev/null"
-else
-    plugin_cmd="isort"
-    proj_plugin_cmd="isort --gitignore ."
-fi
+case "$(ruff check --show-settings 2>/dev/null)" in
+    *I001*)
+        # rugg handles import order
+        plugin_cmd="/dev/null"
+        proj_plugin_cmd="/dev/null"
+        ;;
+    *)
+        # use isort if ruff is not found/not configured with select "I"
+        plugin_cmd="isort"
+        proj_plugin_cmd="isort --gitignore ."
+        ;;
+esac
 
 plugin_priority=90
 
