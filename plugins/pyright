@@ -27,8 +27,20 @@
 #     ],
 # }
 
-plugin_cmd="pyright"
-proj_plugin_cmd="pyright ."
+# Don't use if mypy is present
+if [[ -n "$(command -v mypy)" ]]; then
+    #
+    # set to /dev/null instead of "" to avoid warning
+    #   missing: plugin_cmd
+    #
+    plugin_cmd="/dev/null"
+    proj_plugin_cmd="/dev/null"
+else
+    # avoiding parallelism is normally not a performance bottle neck
+    # and avoids flake8 to fail on limited systems
+    plugin_cmd="pyright"
+    proj_plugin_cmd="pyright ."
+fi
 
 plugin_priority=35
 
