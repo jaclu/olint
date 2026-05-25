@@ -81,3 +81,57 @@ zsh
 70 shfmt
 50 shellcheck
 zsh-init
+
+## better overall task order
+
+change linter ordering from two groups
+
+file linters
+proj linters
+
+into
+
+early linters that are proj linters, should be done before later linters are
+done on a file by file basis
+
+Stage 1: mutation tools
+isort
+black
+
+Stage 2: hard syntax gate (important addition) minimalistic syntax check, for python:
+python -m py_compile
+
+faster than most linters
+strict
+minimal false negatives
+
+Stage 3: structural linters
+      flake8 (if still used) or ruff in legacy mode (if present)
+
+Stage 4: semantic tools
+      pyright OR mypy (choose one for coherence)
+
+Stage 5: heuristic tools
+      vulture bandit pylint
+
+## python order
+
+if no ruff
+
+1. isort
+2. black
+3. python -m py_compile   (or equivalent fast syntax gate)
+4. flake8
+5. pyright  (or mypy, not both ideally)
+6. vulture
+7. bandit
+8. pylint
+
+if ruff
+
+1. ruff format
+2. python -m py_compile
+3. ruff check
+4. pyright (or mypy, not both)
+5. vulture
+6. bandit
