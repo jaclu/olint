@@ -18,8 +18,10 @@
 
 # inline-excludes:  # noqa: F403,F401
 
-plugin_cmd="ruff check --fix"
-proj_plugin_cmd="ruff check --fix ."
+# add: --fix after check if autocorrection of code issues, that can safely be fixed
+# is desired
+plugin_cmd="ruff check"
+proj_plugin_cmd="ruff check ."
 
 # really fast so run early
 # if --fix is used use priority 95, to indicate this changes code, otherwise 85
