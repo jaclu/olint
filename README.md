@@ -201,7 +201,14 @@ skip_linters+=(
 )
 ```
 
-### Termux Recommendations
+## Tool order
+
+To avoid first linting and then later reformat the code, essentially making the linting
+invalid, since the code has changed.
+It is recommended to give code changing tools priorities91 or higher.
+Ensuring no code changes happens in priority 90 or lower.
+
+## Termux Recommendations
 
 Termux supports global pip installs, no virtual environment required. Example setup:
 
