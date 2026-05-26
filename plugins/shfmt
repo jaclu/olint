@@ -9,7 +9,7 @@
 #  (Alpine edge) sudo apk add shfmt
 #
 
-shfmt_change_code=0
+shfmt_change_code=1
 
 if [[ "$shfmt_change_code" -eq 1 ]]; then
     plugin_cmd="shfmt -i 4 -ci -bn -w"
