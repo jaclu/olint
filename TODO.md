@@ -1,5 +1,10 @@
 # ToDo
 
+## ruff is not always run as proj linter
+
+if the other ruff is named ruff-format only that is run as proj linter
+ruff gets ignored, temp fix ruff-format -> ruff_format - investigate reason
+
 ## order for shell check
 
 Shoulddn't bashate go before shellcheck?

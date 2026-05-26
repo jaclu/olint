@@ -18,7 +18,7 @@
 
 # inline-excludes:  # noqa: F403,F401
 
-ruff_change_code=0
+ruff_change_code=1
 
 # if --fix is used use priority 95, to indicate this changes code, otherwise 85
 if [[ "$ruff_change_code" -eq 1 ]]; then
