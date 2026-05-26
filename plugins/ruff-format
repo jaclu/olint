@@ -19,8 +19,8 @@
 # inline-excludes:  # noqa: F403,F401
 
 if [[ -n "$(command -v black)" ]]; then
-    # If black is present, let it handle formating
-    # If ruff should do formating irregardless if black is
+    # If black is present, let it handle formatting
+    # If ruff should do formatting regardless if black is
     # present, remove this condition
     #
     # set to /dev/null instead of "" to avoid warning
