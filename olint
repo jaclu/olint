@@ -2089,7 +2089,7 @@ process_file_tree() {
 
     log_it "process_file_tree()" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
-    trap 'handle_ctrl_c INT' INT
+    # trap 'handle_ctrl_c INT' INT
 
     ! $b_proj_linters_only && {
         [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
@@ -2176,7 +2176,6 @@ process_file_tree() {
         ! $b_proj_linters_only && cache_set_timer
 
         for linter_name in "${proj_linters[@]}"; do
-            [[ "$proj_lint_tasks_completed" == *"$linter_name"* ]] && continue
 
             # it would look ridiculous to first flush the cache then immediately
             # write it again, so lets do it before the project lint
@@ -2187,7 +2186,7 @@ process_file_tree() {
         done
     }
 
-    trap '' INT # abort capturing Ctrl-C
+    # trap '' INT # abort capturing Ctrl-C
 
     [[ $files_without_matching_linter -gt 0 ]] && {
         echo
