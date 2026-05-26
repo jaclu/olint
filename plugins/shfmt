@@ -9,9 +9,15 @@
 #  (Alpine edge) sudo apk add shfmt
 #
 
-plugin_cmd="shfmt -i 4 -ci -bn -w"
+shfmt_change_code=0
 
-plugin_priority=85
+if [[ "$shfmt_change_code" -eq 1 ]]; then
+    plugin_cmd="shfmt -i 4 -ci -bn -w"
+    plugin_priority=95
+else
+    plugin_cmd="shfmt -i 4 -ci -bn"
+    plugin_priority=85
+fi
 
 # file extensions this plugin handles
 plugin_extensions=(

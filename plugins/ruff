@@ -18,14 +18,19 @@
 
 # inline-excludes:  # noqa: F403,F401
 
-# add: --fix after check if autocorrection of code issues, that can safely be fixed
-# is desired
-plugin_cmd="ruff check"
-proj_plugin_cmd="ruff check ."
+ruff_change_code=0
 
+if [[ "$ruff_change_code" -eq 1 ]]; then
+    plugin_cmd="ruff check --fix"
+    proj_plugin_cmd="ruff check --fix ."
+    plugin_priority=95
+else
+    plugin_cmd="ruff check"
+    proj_plugin_cmd="ruff check ."
+    plugin_priority=85
+fi
 # really fast so run early
 # if --fix is used use priority 95, to indicate this changes code, otherwise 85
-plugin_priority=85
 
 # file extensions this plugin handles
 plugin_extensions=(

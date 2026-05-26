@@ -159,7 +159,7 @@ if ruff
 ### shell script
 
 90 bash-n # Extremely basic check, should only be enabled if shellcheck is unavailable
-85 shfmt # Autoformat shell script source code
+85/95 shfmt # Autoformat shell script source code, when using -w rewrites code...
 50 shellcheck # Linter for shell scripts
 30 bashate # Code style enforcement for bash programs
 30 checkbashisms # Checks for portability issues in shell scripts
