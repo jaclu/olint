@@ -20,6 +20,7 @@
 
 ruff_change_code=0
 
+# if --fix is used use priority 95, to indicate this changes code, otherwise 85
 if [[ "$ruff_change_code" -eq 1 ]]; then
     plugin_cmd="ruff check --fix"
     proj_plugin_cmd="ruff check --fix ."
@@ -29,8 +30,6 @@ else
     proj_plugin_cmd="ruff check ."
     plugin_priority=85
 fi
-# really fast so run early
-# if --fix is used use priority 95, to indicate this changes code, otherwise 85
 
 # file extensions this plugin handles
 plugin_extensions=(
