@@ -23,4 +23,4 @@
 proj_plugin_cmd="codespell -H -S './.git,./.venv,./.mypy_cache'"
 
 # extremely fast tool, so might as well run early
-plugin_priority=90
+plugin_priority=91
