@@ -18,8 +18,20 @@
 
 # inline-excludes:  # noqa: F403,F401
 
-plugin_cmd="ruff format"
-proj_plugin_cmd="ruff format"
+if [[ -n "$(command -v black)" ]]; then
+    # If black is present, let it handle formating
+    # If ruff should do formating irregardless if black is
+    # present, remove this condition
+    #
+    # set to /dev/null instead of "" to avoid warning
+    #   missing: plugin_cmd
+    #
+    plugin_cmd="/dev/null"
+    proj_plugin_cmd="/dev/null"
+else
+    plugin_cmd="ruff format"
+    proj_plugin_cmd="ruff format"
+fi
 
 # run as one of the last steps
 plugin_priority=97

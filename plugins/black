@@ -22,21 +22,8 @@
 # project config files: pyproject.toml $XDG_CONFIG_HOME/black (~/.config/ if not set)
 #  [tool.black]
 
-# Be aware many think black is redundant if ruff is found
-# Black is noticeably slower than ruff, but both run by default if installed
-# If you want to give ruff precedence, uncomment the lines below:
-
-if [[ -n "$(command -v ruff)" ]]; then
-    #
-    # set to /dev/null instead of "" to avoid warning
-    #   missing: plugin_cmd
-    #
-    plugin_cmd="/dev/null"
-    proj_plugin_cmd="/dev/null"
-else
-    plugin_cmd="black"
-    proj_plugin_cmd="black ."
-fi
+plugin_cmd="black"
+proj_plugin_cmd="black ."
 
 plugin_priority=96
 
