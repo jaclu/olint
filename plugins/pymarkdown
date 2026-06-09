@@ -8,18 +8,34 @@
 # Installation methods;
 #  pip install pymarkdownlnt - Do NOT install pymarkdown pkg!
 
-# project config file: pyproject.toml
-#
-# Config samples:
-#
-# [tool.pymarkdown.plugins.md013]
-# line_length = 92
+# project config files:
 
+# pyproject.toml
 # [tool.pymarkdown]
-# plugins.md033.allowed_elements = "nbsp"
+# plugins.MD013.enabled = true
+# plugins.MD013.line_length = 92
 
-# [tool.pymarkdown.plugins.md024]
-# enabled = false
+# Or the more readable form:
+
+# plugins.line-length.enabled = true
+# plugins.line-length.line_length = 92
+
+# .pymarkdown.yaml:
+# ---
+# plugins:
+#   MD013:
+#     enabled: true
+#     line_length: 92
+
+# .pymarkdown (JSON5)
+# {
+#     "plugins": {
+#         "MD013": {
+#             "enabled": true,
+#             "line_length": 92
+#         }
+#     }
+# }
 
 plugin_cmd="pymarkdown scan"
 proj_plugin_cmd="pymarkdown scan -r ."

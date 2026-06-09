@@ -5,6 +5,7 @@
 # Installation methods;
 #  For python, consider pymarkdown
 #  brew install markdownlint-cli2
+
 # project config file: .markdownlint.yaml
 
 plugin_cmd="markdownlint-cli2"

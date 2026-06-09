@@ -6,11 +6,8 @@
 #  For python, consider pymarkdown
 #  brew install markdownlint-cli
 #  (Ubuntu)
-#   ensure nodejs >= 18 if not:
-#     curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-#   otherwise:
-#     sudo apt install nodejs npm
-#   sudo npm install -g markdownlint-cli
+#  apt install markdownlint
+
 # project config file: .markdownlint.yaml
 # sample: https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
 
