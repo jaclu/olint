@@ -840,7 +840,7 @@ env_cleanup() {
     proj_lint_tasks_completed=""
 
     cache_write
-    [[ -f "$f_linter_output" ]] && rm -f "$f_linter_output"
+    [[ -f "$f_linter_output" ]] && rm -f "$f_linter_output" # clear tmp file
 
     olint_venv_disable
 
@@ -964,7 +964,7 @@ parse_cmd_line() {
             -C | --continue) b_lint_continue=true ;;
             -d | --config-dir) # Support for ./deploy - prints out the config dir
                 echo "$olint_cfg_dir"
-                exit 0
+                env_cleanup 0
                 ;;
             -e | --excluded)
                 b_show_excluded=true
@@ -1157,7 +1157,7 @@ read_config_file() {
         echo "       use the provided replacements"
         # shellcheck disable=SC2059
         printf "$msg\n"
-        exit 1
+        env_cleanup 1
     }
 }
 
@@ -2089,7 +2089,6 @@ process_file_tree() {
 
     log_it "process_file_tree()" "$dbglvl_major_tasks"
     ((dbg_indent++)) # increase indent until this returns
-    # trap 'handle_ctrl_c INT' INT
 
     ! $b_proj_linters_only && {
         [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
@@ -2186,8 +2185,6 @@ process_file_tree() {
         done
     }
 
-    # trap '' INT # abort capturing Ctrl-C
-
     [[ $files_without_matching_linter -gt 0 ]] && {
         echo
         echo "Found $files_without_matching_linter files with no linter defined"
@@ -2267,5 +2264,6 @@ $b_use_cache || {
 }
 
 cache_read ### R
+trap 'handle_ctrl_c INT' INT
 process_file_tree
 env_cleanup 0
