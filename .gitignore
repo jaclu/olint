@@ -19,6 +19,5 @@ __pycache__/
 .cache.olint
 
 .vscode/
-.claude/base.md
 
 files_to_check/

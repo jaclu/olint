@@ -1,5 +1,3 @@
 [tool.pymarkdown]
-# too long lines in .claude/project.md
-plugins.line-length.line_length = 106 # 92
-
+plugins.line-length.line_length = 92
 plugins.line-length.code_block_line_length = 92
