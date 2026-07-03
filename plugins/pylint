@@ -10,6 +10,7 @@
 # Use case:
 #  Detects potential bugs, enforces coding standards, and warns about unused
 #  imports or variables.
+# Redundant if ruff is found
 
 # Installation methods;
 #  pip install pylint  # usable on iSH
