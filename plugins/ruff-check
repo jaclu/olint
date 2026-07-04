@@ -15,6 +15,7 @@
 #  pip install ruff  # dependency: rust  iSH can install but fails to run this
 #  brew install ruff
 #  (Alpine) sudo apk add ruff # segfaults on iSH
+#  (Termux) apt install ruff
 
 # inline-excludes:  # noqa: F403,F401
 
