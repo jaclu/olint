@@ -120,7 +120,10 @@ deploy_plugins() {
             "$d_plugins" 2>&1
     )"; then
         echo "Default plugins installed to: $d_plugins"
-        files_changed=true
+        echo "$cmd_output" | grep -q '100%' && {
+            # Only indicate changed if any files were xfered
+            files_changed=true
+        }
     else
         echo "ERROR: copying plugins failed"
         echo
