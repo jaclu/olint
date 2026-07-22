@@ -1,5 +1,27 @@
 # ToDo
 
+## dependencies
+
+List of plugins disabled under plugins making them redundant
+
+black
+  ruff-format
+
+mypy
+  pyright
+
+ruff
+  flake8
+  isort
+  pylint
+
+flake8 | ruff
+  pycodestyle
+  pyflakes
+
+shellcheck
+  bash-n
+
 ## ruff is not always run as proj linter
 
 if the other ruff is named ruff-format only that is run as proj linter
