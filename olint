@@ -940,8 +940,12 @@ should_project_be_ignored() {
     #  Abort Check
     case "$(lowercase_it "$ignore_project")" in
         1 | "true" | "yes")
-            echo "olint - Project ignored due to ignore_project=$ignore_project"
-            echo "        Defined in: $olint_cfg_proj"
+            echo "olint - Project ignored due to:"
+            if [[ -n "$olint_cfg_proj" ]]; then
+                echo " ignore_project=$ignore_project - defined in: $olint_cfg_proj"
+            else
+                echo "  No .olint.conf found"
+            fi
             env_cleanup 0
             ;;
         *) ;;
@@ -1193,7 +1197,7 @@ get_proj_config_recursive() {
         dir=$(dirname "$dir")
     done
     olint_cfg_proj=""
-    log_it "get_proj_config_recursive() - No Project config (.olint.conf) found!" 1
+    ignore_project=yes
 }
 
 filter_hidden_vs_actually_excluded_patterns() {
