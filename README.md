@@ -82,6 +82,12 @@ skip_linters+=(
     markdownlint
 )
 
+# Ensure specific installed linters are not ignored, overriding
+# the global skip_linters
+unskip_linters+=(
+    ansible-lint
+)
+
 # Exclude paths by prefix
 excluded_prefixes+=(
     test/
@@ -114,6 +120,8 @@ override_linter_cmd["flake8"]="flake8 --color=always --exclude './.venv,./test'"
 ```
 
 ### Project-wide Linters
+
+Not triggered per matching file, run once spanning the entire project
 
 ```bash
 project_linters+=(
