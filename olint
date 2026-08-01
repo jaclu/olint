@@ -2229,6 +2229,7 @@ t_app_start=$(date +%s) # will be reset after a -Z cache cleanse
 initialize_env
 olint_venv_enable # Needs to happen before get_config
 get_config "$1"
+should_project_be_ignored
 parse_cmd_line "$@"
 
 [[ "$zap_it" -ne 0 ]] && {
@@ -2277,8 +2278,6 @@ $b_show_config && {
     display_config
     env_cleanup 0
 }
-
-should_project_be_ignored
 
 $b_lint_continue && echo "Will continue with next file if linter found issues"
 $b_use_cache || {
