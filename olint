@@ -1093,6 +1093,9 @@ get_config() {
         }
     fi
     get_proj_config_recursive
+    # unskip linters from skip_linters if so requested
+    apply_linter_skips
+
     de_duplicate_config
     filter_hidden_vs_actually_excluded_patterns
 }
@@ -1322,9 +1325,8 @@ check_linter_plugins() {
 }
 
 apply_linter_skips() {
-    local i j found
+    local i j found=0
     for i in "${!unskip_linters[@]}"; do
-        found=0
         for j in "${!skip_linters[@]}"; do
             if [[ ${skip_linters[j]} == "${unskip_linters[i]}" ]]; then
                 unset 'skip_linters[j]'
@@ -1366,9 +1368,6 @@ parse_plugin_file() {
             return 1
         }
     fi
-
-    # unskip linters from skip_linters if so requested
-    apply_linter_skips
 
     for item in "${skip_linters[@]}"; do
         [[ "$item" = "$plugin_name" ]] && {
