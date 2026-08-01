@@ -1252,7 +1252,7 @@ process_linter_overrides() {
         fi
         new_cmd="${override_linter_cmd[$linter_override]}"
         log_it "linter: $linter_override  - override command: $new_cmd" \
-            "$((dbglvl_lintscan_basic + 1))"
+            "$dbglvl_lintscan_details"
         [[ -z "$new_cmd" ]] && {
             error_msg "override_linter_cmd[$linter_override]= - command not defined"
         }
@@ -1350,7 +1350,7 @@ parse_plugin_file() {
     local file_type
     local msg
 
-    log_it "parse_plugin_file($plugin_def)" "$((dbglvl_lintscan_basic + 1))"
+    log_it "parse_plugin_file($plugin_def)" "$dbglvl_lintscan_details"
     ((dbg_indent++)) # increase indent until this returns
 
     [[ -z "$plugin_def" ]] && {
@@ -1473,7 +1473,7 @@ add_plugin_file_type() {
 
     lc_file_type="${file_type,,}"
     log_it "add_plugin_file_type($plugin, $lc_file_type)" \
-        "$((dbglvl_lintscan_basic + 1))"
+        "$dbglvl_lintscan_details"
     ((dbg_indent++)) # increase indent until this returns
 
     if [[ -z "${linter_file_types[$lc_file_type]}" ]]; then
