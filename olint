@@ -60,9 +60,7 @@ log_it() {
     local this_verbose_level="${2:-1}"
 
     [[ "$this_verbose_level" = "forced" ]] && {
-        local this_verbose_level=0
-        local verbosity_lvl=1
-        local dbg_indent=1
+        this_verbose_level=0
     }
     [[ "$verbosity_lvl" -lt "$this_verbose_level" ]] && return
     printf '%s>%*s%s\n' "$this_verbose_level" "$dbg_indent" "" "$msg" >&2
