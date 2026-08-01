@@ -2031,15 +2031,19 @@ should_fname_be_excluded() {
     local fname="$1"
     local item pattern rel_fname
 
+    [[ -z "$fname" ]] && {
+        error_msg "should_fname_be_excluded() - called with empty fname"
+    }
+
     $b_skip_common_excludes && {
         for item in "${hidden_patterns[@]}"; do
-            [[ $fname =~ $item ]] && return 0
+            [[ "$fname" == "$item"* ]] && return 0
         done
     }
 
     # Check if the filename matches any pattern
     for pattern in "${excluded_prefixes[@]}"; do
-        [[ "$fname" =~ $pattern ]] && {
+        [[ "$fname" == "$pattern"* ]] && {
             $b_show_excluded && show_excluded_file "prefix" "$fname"
             return 0
         }
@@ -2059,9 +2063,6 @@ should_fname_be_excluded() {
         }
     done
 
-    [[ -z "$fname" ]] && {
-        error_msg "should_fname_be_excluded() - called with empty fname"
-    }
     rel_fname="$(basename "$fname")"
     for item in "${excluded_basenames[@]}"; do
         [[ "$rel_fname" = "$item" ]] && {
