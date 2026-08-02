@@ -87,7 +87,7 @@ class LinterCore:
                 ):
                     continue
                 self.lint_one(mthd, fname)
-        print("")  # LF after dot progress
+        print()  # LF after dot progress
 
     #
     #  Internals
