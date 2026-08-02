@@ -45,6 +45,7 @@ skip_linters+=(
     # markdownlint-cli2 # Linter for Markdown files
     # mypy          # Static type checker for Python
     # openrc        # Limied OpenRC service script linting via shellcheck
+    # py-compile    # Only compile the module checking for syntax-correctness
     # pycodestyle   # PEP 8 style checker; redundant if flake8 is used
     # pyflakes      # Passive checker of Python 3 programs
     # pylint        # Comprehensive Python code linter
