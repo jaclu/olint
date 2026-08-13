@@ -149,3 +149,6 @@ project_linters+=(
 # In most cases, leave this empty to use the default plugin location.
 #
 # olint_plugin_dir="/tmp/foo/olint_plugins"
+
+# 1 = allow ruff check to use --fix
+ruff_change_code=0
