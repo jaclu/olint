@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Extremely fast Python linter, written in Rust
+#  Extremely fast Python linter, written in Rust, this instance only handles formatting
 # Strengths:
 #  Ruff can be used to replace Flake8 (plus dozens of plugins), Black, isort,
 #  pydocstyle, pyupgrade, autoflake, and more, all while executing tens or
@@ -15,6 +15,13 @@
 #  pip install ruff  # dependency: rust  iSH can install but fails to run this
 #  brew install ruff
 #  (Alpine) sudo apk add ruff # segfaults on iSH
+
+# Sample config (pyproject.toml)
+# F & BLE must be present to ensure ruff linting doesn't leave issues
+# pylint would reject on nodes not using ruff
+#
+# [tool.ruff.lint]
+# select = ["E", "W", "I", "UP", "F", "BLE"]
 
 # inline-excludes:  # noqa: F403,F401
 

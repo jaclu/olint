@@ -3,7 +3,8 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Extremely fast Python linter, written in Rust
+#  Extremely fast Python linter, written in Rust, this instance checks code
+#  if ruff_change_code=1 then it auto-fixes issues
 # Strengths:
 #  Ruff can be used to replace Flake8 (plus dozens of plugins), Black, isort,
 #  pydocstyle, pyupgrade, autoflake, and more, all while executing tens or
@@ -17,9 +18,16 @@
 #  (Alpine) sudo apk add ruff # segfaults on iSH
 #  (Termux) apt install ruff
 
+# Sample config (pyproject.toml)
+# F & BLE must be present to ensure ruff linting doesn't leave issues
+# pylint would reject on nodes not using ruff
+#
+# [tool.ruff.lint]
+# select = ["E", "W", "I", "UP", "F", "BLE"]
+
 # inline-excludes:  # noqa: F403,F401
 
-ruff_change_code=1
+ruff_change_code="${ruff_change_code:-0}"
 
 # if --fix is used use priority 95, to indicate this changes code, otherwise 85
 if [[ "$ruff_change_code" -eq 1 ]]; then
