@@ -12,6 +12,9 @@ else
     plugin_cmd="bash --norc -n"
 fi
 
+# Extremely fast but only checks for basic syntax issues
+plugin_priority=99
+
 # file extensions this plugin handles
 plugin_extensions=(
     .sh
@@ -23,5 +26,3 @@ plugin_file_types=(
     "POSIX shell script*"
     "Bourne-Again shell script*"
 )
-
-plugin_priority=90

@@ -18,9 +18,7 @@
 # there isn't any file type associated, so in the clobal config this
 # is set as a project linter.
 
-# plugin_cmd="codespell"
-
 proj_plugin_cmd="codespell -H -S './.git,./.venv,./.mypy_cache'"
 
 # extremely fast tool, so might as well run early
-plugin_priority=91
+plugin_priority=98

@@ -9,11 +9,12 @@
 #  (Alpine edge) sudo apk add shfmt
 #
 
-shfmt_change_code=1
+# should be in global settings, this just to avoid lint issues
+shfmt_change_code="${shfmt_change_code:-0}"
 
 if [[ "$shfmt_change_code" -eq 1 ]]; then
     plugin_cmd="shfmt -i 4 -ci -bn -w"
-    plugin_priority=95
+    plugin_priority=150
 else
     plugin_cmd="shfmt -i 4 -ci -bn"
     plugin_priority=85

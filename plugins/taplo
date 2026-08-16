@@ -18,11 +18,7 @@
 # Reformat toml file: taplo format file.toml
 #
 
-if [[ -n "$(command -v taplo)" ]]; then
-    plugin_cmd="taplo lint"
-else
-    plugin_cmd=/dev/null
-fi
+plugin_cmd="taplo lint"
 
 plugin_priority=70
 

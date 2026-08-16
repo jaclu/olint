@@ -14,7 +14,7 @@ plugin_cmd="python3 -m py_compile"
 proj_plugin_cmd="/dev/null"
 
 # really fast so run early
-plugin_priority=90
+plugin_priority=199
 
 # file extensions this plugin handles
 plugin_extensions=(

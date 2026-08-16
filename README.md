@@ -73,42 +73,12 @@ This prevents accidental linting of the entire filesystem.
 
 ### Example `.olint.conf`
 
-```bash
-#!/usr/bin/env bash
-# This is sourced. Fake bang-path to help editors and linters
+For a full config including all features copy `default_config` from here into
+`.olint.conf` in proj folder
 
-# Skip specific installed linters
-skip_linters+=(
-    markdownlint
-)
-
-# Ensure specific installed linters are not ignored, overriding
-# the global skip_linters
-unskip_linters+=(
-    ansible-lint
-)
-
-# Exclude paths by prefix
-excluded_prefixes+=(
-    test/
-    .venv/
-)
-
-# Exclude paths by suffix
-excluded_suffixes+=(
-    .sqlite
-)
-
-# Explicitly exclude files
-excludes+=(
-    data/dead_code.py
-)
-
-# Exclude by basename prefix
-excluded_basename_prefixes+=(
-    \#
-)
-```
+For a typical project adding excluded linters via `skip_linters+=()`
+folders that should not be linted via `excluded_prefixes+=()` and explicit
+file excludes via `excludes+=()` is typically enough.
 
 ### Custom Linter Commands
 

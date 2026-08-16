@@ -5,22 +5,22 @@
 List of plugins disabled under plugins making them redundant
 
 black
-  ruff-format
+ruff-format
 
 mypy
-  pyright
+pyright
 
 ruff
-  flake8
-  isort
-  pylint
+flake8
+isort
+pylint
 
 flake8 | ruff
-  pycodestyle
-  pyflakes
+pycodestyle
+pyflakes
 
 shellcheck
-  bash-n
+bash-n
 
 ## ruff is not always run as proj linter
 
@@ -169,12 +169,19 @@ if ruff
 
 ### python
 
-98 isort [if ruff absent / not using "I"] # Sort Python imports automatically
-97 ruff-format (ruff formast)
-96 black [if no ruff] # Python code formatter
-90 py-compile # tests to compile the python code
+> 99 for linters rewriting the code
+
+199 py-compile # tests compile the python code - checks for invalid syntax
+
+120 isort [if ruff absent / not using "I"] # Sort Python imports automatically
+110 ruff-format (ruff formast) [if no black] - corrects isort obsolete sorting
+108 black - Python code formatter
+107 ruff-check - use if ruff_change_code=1 - rewrites code
+
 86 flake8 [if no ruff] # Python linter; handles multiple PEP 8 violations
-85/95 ruff # Extremely fast Python linter, written in Rust, when using --fix rewrites code...
+
+85 ruff-check - use if ruff_change_code != 1 - no code rewrite
+
 70 pycodestyle [if neither ruff/flake8] # PEP 8 style checker; redundant if flake8 is used
 60 pyflakes [if neither ruff/flake8] # Passive checker of Python 3 programs
 50 mypy # Static type checker for Python
@@ -185,17 +192,19 @@ if ruff
 
 ### shell script
 
-90 bash-n # Extremely basic check, should only be enabled if shellcheck is unavailable
-85/95 shfmt # Autoformat shell script source code, when using -w rewrites code...
+150 shfmt - used if shfmt_change_code=1 - rewrites code
+... Autoformat shell script source code, when using -w rewrites code
+99 bash-n # Extremely basic check, should only be enabled if shellcheck is unavailable
+85 shfmt - used if shfmt_change_code != 1
 50 shellcheck # Linter for shell scripts
-30 bashate # Code style enforcement for bash programs
+40 bashate # Code style enforcement for bash programs
 30 checkbashisms # Checks for portability issues in shell scripts
 
 ### markdown
 
-70 markdownlint # Linter for Markdown files
 70 markdownlint-cli2 # inter for Markdown files
-70 pymarkdownlint # Linter for Markdown files
+69 markdownlint # Linter for Markdown files
+68 pymarkdownlint # Linter for Markdown files
 
 ### yaml/ansible
 
@@ -204,7 +213,7 @@ if ruff
 
 ### unsorted
 
-90 codespell # Fix common misspellings in source code and text files
+98 codespell # Fix common misspellings in source code and text files
 70 jsonlint # JSON file linter
 70 taplo # TOML toolkit written in Rust
 50 cppcheck # Linter for C & C++

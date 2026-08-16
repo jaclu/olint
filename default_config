@@ -31,8 +31,7 @@ skip_linters+=(
     #              normally skipped, since it is slow, and only relevant
     #              for ansible projects
     # bandit     # Security linter for Python code
-    bash-n # Extremely basic check, should only be enabled
-    #        if shellcheck is unavailable
+    # bash-n        # Extremely basic check, self disables if shellcheck is found
     # bashate       # Code style enforcement for bash programs
     # black         # Python code formatter
     # checkbashisms # Checks for portability issues in shell scripts

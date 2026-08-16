@@ -16,22 +16,21 @@
 
 plugin_cmd="bashate"
 
-if command -v "$plugin_cmd" >/dev/null; then
-    if command -v shfmt >/dev/null; then
-        # In this case shfmt does the heavy lifting and bashate is only used
-        # for residual policy checks
-        plugin_cmd="bashate --ignore=E003,E006,E010,E011,E020,E021,E022,E023,E024"
-    elif command -v bashate-wrapper >/dev/null; then
-        # this reads .bashateconfig
-        plugin_cmd="bashate-wrapper"
-    fi
+if command -v bashate-wrapper >/dev/null; then
+    # TODO: check of the shfmt conditions should be put in bashate-wrapper
+    # this reads .bashateconfig
+    plugin_cmd="bashate-wrapper"
+elif command -v shfmt >/dev/null; then
+    # In this case shfmt does the heavy lifting and bashate is only used
+    # for residual policy checks
+    plugin_cmd="bashate --ignore=E003,E006,E010,E011,E020,E021,E022,E023,E024"
 fi
 
 # much faster than shellcheck, but in a few corner cases will fail to
 # give a meaningful error. such as missing a } somewhere will just
 # be reported as unexpected end of file.
 # so better to run after shellcheck
-plugin_priority=30
+plugin_priority=40
 
 #  file-types this plugin handles
 plugin_file_types=(

@@ -18,7 +18,7 @@
 #  [pycodestyle]
 #  max-line-length = 92
 
-if [[ -n "$(command -v flake8)" ]] || [[ -n "$(command -v ruff)" ]]; then
+if [[ -n "$(command -v ruff)" ]] || [[ -n "$(command -v flake8)" ]]; then
     #
     # set to /dev/null instead of "" to avoid warning
     #   missing: plugin_cmd

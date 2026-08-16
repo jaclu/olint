@@ -40,8 +40,7 @@ else
     proj_plugin_cmd="ruff format"
 fi
 
-# run as one of the last steps
-plugin_priority=97
+plugin_priority=110
 
 # file extensions this plugin handles
 plugin_extensions=(

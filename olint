@@ -1344,7 +1344,7 @@ parse_plugin_file() {
     local dbg_indent=$dbg_indent
     local plugin_name
     local proj_plugin_cmd
-    local plugin_priority=50 # set a default priority
+    local plugin_priority=50 # set a default priority, higher prios are run first
     local plugin_cmd
     local cmd_ok plugin_cmd_actual
     local item
@@ -1402,6 +1402,9 @@ parse_plugin_file() {
     #
 
     if [[ -n "$plugin_cmd_actual" ]]; then
+        #  if defined, check this for presence, instead of plugin_cmd
+        #  useful if a function is used, since then presence of the function
+        #  would give a false positive
         check_cmd="$plugin_cmd_actual"
     else
         check_cmd="$plugin_cmd"

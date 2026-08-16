@@ -27,13 +27,14 @@
 
 # inline-excludes:  # noqa: F403,F401
 
+# should be in global settings, this just to avoid lint issues
 ruff_change_code="${ruff_change_code:-0}"
 
 # if --fix is used use priority 95, to indicate this changes code, otherwise 85
 if [[ "$ruff_change_code" -eq 1 ]]; then
     plugin_cmd="ruff check --fix"
     proj_plugin_cmd="ruff check --fix ."
-    plugin_priority=95
+    plugin_priority=107
 else
     plugin_cmd="ruff check"
     proj_plugin_cmd="ruff check ."

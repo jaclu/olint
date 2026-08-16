@@ -21,7 +21,7 @@
 
 # inline-excludes:  # noqa: F401,F403
 
-if [[ -n "$(command -v flake8)" ]] || [[ -n "$(command -v ruff)" ]]; then
+if [[ -n "$(command -v ruff)" ]] || [[ -n "$(command -v flake8)" ]]; then
     #
     # Redundant if flake8 is found, this is part of flake8
     # set to /dev/null instead of "" to avoid warning
@@ -30,14 +30,12 @@ if [[ -n "$(command -v flake8)" ]] || [[ -n "$(command -v ruff)" ]]; then
     plugin_cmd="/dev/null"
     proj_plugin_cmd="/dev/null"
 else
+    plugin_cmd="pyflakes"
     # obviously there are two names it might use...
-    if [[ -n "$(command -v pyflakes3)" ]]; then
-        _cmd="pyflakes3"
-    else
-        _cmd="pyflakes"
-    fi
-    plugin_cmd="$_cmd"
-    proj_plugin_cmd="$_cmd ."
+    [[ -n "$(command -v pyflakes3)" ]] && {
+        plugin_cmd="pyflakes3"
+    }
+    proj_plugin_cmd="$plugin_cmd ."
 fi
 
 plugin_priority=60
