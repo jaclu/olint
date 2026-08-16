@@ -150,5 +150,6 @@ project_linters+=(
 #
 # olint_plugin_dir="/tmp/foo/olint_plugins"
 
-# 1 = allow ruff check to use --fix
+# Set to 1 to allow tool to change code
 ruff_change_code=0
+shfmt_change_code=0

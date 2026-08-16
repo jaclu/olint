@@ -10,6 +10,33 @@
 #  Can be run again to deploy updates.
 #
 
+err_msg() {
+    msg="$1"
+
+    [ -n "$msg" ] || msg="call to err_msg() with no param"
+
+    printf '\n\nERROR: %s\n' "$msg" >/dev/stderr
+    exit 1
+}
+
+set_section_global_config() {
+    [ "$section_global_config" = 1 ] && return
+    echo "---  Global olint config"
+    section_global_config=1
+}
+
+append_config_line() {
+    _acl_item="$1"
+    [ -n "$_acl_item" ] || err_msg "append_config_line() - no param"
+    [ -f "$f_default_conf" ] || err_msg "append_config_line() - no config file"
+    set_section_global_config
+    echo "$_acl_item" >>"$f_default_conf" || {
+        err_msg "Failed to append [$_acl_item] to: $f_default_conf"
+    }
+    echo "Appended to global config: $_acl_item"
+    files_changed=true
+}
+
 check_dependencies() {
     #
     #  Check if tools needed are available
@@ -68,14 +95,21 @@ get_app_destination() {
 
 deploy_default_config() {
     d_default_conf="$("$REPO_DIR"/olint --config-dir)" || {
-        echo "ERROR: Failed to extract config-dir"
-        exit 1
+        err_msg "Failed to extract config-dir"
     }
     mkdir -p "$d_default_conf"
     f_default_conf="$d_default_conf/olint.conf"
 
-    if [ ! -f "$f_default_conf" ]; then
-        echo "---  Global olint config"
+    if [ -f "$f_default_conf" ]; then
+        # ensure passive defaults are set if undefined
+        grep -q ^ruff_change_code= "$f_default_conf" || {
+            append_config_line "ruff_change_code=0"
+        }
+        grep -q ^shfmt_change_code= "$f_default_conf" || {
+            append_config_line "shfmt_change_code=0"
+        }
+    else
+        set_section_global_config
         cp "$REPO_DIR"/default_config "$f_default_conf"
 
         echo "A default config has been copied to: $f_default_conf"
@@ -102,8 +136,7 @@ deploy_plugins() {
 
     cmd_conf_dir="$REPO_DIR/olint --config-dir"
     d_default_conf="$($cmd_conf_dir)" || {
-        echo "ERROR: Failed to detect config folder using: $cmd_conf_dir"
-        exit 1
+        err_msg "Failed to detect config folder using: $cmd_conf_dir"
     }
 
     d_plugins="$d_default_conf"/plugins
@@ -174,8 +207,7 @@ elif [ "$1" = uninstall ]; then
 elif [ -n "$1" ]; then
     echo "$0 [force / uninstall]"
     echo
-    echo "ERROR: invalid option: $1"
-    exit 1
+    err_msg "invalid option: $1"
 fi
 
 files_changed=false
