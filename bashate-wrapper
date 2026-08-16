@@ -9,7 +9,7 @@
 #  a project conf file is used
 #
 
-CMD="bashate"
+CMD="bashate -eE005,E042,E043"
 CONFIG_FILE=".bashateconfig"
 
 # Default values
