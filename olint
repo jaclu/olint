@@ -282,7 +282,7 @@ maybe_update_cache() {
     t=$(("$(date +%s)" - t_cache_age))
     [[ "$t" -ge "$t_cashe_interval" ]] && {
         cache_write
-        printf '  %s - cache updated, files processed so far: %d\n' \
+        printf '---  %s - cache updated, files processed so far: %d\n' \
             "$(date +'%Y-%m-%d %H:%M:%S')" "${#cache_new[@]}"
         cache_set_timer
     }
@@ -2093,7 +2093,7 @@ ish_sysload_check() {
     [[ -z "$ish_ift_uptime" ]] && return
 
     while [[ "$($ish_ift_uptime -l | cut -d. -f1)" -ge "$ish_max_load" ]]; do
-        echo "[$(date +'%Y-%m-%d %H:%M:%S')] ***  iSH sysload is > $ish_max_load, waiting ${ish_high_load_sleep}s  ***"
+        echo "---  [$(date +'%Y-%m-%d %H:%M:%S')] ***  iSH sysload is > $ish_max_load, waiting ${ish_high_load_sleep}s  ***"
         sleep "$ish_high_load_sleep"
     done
 }
