@@ -258,8 +258,8 @@ mtime_2_date() {
     fi
 
     case "$kernel_name" in
-        "Darwin") as_date="$(date -r "$f_mtime" +'%Y-%m-%d %H:%M:%S')" ;;
-        *) as_date="$(date -d "@$f_mtime" +'%Y-%m-%d %H:%M:%S')" ;;
+        "Darwin") as_date="$(date -r "$f_mtime" +'%F %T')" ;;
+        *) as_date="$(date -d "@$f_mtime" +'%F %T')" ;;
     esac
 
     log_it "result [$as_date]" "$((dbglvl_data_types + 1))"
@@ -283,7 +283,7 @@ maybe_update_cache() {
     [[ "$t" -ge "$t_cashe_interval" ]] && {
         cache_write
         printf -- '---[%s] - cache updated, files processed so far: %d\n' \
-            "$(date +'%Y-%m-%d %H:%M:%S')" \
+            "$(date +'%F %T')" \
             "${#cache_new[@]}"
         cache_set_timer
     }
@@ -2095,7 +2095,7 @@ ish_sysload_check() {
 
     while [[ "$($ish_ift_uptime -l | cut -d. -f1)" -ge "$ish_max_load" ]]; do
         printf -- '---[%s]  ***  iSH sysload is > %s, waiting %ds  ***\n' \
-            "$(date +'%Y-%m-%d %H:%M:%S')" \
+            "$(date +'%F %T')" \
             "$ish_max_load" \
             "$ish_high_load_sleep"
         sleep "$ish_high_load_sleep"
