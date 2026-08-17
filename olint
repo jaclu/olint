@@ -2093,7 +2093,7 @@ ish_sysload_check() {
     [[ -z "$ish_ift_uptime" ]] && return
 
     while [[ "$($ish_ift_uptime -l | cut -d. -f1)" -ge "$ish_max_load" ]]; do
-        echo "***  iSH sysload is > $ish_max_load, waiting ${ish_high_load_sleep}s  ***"
+        echo "[$(date +%H:%M:%S)] ***  iSH sysload is > $ish_max_load, waiting ${ish_high_load_sleep}s  ***"
         sleep "$ish_high_load_sleep"
     done
 }
