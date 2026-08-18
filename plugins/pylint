@@ -30,7 +30,7 @@
 #  [base.py]
 #  disable=R0904
 
-if [[ -n "$(command -v ruff)" ]]; then
+if [[ -n "$(command -v ruff)" ]] && [[ -n "$(command -v pyright)" ]]; then
     #
     # set to /dev/null instead of "" to avoid warning
     #   missing: plugin_cmd

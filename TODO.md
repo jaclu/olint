@@ -236,15 +236,15 @@ This increases coverage on platforms where not all preferred options are availab
 
 210 py-compile
 
-120 ruff-check --fix [if $ruff_change_code is 1 and (
-if not isort_allow_usage=1 and isort found and I001 used)]
+120 ruff-check --fix [if $ruff_change_code is 1 and not (
+isort_allow_usage=1 and isort found and I001 used)]
 
 115 isort [isort_allow_usage=1]
 110 ruff-format [if not black_allow_usage=1 and black found]
 108 black [black_allow_usage=1]
 
-90 ruff-check [ruff_change_code=0 and (
-if not isort_allow_usage=1 and isort found and I001 used)]
+90 ruff-check [ruff_change_code=0 and not (
+isort_allow_usage=1 and isort found and I001 used)]
 
 85 flake8 [if no ruff]
 75 pycodestyle [if neither ruff/flake8]
@@ -255,7 +255,7 @@ if not isort_allow_usage=1 and isort found and I001 used)]
 
 25 bandit
 20 vulture
-10 pylint [if no ruff]
+10 pylint [skipped if ruff and pyright installed]
 
 ### python
 
