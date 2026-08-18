@@ -65,7 +65,7 @@ skip_linters+=(
 # Use unskip_linters to override a default skip_linters item, and add it on a per
 # project basis
 unskip_linters+=(
-    # ansible-lint # Enable for ansible related projects
+    # ansible-lint # Enable for ansible related projects in that .olint.conf
 )
 
 #  =====  Handling which files should be skipped by 'olint'.  =====
