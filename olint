@@ -1043,7 +1043,7 @@ olint_venv_enable() {
     # shellcheck disable=SC2154
     if [[ -d "$d_linting_venv" ]]; then
         if [[ $(command -v python3) == "$d_linting_venv/"* ]]; then
-            echo "---  Already using olint venv  ---"
+            printf -- '---  Already using olint venv  ---\n' >/dev/stderr
             return
         fi
         # [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
