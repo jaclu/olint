@@ -31,7 +31,7 @@ case "$(ruff check --show-settings 2>/dev/null)" in
         ;;
 esac
 
-plugin_priority=120
+plugin_priority=115
 
 # file extensions this plugin handles
 plugin_extensions=(

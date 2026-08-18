@@ -38,7 +38,7 @@ else
     proj_plugin_cmd="$plugin_cmd ."
 fi
 
-plugin_priority=60
+plugin_priority=70
 
 # file extensions this plugin handles
 plugin_extensions=(

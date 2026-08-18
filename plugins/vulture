@@ -33,7 +33,7 @@
 plugin_cmd="vulture --min-confidence 80"
 proj_plugin_cmd="vulture --min-confidence 80 ."
 
-plugin_priority=25
+plugin_priority=20
 
 # file extensions this plugin handles
 plugin_extensions=(

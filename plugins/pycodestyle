@@ -30,7 +30,7 @@ else
     proj_plugin_cmd="pycodestyle --exclude=.venv ."
 fi
 
-plugin_priority=70
+plugin_priority=75
 
 # file extensions this plugin handles
 plugin_extensions=(

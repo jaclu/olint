@@ -34,11 +34,11 @@ ruff_change_code="${ruff_change_code:-0}"
 if [[ "$ruff_change_code" -eq 1 ]]; then
     plugin_cmd="ruff check --fix"
     proj_plugin_cmd="ruff check --fix ."
-    plugin_priority=107
+    plugin_priority=120
 else
     plugin_cmd="ruff check"
     proj_plugin_cmd="ruff check ."
-    plugin_priority=85
+    plugin_priority=90
 fi
 
 # file extensions this plugin handles

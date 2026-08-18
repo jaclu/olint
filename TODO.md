@@ -167,6 +167,90 @@ if ruff
 5. vulture - 25
 6. bandit - 20
 
+### py list
+
+Available linters found are run from higher priority to lower,
+with fallback alternatives if the preferred linter is not installed,
+aborting at first error.
+This increases coverage on platforms where not all preferred options are available.
+
+## handler priorities
+
+>200 - Ultra fast minimal checks, verify runable code, if this fails linting is pointless
+199-100 - linters modifying code
+<100 - no code changed so all handlers analyse the same code
+
+## ordered list of python handlers
+
+220 py-compile (python3 -m py_compile)
+
+120 isort [if ruff absent]
+110 ruff-format (ruff format) [if no black]
+108 black
+107 ruff-check (ruff check --fix) [if $ruff_change_code is 1]
+
+86 flake8 [if no ruff]
+85 ruff-check (ruff check) [if $ruff_change_code not 1]
+70 pycodestyle [if neither ruff/flake8]
+60 pyflakes [if neither ruff/flake8]
+50 mypy
+35 pyright [if no mypy]
+25 vulture
+20 bandit
+10 pylint [if no ruff]
+
+## with additions
+
+220 py-compile
+
+      MUTATORS
+120 ruff-check --fix
+115 isort          [if no ruff]
+110 ruff-format    [if no black]
+108 black          [if no ruff-format]
+
+      ANALYSERS
+ 90 ruff-check     [if ruff]
+ 85 flake8         [if no ruff]
+ 70 pycodestyle    [if neither ruff/flake8]
+ 60 pyflakes       [if neither ruff/flake8]
+
+ 50 mypy
+ 35 pyright        [if no mypy]
+
+ 25 bandit
+ 20 vulture
+ 10 pylint
+
+-------
+
+## handler priorities2
+
+>200 - executable/syntax validation
+199-100 - source-modifying handlers
+<100 - analysis handlers, all seeing the same final source
+
+## Python
+
+220 py-compile
+
+120 ruff-check --fix [if $ruff_change_code is 1]
+115 isort [if ruff and I001 enabled]
+110 ruff-format [if no black]
+108 black
+
+90  ruff-check [if ruff_change_code is not 1]
+85  flake8 [if no ruff]
+75  pycodestyle [if neither ruff/flake8]
+70  pyflakes [if neither ruff/flake8]
+
+50  mypy
+35  pyright [if no mypy]
+
+25  bandit
+20  vulture
+10  pylint [if no ruff]
+
 ### python
 
 > 99 for linters rewriting the code
