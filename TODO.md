@@ -2,7 +2,7 @@
 
 ## filetypes only handled by proj linters
 
-Are mistakenly listed as --no-linter
+Are mistakenly listed as --no-linter - should not be
 
 ## dependencies
 
