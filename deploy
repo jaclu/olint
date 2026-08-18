@@ -102,6 +102,12 @@ deploy_default_config() {
 
     if [ -f "$f_default_conf" ]; then
         # ensure passive defaults are set if undefined
+        grep -q ^black_allow_usage= "$f_default_conf" || {
+            append_config_line "black_allow_usage=0"
+        }
+        grep -q ^isort_allow_usage= "$f_default_conf" || {
+            append_config_line "isort_allow_usage=0"
+        }
         grep -q ^ruff_change_code= "$f_default_conf" || {
             append_config_line "ruff_change_code=0"
         }

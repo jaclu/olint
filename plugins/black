@@ -8,7 +8,7 @@
 #  Enforces consistent formatting across your codebase.
 # Use case:
 #  Works well alongside linters like Flake8 and Pylint for a unified style.
-# Redundant if ruff is found
+# Redundant if ruff is used
 
 # Installation methods;
 #  pip install black  # usable on iSH
@@ -22,10 +22,17 @@
 # project config files: pyproject.toml $XDG_CONFIG_HOME/black (~/.config/ if not set)
 #  [tool.black]
 
-plugin_cmd="black"
-proj_plugin_cmd="black ."
-
 plugin_priority=108
+
+# black_allow_usage is supplied via config when applicable.
+# shellcheck disable=SC2154
+if [[ "$black_allow_usage" = 1 ]]; then
+    plugin_cmd="black"
+    proj_plugin_cmd="black ."
+else
+    plugin_cmd=/dev/null
+    proj_plugin_cmd=/dev/null
+fi
 
 # file extensions this plugin handles
 plugin_extensions=(

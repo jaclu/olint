@@ -149,6 +149,14 @@ project_linters+=(
 #
 # olint_plugin_dir="/tmp/foo/olint_plugins"
 
-# Set to 1 to allow tool to change code
+#
+# Set to 1 to allow these options
+#
+# Linters normally excluded from consideration. If allowed they will take
+# presedence over competing linters if both are installed.
+black_allow_usage=0 # if enabled and present skips ruff-format
+isort_allow_usage=0 # if enabled and present skips ruff-check
+
+# optionally allow linter to change code
 ruff_change_code=0
 shfmt_change_code=0

@@ -8,7 +8,7 @@
 #  Ensures imports are grouped and ordered correctly according to PEP 8.
 # Use case:
 #  Keeps imports organized and clean.
-# Redundant if ruff is found
+# Causes conflicts if ruff is used on other nodes
 
 # Installation methods;
 #  pip install isort  # usable on iSH
@@ -16,22 +16,17 @@
 #  (Ubuntu) sudo apt install isort
 #  (Alpine) sudo apk add py3-isort
 
-# isort is skipped if ruff is found and monitoring imports in current proj
-
-case "$(ruff check --show-settings 2>/dev/null)" in
-    *I001*)
-        # rugg handles import order
-        plugin_cmd="/dev/null"
-        proj_plugin_cmd="/dev/null"
-        ;;
-    *)
-        # use isort if ruff is not found/not configured with select "I"
-        plugin_cmd="isort"
-        proj_plugin_cmd="isort --gitignore ."
-        ;;
-esac
-
 plugin_priority=115
+
+# isort_allow_usage is supplied via config when applicable.
+# shellcheck disable=SC2154
+if [[ "$isort_allow_usage" = 1 ]]; then
+    plugin_cmd="isort"
+    proj_plugin_cmd="isort --gitignore ."
+else
+    plugin_cmd=/dev/null
+    proj_plugin_cmd=/dev/null
+fi
 
 # file extensions this plugin handles
 plugin_extensions=(

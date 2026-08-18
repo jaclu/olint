@@ -176,9 +176,9 @@ This increases coverage on platforms where not all preferred options are availab
 
 ## handler priorities
 
->200 - Ultra fast minimal checks, verify runable code, if this fails linting is pointless
-199-100 - linters modifying code
-<100 - no code changed so all handlers analyse the same code
+> 200 - Ultra fast minimal checks, verify runable code, if this fails linting is pointless
+> 199-100 - linters modifying code
+> <100 - no code changed so all handlers analyse the same code
 
 ## ordered list of python handlers
 
@@ -204,52 +204,58 @@ This increases coverage on platforms where not all preferred options are availab
 220 py-compile
 
       MUTATORS
+
 120 ruff-check --fix
-115 isort          [if no ruff]
-110 ruff-format    [if no black]
-108 black          [if no ruff-format]
+115 isort [if no ruff]
+110 ruff-format [if no black]
+108 black [if no ruff-format]
 
       ANALYSERS
- 90 ruff-check     [if ruff]
- 85 flake8         [if no ruff]
- 70 pycodestyle    [if neither ruff/flake8]
- 60 pyflakes       [if neither ruff/flake8]
 
- 50 mypy
- 35 pyright        [if no mypy]
+90 ruff-check [if ruff]
+85 flake8 [if no ruff]
+70 pycodestyle [if neither ruff/flake8]
+60 pyflakes [if neither ruff/flake8]
 
- 25 bandit
- 20 vulture
- 10 pylint
+50 mypy
+35 pyright [if no mypy]
 
--------
+25 bandit
+20 vulture
+10 pylint
+
+---
 
 ## handler priorities2
 
->200 - executable/syntax validation
-199-100 - source-modifying handlers
-<100 - analysis handlers, all seeing the same final source
+> 200 - executable/syntax validation
+> 199-100 - source-modifying handlers
+> <100 - analysis handlers, all seeing the same final source
 
 ## Python
 
-220 py-compile
+210 py-compile
 
-120 ruff-check --fix [if $ruff_change_code is 1]
-115 isort [if ruff and I001 enabled]
-110 ruff-format [if no black]
-108 black
+120 ruff-check --fix [if $ruff_change_code is 1 and (
+if not isort_allow_usage=1 and isort found and I001 used)]
 
-90  ruff-check [if ruff_change_code is not 1]
-85  flake8 [if no ruff]
-75  pycodestyle [if neither ruff/flake8]
-70  pyflakes [if neither ruff/flake8]
+115 isort [isort_allow_usage=1]
+110 ruff-format [if not black_allow_usage=1 and black found]
+108 black [black_allow_usage=1]
 
-50  mypy
-35  pyright [if no mypy]
+90 ruff-check [ruff_change_code=0 and (
+if not isort_allow_usage=1 and isort found and I001 used)]
 
-25  bandit
-20  vulture
-10  pylint [if no ruff]
+85 flake8 [if no ruff]
+75 pycodestyle [if neither ruff/flake8]
+70 pyflakes [if neither ruff/flake8]
+
+50 mypy
+35 pyright [if no mypy]
+
+25 bandit
+20 vulture
+10 pylint [if no ruff]
 
 ### python
 

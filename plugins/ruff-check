@@ -11,6 +11,8 @@
 #  hundreds of times faster than any individual tool.
 # Use case:
 #  Rapid linting
+# Observe:
+#  isort_allow_usage=1 and isort found and ruff using I001 disables this
 
 # Installation methods;
 #  pip install ruff  # dependency: rust  iSH can install but fails to run this
@@ -27,20 +29,6 @@
 
 # inline-excludes:  # noqa: F403,F401
 
-# should be in global settings, this just to avoid lint issues
-ruff_change_code="${ruff_change_code:-0}"
-
-# if --fix is used use priority 95, to indicate this changes code, otherwise 85
-if [[ "$ruff_change_code" -eq 1 ]]; then
-    plugin_cmd="ruff check --fix"
-    proj_plugin_cmd="ruff check --fix ."
-    plugin_priority=120
-else
-    plugin_cmd="ruff check"
-    proj_plugin_cmd="ruff check ."
-    plugin_priority=90
-fi
-
 # file extensions this plugin handles
 plugin_extensions=(
     .py
@@ -51,3 +39,30 @@ plugin_extensions=(
 plugin_file_types=(
     "Python script*"
 )
+
+# ruff_change_code is supplied via config when applicable.
+# shellcheck disable=SC2154
+if [[ "$ruff_change_code" = 1 ]]; then
+    plugin_cmd="ruff check --fix"
+    proj_plugin_cmd="ruff check --fix ."
+    plugin_priority=120
+else
+    plugin_cmd="ruff check"
+    proj_plugin_cmd="ruff check ."
+    plugin_priority=90
+fi
+
+# isort_allow_usage is supplied via config when applicable.
+# shellcheck disable=SC2154
+if [[ "$isort_allow_usage" = 1 ]]; then
+    if [[ -n "$(command -v isort)" ]]; then
+        case "$(ruff check --show-settings 2>/dev/null)" in
+            *I001*)
+                # ruff import order might conflict with isort
+                plugin_cmd="/dev/null"
+                proj_plugin_cmd="/dev/null"
+                ;;
+            *) ;;
+        esac
+    fi
+fi
