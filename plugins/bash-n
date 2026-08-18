@@ -16,7 +16,7 @@ else
 fi
 
 # Extremely fast but only checks for basic syntax issues
-plugin_priority=211
+plugin_priority=220
 
 # file extensions this plugin handles
 plugin_extensions=(
