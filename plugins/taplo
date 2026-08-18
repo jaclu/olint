@@ -4,7 +4,10 @@
 #
 # Purpose:
 #  TOML toolkit written in Rust
-#
+# Strengths:
+# Use case:
+# Caveats:
+
 # Installation methods
 #  brew install taplo
 #  npm install -g @taplo/cli

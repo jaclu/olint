@@ -8,7 +8,8 @@
 #  Enforces consistent formatting across your codebase.
 # Use case:
 #  Works well alongside linters like Flake8 and Pylint for a unified style.
-# Redundant if ruff is used
+# Caveats:
+#  Only used if black_allow_usage=1, since it disagrees with ruff format in many cases
 
 # Installation methods;
 #  pip install black  # usable on iSH

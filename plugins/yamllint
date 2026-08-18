@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
+# Purpose: YAML syntax and style linting
+# Strengths: Detects YAML syntax, structure, and formatting problems
+# Use case: Generic YAML validation; complements Ansible-lint rather than replacing it
+# Caveats:
+
 # Installation methods;
-#  pip install yamllint   # can be installed on iSH
+#  pip install yamllint
 #  brew install yamllint
 #  (Ubuntu) sudo apt install yamllint
 #  (Alpine) sudo apk add yamllint

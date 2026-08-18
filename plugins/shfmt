@@ -2,6 +2,11 @@
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # don't warn about unused variables
 
+# Purpose:
+# Strengths:
+# Use case:
+# Caveats: Only changes code if shfmt_change_code=1
+
 # Installation methods;
 #  brew install shfmt
 #  go install mvdan.cc/sh/v3/cmd/shfmt@latest

@@ -12,6 +12,7 @@
 #  Keeping codebases clean by surfacing code that can be safely removed.
 #  Best run as a project linter - per-file analysis produces false positives
 #  for symbols that are unused locally but referenced elsewhere.
+# Caveats:
 
 # Installation methods;
 #  pip install vulture  # usable on iSH

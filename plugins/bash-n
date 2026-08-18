@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # This is sourced. Fake bang-path to help editors and linters
 # shellcheck disable=SC2034  # don't warn about unused variables
-#
-# Super simple and quick script tesster, will print out basic errors detected
-# so can be used if shellcheck is unavailable.
-#
+
+# Purpose:
+#  Super simple and quick script tesster, will print out basic errors detected
+#  so can be used if shellcheck is unavailable.
+# Strengths:
+# Use case:
+# Caveats: Only checks if script can run at all
 
 if [[ -n "$(command -v shellcheck)" ]]; then
     plugin_cmd="/dev/null"

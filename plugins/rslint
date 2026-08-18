@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
-# This linter ignores Ctrl-C and I haven't figured out how to solve this...
+# Purpose:
+# Strengths:
+# Use case:
+# Caveats: This linter ignores Ctrl-C and I haven't figured out how to solve this...
 
 # Installing methods;
 #  brew install rslint

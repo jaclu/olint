@@ -11,7 +11,7 @@
 #  since it uses the pyright engine but offers better integration
 # Use case:
 #  Provides type checks and basic linting as you write code.
-# Redundant if mypy is found
+# Caveats: Skipped if ruff is found
 
 # Installation methods;
 # Not usable on iSH - segfaults - last checked: 26-08-18

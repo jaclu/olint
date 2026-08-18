@@ -8,7 +8,8 @@
 #  Ensures imports are grouped and ordered correctly according to PEP 8.
 # Use case:
 #  Keeps imports organized and clean.
-# Causes conflicts if ruff is used on other nodes
+# Caveats:
+#  Only used if isort_allow_usage=1, since it disagrees with ruff check in many cases
 
 # Installation methods;
 #  pip install isort  # usable on iSH

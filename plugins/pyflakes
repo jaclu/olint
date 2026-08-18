@@ -11,7 +11,7 @@
 # Issues:
 #  pyflakes doesn't seem to have an exclude param, so might not be practical
 #  to use as a project linter....
-# Redundant if flake8 or ruff is found
+# Caveats: Skipped if ruff or flake8 is found
 
 # Installation methods;
 #  pip install pyflakes  # usable on iSH

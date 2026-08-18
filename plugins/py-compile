@@ -9,6 +9,7 @@
 # Use case:
 #  Rapid code validation, if it can't even be compiled, not much point in running linters
 #  on it
+# Caveats:
 
 plugin_cmd="python3 -m py_compile"
 proj_plugin_cmd="/dev/null"

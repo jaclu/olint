@@ -6,14 +6,12 @@
 # so it would be redundant to also run them if you use Flake8
 #
 
-# Purpose:
-#  Lightweight tool for enforcing PEP 8 style guide compliance.
+# Purpose: Lightweight tool for enforcing PEP 8 style guide compliance.
 # Strengths:
 #  Supports plugins for extended functionality
 #  (e.g., flake8-bugbear for additional checks). Less verbose than Pylint.
-# Use case:
-#  Ideal for enforcing style and detecting common coding issues.
-# Redundant if ruff is found
+# Use case: Ideal for enforcing style and detecting common coding issues.
+# Caveats: Skipped if ruff is found
 
 # Installation methods;
 #  pip install flake8

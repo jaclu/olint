@@ -10,7 +10,7 @@
 #  hundreds of times faster than any individual tool.
 # Use case:
 #  Rapid linting
-# Observe:
+# Caveats:
 #  black_allow_usage=1 and black found disables this
 
 # Installation methods;
