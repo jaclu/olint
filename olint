@@ -898,17 +898,16 @@ defaults_for_proj_config_file() {
 
     skip_linters=() # plugins to skip in this project
     unskip_linters=()
-
     excluded_prefixes=( # start of fname
         __pycache__/
         .git/
+        .idea/ # Used by JetBrains
         .mypy_cache/
         .pytest_cache/
         .ruff_cache/
         .venv/
         .vscode/
     )
-
     hidden_patterns=( # exclude from display of excluded_prefixes unless -E is used
         __pycache__/
         .git/
@@ -918,6 +917,7 @@ defaults_for_proj_config_file() {
         .venv/
         .vscode/
     )
+    hidden_patterns=("${excluded_prefixes[@]}")
     excluded_suffixes=( # excludes by filename suffix
         \~
         \#
@@ -925,9 +925,9 @@ defaults_for_proj_config_file() {
         .tmp
     )
     excludes=( # Specific excludes
+        "$bname_cache"
     )
     excluded_basenames=( # basename (filename without any path) excludes
-        "$bname_cache"
     )
     excluded_basename_prefixes=( # excludes by basename prefix
         \#
