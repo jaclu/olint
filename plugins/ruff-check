@@ -15,7 +15,8 @@
 #  isort_allow_usage=1 and isort found and ruff using I001 disables this
 
 # Installation methods;
-#  pip install ruff  # dependency: rust  iSH can install but fails to run this
+# Not usable on iSH - segfaults - last checked: 26-08-18
+#  pip install ruff  # dependency: rust  iSH can install but fails to run
 #  brew install ruff
 #  (Alpine) sudo apk add ruff # segfaults on iSH
 #  (Termux) apt install ruff

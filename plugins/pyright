@@ -14,7 +14,8 @@
 # Redundant if mypy is found
 
 # Installation methods;
-#  pip install pyright  # iSH can install but fails to run this
+# Not usable on iSH - segfaults - last checked: 26-08-18
+#  pip install pyright  # iSH can install but fails to run
 #  brew install pyright
 #  npm install -g pyright
 

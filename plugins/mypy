@@ -43,8 +43,3 @@ plugin_extensions=(
 plugin_file_types=(
     "Python script*"
 )
-
-# Handle entire project
-
-# conf file pyproject.toml
-# mypy .
