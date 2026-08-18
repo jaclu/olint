@@ -9,8 +9,8 @@
 # Use case:
 # Caveats: Only checks if script can run at all
 
-if [[ -n "$(command -v shellcheck)" ]]; then
-    plugin_cmd="/dev/null"
+if command -v shellcheck >/dev/null; then
+    plugin_cmd=/dev/null
 else
     plugin_cmd="bash --norc -n"
 fi

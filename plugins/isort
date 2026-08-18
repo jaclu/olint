@@ -22,7 +22,7 @@ plugin_priority=115
 # isort_allow_usage is supplied via config when applicable.
 # shellcheck disable=SC2154
 if [[ "$isort_allow_usage" = 1 ]]; then
-    plugin_cmd="isort"
+    plugin_cmd=isort
     proj_plugin_cmd="isort --gitignore ."
 else
     plugin_cmd=/dev/null

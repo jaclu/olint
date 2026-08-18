@@ -28,7 +28,7 @@ plugin_priority=108
 # black_allow_usage is supplied via config when applicable.
 # shellcheck disable=SC2154
 if [[ "$black_allow_usage" = 1 ]]; then
-    plugin_cmd="black"
+    plugin_cmd=black
     proj_plugin_cmd="black ."
 else
     plugin_cmd=/dev/null

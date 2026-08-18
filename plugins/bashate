@@ -25,7 +25,7 @@ plugin_cmd="bashate -eE005,E042,E043 -iE011"
 if command -v bashate-wrapper >/dev/null; then
     # TODO: check of the shfmt conditions should be put in bashate-wrapper
     # this reads .bashateconfig
-    plugin_cmd="bashate-wrapper"
+    plugin_cmd=bashate-wrapper
 elif command -v shfmt >/dev/null; then
     # In this case shfmt does the heavy lifting and bashate is only used
     # for residual policy checks

@@ -12,7 +12,7 @@
 #    install rust: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 #    cargo install rslint
 
-plugin_cmd="rslint"
+plugin_cmd=rslint
 proj_plugin_cmd="rslint ."
 
 plugin_priority=50

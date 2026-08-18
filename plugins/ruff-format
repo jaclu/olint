@@ -32,7 +32,7 @@ plugin_priority=110
 
 # black_allow_usage is supplied via config when applicable.
 # shellcheck disable=SC2154
-if [[ "$black_allow_usage" = 1 ]] && [[ -n "$(command -v black)" ]]; then
+if [[ "$black_allow_usage" = 1 ]] && command -v black >/dev/null; then
     plugin_cmd=/dev/null
     proj_plugin_cmd=/dev/null
 else

@@ -24,13 +24,13 @@
 #  [flake8]
 #  max-line-length = 92
 
-if [[ -n "$(command -v ruff)" ]]; then
+if command -v ruff >/dev/null; then
     #
     # set to /dev/null instead of "" to avoid warning
     #   missing: plugin_cmd
     #
-    plugin_cmd="/dev/null"
-    proj_plugin_cmd="/dev/null"
+    plugin_cmd=/dev/null
+    proj_plugin_cmd=/dev/null
 else
     # avoiding parallelism is normally not a performance bottle neck
     # and avoids flake8 to fail on limited systems

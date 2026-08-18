@@ -16,7 +16,7 @@
 # project config file: .markdownlint.yaml
 # sample: https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
 
-plugin_cmd="markdownlint"
+plugin_cmd=markdownlint
 proj_plugin_cmd="markdownlint ."
 
 plugin_priority=69

@@ -26,7 +26,7 @@
 #  [mypy-.brabantse_gebouwen.settings]
 #  ignore_missing_imports = True
 
-plugin_cmd="mypy"
+plugin_cmd=mypy
 proj_plugin_cmd="mypy --namespace-packages --explicit-package-bases ."
 
 # do this plugin late, since if other plugins find issues

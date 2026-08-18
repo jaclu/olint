@@ -56,14 +56,14 @@ fi
 # isort_allow_usage is supplied via config when applicable.
 # shellcheck disable=SC2154
 if [[ "$isort_allow_usage" = 1 ]]; then
-    if [[ -n "$(command -v isort)" ]]; then
+    command -v isort >/dev/null && {
         case "$(ruff check --show-settings 2>/dev/null)" in
             *I001*)
                 # ruff import order might conflict with isort
-                plugin_cmd="/dev/null"
-                proj_plugin_cmd="/dev/null"
+                plugin_cmd=/dev/null
+                proj_plugin_cmd=/dev/null
                 ;;
             *) ;;
         esac
-    fi
+    }
 fi

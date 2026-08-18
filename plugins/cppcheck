@@ -12,7 +12,7 @@
 #  (Ubuntu) sudo apt install cppcheck
 #  (Alpine) sudo apk add cppcheck
 
-plugin_cmd="cppcheck"
+plugin_cmd=cppcheck
 proj_plugin_cmd="cppcheck ."
 
 plugin_priority=50

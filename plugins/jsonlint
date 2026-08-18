@@ -17,7 +17,7 @@
 
 plugin_cmd="jsonlint -p"
 # If run as a project linter, the process does nothing and idles forever...
-proj_plugin_cmd="/dev/null"
+proj_plugin_cmd=/dev/null
 
 plugin_priority=70
 
