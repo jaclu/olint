@@ -115,23 +115,3 @@ isort_allow_usage=1 and isort found and I001 used)]
 70 taplo # TOML toolkit written in Rust
 50 cppcheck # Linter for C & C++
 50 rslint # Linter for Rust code
-
-## machine types
-
-### Termux
-
-apt install cppcheck ruff shellcheck shfmt taplo
-pip install bandit bashate codespell pymarkdownlnt pyright vulture yamllint
-npm install -g jsonlint
-
-#### I dont use atm
-
-pip install black flake8 isort mypy pycodestyle pyflakes pylint
-
-#### Manual
-
-- checkbashisms - copy perl script from other node
-
-#### Unavailable
-
-markdownlint markdownlint-cli2 rslint
