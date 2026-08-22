@@ -16,7 +16,7 @@ __pycache__/
 # between nodes and projects as softlinks, its kinda pointless
 # to have them in the repo as dead references
 CLAUDE.md
-.claude/base.md
+.claude/
 
 # defines where deploy will install olint
 .destination
