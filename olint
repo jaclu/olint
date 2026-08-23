@@ -2201,10 +2201,12 @@ process_file_tree() {
     #   b_show_excluded - just list excluded files
     #   b_changed_file_found  - at least one changed file was found
     #
-    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded && $b_changed_file_found \
-        && [[ ${#proj_linters[@]} -gt 0 ]] && {
+    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
+        && $b_changed_file_found && [[ ${#proj_linters[@]} -gt 0 ]] && {
 
-        ! $b_proj_linters_only && cache_set_timer
+        # I don't think this should be done here, it resets the timer and might thus
+        # delay a cache write
+        # ! $b_proj_linters_only && cache_set_timer
 
         for linter_name in "${proj_linters[@]}"; do
 
