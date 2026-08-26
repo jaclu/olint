@@ -31,32 +31,22 @@ bash-n
 if the other ruff is named ruff-format only that is run as proj linter
 ruff gets ignored, temp fix ruff-format -> ruff_format - investigate reason
 
-## order for shell check
-
-Shoulddn't bashate go before shellcheck?
-
 ## pyflakes
 
 supposedly redundant if flake8 is found, however flake8 seems unable
 to find `#hepp` without complaining about missing space
-
-## Dont list files covered by project linters as `No linter`
-
-## order project linter by prio
-
-initially just use the existing prio variable
-
-dummy change
 
 ## outside of project
 
 use other_files or similar in .olint.conf to list files outside the project
 that should be linted, such as ~/.config/common_pull_config
 
-## CtrlC
+## Seems to ignore CtrlC
 
-- jsonlint ignores ctrl c
-- rslint ignores ctrl c
+- jsonlint
+- rslint
+
+## plugin order
 
 > 200 - executable/syntax validation
 > 199-100 - source-modifying handlers
