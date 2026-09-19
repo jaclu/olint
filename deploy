@@ -192,7 +192,9 @@ deploy_app() {
 #
 #===============================================================
 
-REPO_DIR="$(dirname -- "$0")"
+REPO_DIR=$(cd "${0%/*}" && pwd)
+
+cd "$REPO_DIR" || err_msg "Failed to cd to REPO_DIR: $REPO_DIR"
 
 force_deploy=false
 
