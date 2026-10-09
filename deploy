@@ -229,6 +229,11 @@ deploy_plugins
 deploy_app olint
 deploy_app bashate-wrapper
 
+_f=~/.config/olint/plugins/rslint
+[ -f "$_f" ] && {
+    echo "WARNING: Found obsolete plugin: $_f"
+}
+
 if [ "$files_changed" = true ]; then
     exit 2 # indicate files changed
 else
