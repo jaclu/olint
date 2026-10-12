@@ -1,5 +1,9 @@
 # ToDo
 
+##
+
+investigate in oxlint as oxlint as a much faster alternative than rslint
+
 ## filetypes only handled by proj linters
 
 Are mistakenly listed as --no-linter - should not be
