@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2034
+
+# Purpose:
+#  High-performance linter for JavaScript and TypeScript written in Rust
+# Strengths:
+# Use case:
+# Caveats:
+
+# Installing methods;
+#  brew install oxlint
+#  Manual
+#    pnpm add -D oxlint
+
+# project config files:
+#  .oxlintrc.json
+
+plugin_cmd="oxlint --fix"
+proj_plugin_cmd="rslint ."
+
+plugin_priority=95
+
+# file extensions this plugin handles
+plugin_extensions=(
+    .js
+    .mjs
+    .cjs
+    .jsx
+    .ts
+    .mts
+    .cts
+    .tsx
+    .vue
+    .astro
+    .svelte
+)
+
+# file-types this plugin handles
+plugin_file_types=(
+)
