@@ -30,7 +30,7 @@ skip_linters+=(
     ansible-lint # Checks ansible playbooks for practices and behaviour
     #              normally skipped, since it is slow, and only relevant
     #              for ansible projects
-    # bandit     # Security linter for Python code
+    # bandit        # Security linter for Python code
     # bash-n        # Extremely basic check, self disables if shellcheck is found
     # bashate       # Code style enforcement for bash programs
     # black         # Python code formatter
