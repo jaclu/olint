@@ -137,7 +137,7 @@ remove_duplicates_2() {
             # Mark the value as seen
             seen[$value]=1
         else
-            log_it "remove_duplicates_2() - found duplicate: $value" >/dev/stderr
+            log_it "remove_duplicates_2() - found duplicate: $value" >&2
         fi
     done
 
@@ -1039,25 +1039,28 @@ parse_cmd_line() {
 }
 
 olint_venv_enable() {
+    log_it "olint_venv_enable()" 1
     # shellcheck disable=SC2154
     if [[ -d "$d_linting_venv" ]]; then
         if [[ $(command -v python3) == "$d_linting_venv/"* ]]; then
-            printf -- '---  Already using olint venv  ---\n' >/dev/stderr
+            printf -- '---  Already using olint venv  ---\n' >&2
             return
         fi
         # [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
-        echo "===  Activating olint venv  ===" >/dev/stderr
+        echo "===  Activating olint venv  ===" >&2
         # shellcheck source=/dev/null
         . "$d_linting_venv/bin/activate" || {
             error_msg "Failed to activate linting venv"
         }
         b_olint_venv_enabled=true
+    else
+        log_it "><> no d_linting_venv [$d_linting_venv]" 1
     fi
 }
 
 olint_venv_disable() {
     $b_olint_venv_enabled && {
-        echo "===  de-activating olint venv  ===" >/dev/stderr
+        echo "===  de-activating olint venv  ===" >&2
         deactivate || error_msg "Failed to deactivate alpine linting venv"
     }
     return 0
