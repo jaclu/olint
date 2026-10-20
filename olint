@@ -285,7 +285,9 @@ maybe_update_cache() {
             "$(date +'%F %T')" \
             "${#cache_new[@]}"
         cache_set_timer
+        return 0
     }
+    return 1
 }
 
 cache_write() {
@@ -2166,6 +2168,7 @@ process_file_tree() {
     local b_linter_found
     local file_types
     local file_type
+    local cache_written_during_proj_linters=0
 
     log_it "process_file_tree()" "$dbglvl_major_tasks"
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
@@ -2258,9 +2261,11 @@ process_file_tree() {
 
         for linter_name in "${proj_linters[@]}"; do
 
-            # it would look ridiculous to first flush the cache then immediately
-            # write it again, so lets do it before the project lint
-            maybe_update_cache
+            [[ "$cache_written_during_proj_linters" -ne 1 ]] && {
+                # the cache doesn't update during proj linting, but if it takes ages
+                # on a slow system, it still makes sense to do one last flush
+                maybe_update_cache && cache_written_during_proj_linters=1
+            }
 
             [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
             lint_proj "$linter_name"

@@ -1,6 +1,9 @@
 # ToDo
 
-##
+## plugin cmd check and usage
+
+plugin_cmd - check this if available
+plugin_cmd_actual - if defined also check this, and use as plugin commandproj_plugin_cmd
 
 investigate in oxlint as oxlint as a much faster alternative than rslint
 
@@ -60,15 +63,13 @@ that should be linted, such as ~/.config/common_pull_config
 
 210 py-compile
 
-120 ruff-check --fix [if $ruff_change_code is 1 and not (
-isort_allow_usage=1 and isort found and I001 used)]
+120 ruff-check ruff check [--fix if ruff_change_code=1]
 
-115 isort [isort_allow_usage=1]
-110 ruff-format [if not black_allow_usage=1 and black found]
-108 black [black_allow_usage=1]
+115 isort
+110 ruff-format - ruff format
+108 black [if no ruff-format]
 
-90 ruff-check [ruff_change_code=0 and not (
-isort_allow_usage=1 and isort found and I001 used)]
+90 ruff-check [use_isort_style_import_ordering=1 disables some versions]
 
 85 flake8 [if no ruff]
 75 pycodestyle [if neither ruff/flake8]
