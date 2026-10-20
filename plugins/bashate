@@ -14,19 +14,42 @@
 #  (Ubuntu) sudo apt install python3-bashate
 
 # bashate doesn't have a config file, so I created one!
-# and included bashate-wrapper. This is called by olint to first parse
+# and included bashate_wrapper. This is called by olint to first parse
 # this config then run bashate
 # project config file: .bashateconfig
 #  max-line-length=92
 #  ignore=E001,E002
 
+bashate_wrapper() {
+    local config_file=".bashateconfig"
+    local max_line_length="" ignore=""
+    # shfmt-compatible baseline, project config adds to it
+    local base_ignore="E003,E010,E011,E020"
+
+    if [[ -f $config_file ]]; then
+        max_line_length=$(sed -n 's/^max-line-length=//p' "$config_file")
+        ignore=$(sed -n 's/^ignore=//p' "$config_file")
+    fi
+
+    bashate -e E005,E042,E043,E044 \
+        --max-line-length "${max_line_length:-80}" \
+        --ignore "$base_ignore${ignore:+,$ignore}" \
+        "$@"
+}
+
+skip_if_used=("shfmt && shellcheck")
+
 if [[ " ${valid_plugins[*]-} " == *" shfmt "* ]]; then
-    # In this case shfmt does the heavy lifting and bashate is only used
-    # for residual policy checks
-    plugin_cmd="bashate -eE005,E042,E043 -iE003,E006,E010,E011,E020"
+    # In this case where shellcheck is absent, shfmt does the heavy lifting and
+    # bashate is only used for residual policy checks
+    plugin_cmd="bashate -eE005,E042,E043,E044 -iE003,E006,E010,E011,E020"
 else
+    # this supports proj config of options, like line-length etc
+    # claude note if both are specified, plugin_cmd is the linter being checked
+    # for presence, and bashate_wrapper is a wrapper func in-here that first
+    # parses the proj config file
     plugin_cmd=bashate
-    plugin_cmd_actual=bashate-wrapper
+    plugin_cmd_actual=bashate_wrapper
 fi
 
 # much faster than shellcheck, but in a few corner cases will fail to
