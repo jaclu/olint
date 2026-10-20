@@ -28,8 +28,8 @@
 #  Uncomment the linters you want to exclude from being run.
 skip_linters+=(
     ansible-lint #    Checks ansible playbooks for practices and behaviour
-    #                 normally skipped, since it is slow, and only relevant
-    #                 for ansible projects
+    #                  normally skipped, since it is slow, and only relevant
+    #                  for ansible projects
     # bandit        # Security linter for Python code
     # bash-n        # Extremely basic check, self disables if shellcheck is found
     # bashate       # Code style enforcement for bash programs
@@ -45,8 +45,8 @@ skip_linters+=(
     # mypy          # Static type checker for Python
     # oxlint        # High-performance linter for JavaScript and TypeScript
     # py-compile    # Only compile the module, checking for syntax-correctness
-                    # Useful if most python linters are proj_linters, to still
-                    # get a basic sanity check per file
+    #                  Useful if most python linters are proj_linters, to still
+    #                  get a basic sanity check per file
     # pycodestyle   # PEP 8 style checker; redundant if flake8 is used
     # pyflakes      # Passive checker of Python 3 programs
     # pylint        # Comprehensive Python code linter
@@ -125,7 +125,6 @@ project_linters+=(
 #
 # override_linter_cmd["shellcheck"]="shellcheck -a -x --color=always -o all"
 # The above example customizes the shellcheck command to include additional options.
-
 
 #
 # Additional configuration options that can be pre-defined:

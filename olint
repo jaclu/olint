@@ -1461,8 +1461,6 @@ parse_plugin_file() {
     log_it "parse_plugin_file($f_plugin)" "$dbglvl_all_detils"
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
 
-
-
     source_file "$f_plugin" || return 1
 
     for priority_plugin in "${skip_if_used[@]}"; do
