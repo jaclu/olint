@@ -12,10 +12,12 @@
 # Use case:
 #  Rapid linting
 # Caveats:
-#  isort_allow_usage=1 and isort found and ruff using I001 disables this
+#  use_isort_style_import_ordering=1 and ruff using I001 disables this plugin,
+#  in order to not have different nodes some using isort generate conflicting
+#  code changes
 
 # Installation methods;
-# Not usable on iSH - segfaults - last checked: 26-08-18
+#  Not usable on iSH - segfaults - last checked: 26-08-18
 #  pip install ruff  # dependency: rust  iSH can install but fails to run
 #  brew install ruff
 #  (Alpine) sudo apk add ruff # segfaults on iSH
@@ -30,19 +32,7 @@
 
 # inline-excludes:  # noqa: F403,F401
 
-# file extensions this plugin handles
-plugin_extensions=(
-    .py
-    .py3
-)
-
-# file-types this plugin handles
-plugin_file_types=(
-    "Python script*"
-)
-
-# ruff_change_code is supplied via config when applicable.
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154 # ruff_change_code is supplied via config when applicable.
 if [[ "$ruff_change_code" = 1 ]]; then
     plugin_cmd="ruff check --fix"
     proj_plugin_cmd="ruff check --fix ."
@@ -53,17 +43,24 @@ else
     plugin_priority=90
 fi
 
-# isort_allow_usage is supplied via config when applicable.
+# use_isort_style_import_ordering is supplied via config when applicable.
 # shellcheck disable=SC2154
-if [[ "$isort_allow_usage" = 1 ]]; then
-    command -v isort >/dev/null && {
-        case "$(ruff check --show-settings 2>/dev/null)" in
-            *I001*)
-                # ruff import order might conflict with isort
-                plugin_cmd=/dev/null
-                proj_plugin_cmd=/dev/null
-                ;;
-            *) ;;
-        esac
-    }
+if [[ "$use_isort_style_import_ordering" = 1 ]]; then
+    case "$(ruff check --show-settings 2>/dev/null)" in
+        *I001*)
+            # ruff import order might conflict with isort, thus disabled
+            plugin_cmd=/dev/null
+            proj_plugin_cmd=/dev/null
+            ;;
+        *) ;;
+    esac
 fi
+
+plugin_extensions=(
+    .py
+    .py3
+)
+
+plugin_file_types=(
+    "Python script*"
+)

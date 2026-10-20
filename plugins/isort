@@ -9,7 +9,11 @@
 # Use case:
 #  Keeps imports organized and clean.
 # Caveats:
-#  Only used if isort_allow_usage=1, since it disagrees with ruff check in many cases
+#  Baseline is to skip isort if ruff-check is found.
+#  isort conflicts with some versions of ruff for import ordering
+#  If project is linted on nodes where some use isort and othets ruff-check
+#  it is recommended to set use_isort_style_import_ordering=1 in proj config
+#  to skip ruff versions that will collide with isort sort order
 
 # Installation methods;
 #  pip install isort  # usable on iSH
@@ -17,25 +21,18 @@
 #  (Ubuntu) sudo apt install isort
 #  (Alpine) sudo apk add py3-isort
 
+skip_if_used=(ruff-check)
+
+plugin_cmd=isort
+proj_plugin_cmd="isort --gitignore ."
+
 plugin_priority=115
 
-# isort_allow_usage is supplied via config when applicable.
-# shellcheck disable=SC2154
-if [[ "$isort_allow_usage" = 1 ]]; then
-    plugin_cmd=isort
-    proj_plugin_cmd="isort --gitignore ."
-else
-    plugin_cmd=/dev/null
-    proj_plugin_cmd=/dev/null
-fi
-
-# file extensions this plugin handles
 plugin_extensions=(
     .py
     .py3
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "Python script*"
 )

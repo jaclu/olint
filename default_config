@@ -27,14 +27,14 @@
 # for a specific project.
 #  Uncomment the linters you want to exclude from being run.
 skip_linters+=(
-    ansible-lint # Checks ansible playbooks for practices and behaviour
-    #              normally skipped, since it is slow, and only relevant
-    #              for ansible projects
+    ansible-lint #    Checks ansible playbooks for practices and behaviour
+    #                 normally skipped, since it is slow, and only relevant
+    #                 for ansible projects
     # bandit        # Security linter for Python code
     # bash-n        # Extremely basic check, self disables if shellcheck is found
     # bashate       # Code style enforcement for bash programs
     # black         # Python code formatter
-    # checkbashisms # Checks for portability issues in shell scripts
+    # checkbashisms # Check for bashisms in /bin/sh scripts
     # codespell     # Fix common misspellings in source code and text files
     # cppcheck      # Linter for C & C++
     # flake8        # Python linter; handles multiple PEP 8 violations
@@ -46,8 +46,8 @@ skip_linters+=(
     # openrc        # Limied OpenRC service script linting via shellcheck
     # oxlint        # High-performance linter for JavaScript and TypeScript
     # py-compile    # Only compile the module, checking for syntax-correctness
-    #                 Useful if most python linters are proj_linters, to still
-    #                 get a basic sanity check per file
+                    # Useful if most python linters are proj_linters, to still
+                    # get a basic sanity check per file
     # pycodestyle   # PEP 8 style checker; redundant if flake8 is used
     # pyflakes      # Passive checker of Python 3 programs
     # pylint        # Comprehensive Python code linter
@@ -154,11 +154,11 @@ project_linters+=(
 # Set to 1 to allow these options in global or project .olint.conf,
 #  latter takes precedence
 #
-# Linters normally excluded from consideration. If allowed they will take
-# presedence over competing linters if both are installed.
-black_allow_usage=0 # if enabled and present skips ruff-format
-isort_allow_usage=0 # if enabled and present skips ruff-check
 
 # optionally allow linter to change code
 ruff_change_code=0
 shfmt_change_code=0
+
+# old var: isort_allow_usage
+# use_isort_for_py_import_ordering=0
+use_isort_style_import_ordering=0
