@@ -1378,6 +1378,8 @@ prel_plugin_check() {
     local plugin_cmd plugin_cmd_actual proj_plugin_cmd
     local plugin_priority=50 # set a default priority, higher prios are run first
     local plugin_extensions plugin_file_types
+    local ruff_change_code shfmt_change_code
+    local use_isort_style_import_ordering
 
     [[ -z "$f_plugin" ]] && {
         error_msg "prel_plugin_check() - no param"
@@ -1454,6 +1456,10 @@ parse_plugin_file() {
     local plugin_cmd plugin_cmd_actual proj_plugin_cmd
     local plugin_priority=50 # set a default priority, higher prios are run first
     local plugin_extensions plugin_file_types
+    # shellcheck disable=SC2034 # not used but needs to be contained from leaking
+    local ruff_change_code shfmt_change_code
+    # shellcheck disable=SC2034 # not used but needs to be contained from leaking
+    local use_isort_style_import_ordering
 
     [[ -z $f_plugin ]] && {
         error_msg "parse_plugin_file() - No param"
