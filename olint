@@ -2065,7 +2065,8 @@ generate_list_of_files_to_process() {
     else
         max_age="-mmin -$max_age_mins"
     fi
-    mapfile -t all_files < <(find . -type f "$max_age" -exec ls -1t {} + | sed 's#^\./##')
+    # shellcheck disable=SC2086 # max_age intentionally unquoted
+    mapfile -t all_files < <(find . -type f $max_age -exec ls -1t {} + | sed 's#^\./##')
 
     # if [[ $kernel_name == "Darwin" ]]; then
     #     # macOS version
