@@ -224,8 +224,10 @@ deploy_plugins
 # Without any plugins the app can't do anything, so to avoid a useless state
 # in case deploy was aborted only install the bins after plugins are available
 deploy_app olint
-deploy_app bashate-wrapper
-
+obsolete_item="$d_app_dest"/bashate-wrapper
+[ -f "$obsolete_item" ] && {
+    echo "WARNING: Found obsolete support app: $obsolete_item"
+}
 _f=~/.config/olint/plugins/rslint
 [ -f "$_f" ] && {
     echo "WARNING: Found obsolete plugin: $_f"
