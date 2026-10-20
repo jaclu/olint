@@ -3,6 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  Linter for Markdown files
 # Strengths:
 # Use case:
 # Caveats:
@@ -18,7 +19,6 @@ proj_plugin_cmd="markdownlint-cli2 \"**.{md,markdown}\""
 
 plugin_priority=70
 
-# file extensions this plugin handles
 plugin_extensions=(
     .md
 )

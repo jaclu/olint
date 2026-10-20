@@ -3,6 +3,7 @@
 #  shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  Checks ansible playbooks for practices and behaviour
 # Strengths:
 # Use case:
 # Caveats:
@@ -26,17 +27,7 @@ proj_plugin_cmd=ansible-lint
 # Slow and comprehensive; belongs in the deep-analysis tier
 plugin_priority=15
 
-# file extensions this plugin handles
 plugin_extensions=(
     .yml
     .yaml
 )
-
-# file-types this plugin handles
-#plugin_file_types=(
-#)
-
-# Files this plugin should not handle
-#plugin_excludes=(
-#    ./tmp/foo.sh
-#)

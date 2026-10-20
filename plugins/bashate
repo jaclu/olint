@@ -3,6 +3,7 @@
 #  shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  Code style enforcement for bash programs
 # Strengths:
 # Use case:
 # Caveats:
@@ -19,19 +20,13 @@
 #  max-line-length=92
 #  ignore=E001,E002
 
-# remember to set the same in bashate-wrapper!!
-plugin_cmd="bashate -eE005,E042,E043 -iE011"
-
-if command -v bashate >/dev/null && command command -v bashate-wrapper >/dev/null; then
-    # TODO: check of the shfmt conditions should be put in bashate-wrapper
-    # this reads .bashateconfig
-    plugin_cmd=bashate-wrapper
-elif command -v bashate >/dev/null; then
-    plugin_cmd=bashate
-elif command -v shfmt >/dev/null; then
+if [[ " ${valid_plugins[*]-} " == *" shfmt "* ]]; then
     # In this case shfmt does the heavy lifting and bashate is only used
     # for residual policy checks
-    plugin_cmd="$plugin_cmd --ignore=E003,E006,E010,E011,E020"
+    plugin_cmd="bashate -eE005,E042,E043 -iE003,E006,E010,E011,E020"
+else
+    plugin_cmd=bashate
+    plugin_cmd_actual=bashate-wrapper
 fi
 
 # much faster than shellcheck, but in a few corner cases will fail to
@@ -40,15 +35,14 @@ fi
 # so better to run after shellcheck
 plugin_priority=40
 
-#  file-types this plugin handles
+plugin_extensions=(
+    .bash
+)
+
 plugin_file_types=(
     "Bourne-Again shell script*"
     "Paul Falstad's zsh script*"
 
     "a /sbin/openrc-run script*"
     "OpenRC script"
-)
-
-plugin_extensions=(
-    .bash
 )

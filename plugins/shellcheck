@@ -3,6 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  Linter for shell scripts
 # Strengths:
 # Use case:
 # Caveats:
@@ -37,13 +38,11 @@ fi
 
 plugin_priority=50
 
-# file extensions this plugin handles
 plugin_extensions=(
     .sh
     .bash
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "Bourne-Again shell script*"
     "POSIX shell script*"

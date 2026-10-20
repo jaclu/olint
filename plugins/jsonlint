@@ -3,6 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  JSON file linter
 # Strengths:
 # Use case:
 # Caveats:
@@ -21,12 +22,10 @@ proj_plugin_cmd=/dev/null
 
 plugin_priority=70
 
-# file extensions this plugin handles
 plugin_extensions=(
     .json
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "JSON data"
     "JSON text data"

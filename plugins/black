@@ -22,30 +22,6 @@
 # line after a blick: # fmt: on
 # project config files: pyproject.toml $XDG_CONFIG_HOME/black (~/.config/ if not set)
 #  [tool.black]
-
-plugin_priority=108
-
-# black_allow_usage is supplied via config when applicable.
-# shellcheck disable=SC2154
-if [[ "$black_allow_usage" = 1 ]]; then
-    plugin_cmd=black
-    proj_plugin_cmd="black ."
-else
-    plugin_cmd=/dev/null
-    proj_plugin_cmd=/dev/null
-fi
-
-# file extensions this plugin handles
-plugin_extensions=(
-    .py
-    .py3
-)
-
-# file-types this plugin handles
-plugin_file_types=(
-    "Python script*"
-)
-
 # Handle entire project, sample pyproject.toml block:
 #
 # [tool.black]
@@ -55,3 +31,19 @@ plugin_file_types=(
 #     \.venv    # Match .venv directory
 # )/
 # '''
+
+skip_if_used=(ruff-format)
+
+plugin_cmd=black
+proj_plugin_cmd="black ."
+
+plugin_priority=108
+
+plugin_extensions=(
+    .py
+    .py3
+)
+
+plugin_file_types=(
+    "Python script*"
+)

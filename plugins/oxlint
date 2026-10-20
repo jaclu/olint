@@ -20,7 +20,6 @@ proj_plugin_cmd="rslint ."
 
 plugin_priority=95
 
-# file extensions this plugin handles
 plugin_extensions=(
     .js
     .mjs
@@ -35,6 +34,5 @@ plugin_extensions=(
     .svelte
 )
 
-# file-types this plugin handles
 plugin_file_types=(
 )

@@ -9,22 +9,18 @@
 # Use case:
 # Caveats: Only checks if script can run at all
 
-if command -v shellcheck >/dev/null; then
-    plugin_cmd=/dev/null
-else
-    plugin_cmd="bash --norc -n"
-fi
+skip_if_used=(shellcheck)
+
+plugin_cmd="bash --norc -n"
 
 # Extremely fast but only checks for basic syntax issues
 plugin_priority=220
 
-# file extensions this plugin handles
 plugin_extensions=(
     .sh
     .bash
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "POSIX shell script*"
     "Bourne-Again shell script*"

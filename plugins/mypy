@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Type checker.
+#  Static type checker for Python
 # Strengths:
 #  Ensures type correctness when using type hints.
 #  Helps catch errors early in larger projects with complex type relationships.
@@ -33,13 +33,11 @@ proj_plugin_cmd="mypy --namespace-packages --explicit-package-bases ."
 # on next run the mypy cache might cause issues
 plugin_priority=50
 
-# file extensions this plugin handles
 plugin_extensions=(
     .py
     .py3
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "Python script*"
 )

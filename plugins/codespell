@@ -3,6 +3,7 @@
 #  shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  Fix common misspellings in source code and text files
 # Strengths:
 # Use case:
 # Caveats:

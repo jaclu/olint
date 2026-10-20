@@ -17,13 +17,11 @@ proj_plugin_cmd=/dev/null
 # really fast so run early
 plugin_priority=210
 
-# file extensions this plugin handles
 plugin_extensions=(
     .py
     .py3
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "Python script*"
 )

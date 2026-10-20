@@ -25,11 +25,6 @@ plugin_cmd="taplo lint"
 
 plugin_priority=70
 
-# file extensions this plugin handles
 plugin_extensions=(
     .toml
 )
-
-# file-types this plugin handles
-#plugin_file_types=(
-#)

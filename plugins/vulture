@@ -36,13 +36,11 @@ proj_plugin_cmd="vulture --min-confidence 80 ."
 
 plugin_priority=20
 
-# file extensions this plugin handles
 plugin_extensions=(
     .py
     .py3
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "Python script*"
 )

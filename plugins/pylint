@@ -30,27 +30,18 @@
 #  [base.py]
 #  disable=R0904
 
-if command -v ruff >/dev/null && command -v pyright >/dev/null; then
-    #
-    # set to /dev/null instead of "" to avoid warning
-    #   missing: plugin_cmd
-    #
-    plugin_cmd=/dev/null
-    proj_plugin_cmd=/dev/null
-else
-    plugin_cmd=pylint
-    proj_plugin_cmd="pylint --ignore-paths .venv/ ."
-fi
+skip_if_used=(ruff-format flake8)
+
+plugin_cmd=pylint
+proj_plugin_cmd="pylint --ignore-paths .venv/ ."
 
 plugin_priority=10
 
-# file extensions this plugin handles
 plugin_extensions=(
     .py
     .py3
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "Python script*"
 )

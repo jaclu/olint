@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
-# Purpose: YAML syntax and style linting
+# Purpose:
+#  YAML syntax and style linting
 # Strengths: Detects YAML syntax, structure, and formatting problems
 # Use case: Generic YAML validation; complements Ansible-lint rather than replacing it
 # Caveats:
@@ -25,12 +26,10 @@ proj_plugin_cmd="yamllint -s ."
 
 plugin_priority=70
 
-# file extensions this plugin handles
 plugin_extensions=(
     .yml
     .yaml
 )
 
-# file-types this plugin handles
 plugin_file_types=(
 )

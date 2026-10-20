@@ -3,6 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  Autoformat shell script source code
 # Strengths:
 # Use case:
 # Caveats: Only changes code if shfmt_change_code=1
@@ -24,13 +25,11 @@ else
     plugin_priority=85
 fi
 
-# file extensions this plugin handles
 plugin_extensions=(
     .sh
     .bash
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "POSIX shell script*"
     "Bourne-Again shell script*"

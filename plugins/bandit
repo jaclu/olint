@@ -22,13 +22,11 @@ proj_plugin_cmd="bandit --exclude './.venv' -r ."
 
 plugin_priority=25
 
-# file extensions this plugin handles
 plugin_extensions=(
     .py
     .py3
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "Python script*"
 )

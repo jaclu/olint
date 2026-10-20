@@ -3,6 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  Linter for C & C++
 # Strengths:
 # Use case:
 # Caveats:
@@ -17,7 +18,6 @@ proj_plugin_cmd="cppcheck ."
 
 plugin_priority=50
 
-# file extensions this plugin handles
 plugin_extensions=(
     .c # C Source File
 
@@ -42,7 +42,6 @@ plugin_extensions=(
     .cuh # CUDA Files (for NVIDIA CUDA C/C++)
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     text/x-c      # C Source Files
     text/x-c++src # C++ Source Files

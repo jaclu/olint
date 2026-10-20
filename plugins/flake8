@@ -6,7 +6,8 @@
 # so it would be redundant to also run them if you use Flake8
 #
 
-# Purpose: Lightweight tool for enforcing PEP 8 style guide compliance.
+# Purpose:
+#  Lightweight tool for enforcing PEP 8 style guide compliance.
 # Strengths:
 #  Supports plugins for extended functionality
 #  (e.g., flake8-bugbear for additional checks). Less verbose than Pylint.
@@ -24,32 +25,23 @@
 #  [flake8]
 #  max-line-length = 92
 
-if command -v ruff >/dev/null; then
-    #
-    # set to /dev/null instead of "" to avoid warning
-    #   missing: plugin_cmd
-    #
-    plugin_cmd=/dev/null
-    proj_plugin_cmd=/dev/null
-else
-    # avoiding parallelism is normally not a performance bottle neck
-    # and avoids flake8 to fail on limited systems
-    plugin_cmd="flake8 --jobs=1"
-    proj_plugin_cmd="$plugin_cmd --exclude './.venv'"
+skip_if_used=(ruff-format)
 
-    # iSH doesn't support flake8 multiprocessing
-    [[ -d /proc/ish ]] && [[ -n "$proj_plugin_cmd" ]] && proj_plugin_cmd+=" -j 1"
-fi
+# avoiding parallelism is normally not a performance bottle neck
+# and avoids flake8 to fail on limited systems
+plugin_cmd="flake8 --jobs=1"
+proj_plugin_cmd="$plugin_cmd --exclude './.venv'"
+
+# iSH doesn't support flake8 multiprocessing
+[[ -d /proc/ish ]] && proj_plugin_cmd+=" -j 1"
 
 plugin_priority=85
 
-# file extensions this plugin handles
 plugin_extensions=(
     .py
     .py3
 )
 
-# file-types this plugin handles
 plugin_file_types=(
     "Python script*"
 )
