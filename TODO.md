@@ -1,7 +1,5 @@
 # ToDo
 
-## plugin cmd check and usage
-
 plugin_cmd - check this if available
 plugin_cmd_actual - if defined also check this, and use as plugin commandproj_plugin_cmd
 
@@ -63,8 +61,7 @@ that should be linted, such as ~/.config/common_pull_config
 
 210 py-compile
 
-120 ruff-check ruff check [--fix if ruff_change_code=1]
-
+120 ruff-check ruff check --fix [if ruff_change_code=1]
 115 isort
 110 ruff-format - ruff format
 108 black [if no ruff-format]
@@ -103,10 +100,35 @@ that should be linted, such as ~/.config/common_pull_config
 70 yamllint # Linter for YAML files
 15 ansible-lint # Checks ansible playbooks for practices and behaviour
 
-### unsorted
+### sorted by priority
 
-98 codespell # Fix common misspellings in source code and text files
-70 jsonlint # JSON file linter
-70 taplo # TOML toolkit written in Rust
-50 cppcheck # Linter for C & C++
-50 rslint # Linter for Rust code
+| prio   | plugin            | Descr                                                |
+| ------ | ----------------- | ---------------------------------------------------- |
+| 220    | bash-n            | Super simple and quick script                        |
+| 210    | py-compile        | Syntax validation                                    |
+| 150/85 | shfmt             | Autoformat shell script source code                  |
+| 120/90 | ruff-check        | `ruff check`                                         |
+| 115    | isort             | Checks and formats import statements                 |
+| 110    | ruff-format       | `ruff format`                                        |
+| 108    | black             | Py Code formatter                                    |
+| 98     | codespell         | Fix common misspellings                              |
+| 95     | oxlint            | linter for JavaScript and TypeScript                 |
+| 85     | flake8            | Lightweight tool for enforcing PEP 8                 |
+| 75     | pycodestyle       | PEP 8 style checker                                  |
+| 70     | pyflakes          | lightweight linting                                  |
+| 70     | jsonlint          | JSON file linter                                     |
+| 70     | markdownlint-cli2 | Linter for Markdown files                            |
+| 70     | yamllint          | YAML syntax and style linting                        |
+| 70     | taplo             | TOML toolkit written in Rust                         |
+| 69     | markdownlint      | Linter for Markdown files                            |
+| 68     | pymarkdown        | python markdown linter                               |
+| 50     | mypy              | Static type checker                                  |
+| 50     | cppcheck          | Linter for C & C++                                   |
+| 50     | shellcheck        | Linter for shell scripts                             |
+| 40     | bashate           | Code style enforcement for bash programs             |
+| 35     | pyright           | Static type checker for Python                       |
+| 30     | checkbashisms     | Check for bashisms in /bin/sh scripts                |
+| 25     | bandit            | Security-focused py linter                           |
+| 20     | vulture           | Dead code finder (py)                                |
+| 15     | ansible-lint      | Checks ansible playbooks for practices and behaviour |
+| 10     | pylint            | code smells / deeper static analysis                 |
