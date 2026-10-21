@@ -2072,33 +2072,12 @@ generate_list_of_files_to_process() {
     else
         max_age="-mmin -$max_age_mins"
     fi
-    # shellcheck disable=SC2086 # max_age intentionally unquoted
-    mapfile -t all_files < <(find . -type f $max_age -exec ls -1t {} + | sed 's#^\./##')
 
-    # if [[ $kernel_name == "Darwin" ]]; then
-    #     # macOS version
-    #     # shellcheck disable=SC2207
-    #     mapfile -t all_files < <(find . -type f -exec stat -f '%m %N' {} + \
-    #         | sort -n -r -k1,1 | cut -d' ' -f2- | sed 's#^\./##')
+    # should work on all platforms
+    files_out=$(find . -type f "$max_age" -exec ls -1t {} + | sed 's#^\./##')
+    all_files=()
+    [[ -n $files_out ]] && mapfile -t all_files <<<"$files_out"
 
-    #     mapfile -t all_files2 < <(find . -prune -o -exec ls -dt {} +)
-    # else
-    #     if [[ "$running_on_ish" -eq 1 ]]; then
-    #         #
-    #         #  iSH kernel doesn't support enough of /proc to make mapfile work
-    #         #
-    #         # shellcheck disable=SC2207
-    #         all_files=($(find . -type f -printf '%T@ %P\n' \
-    #             | sort -n -r -k1,1 | cut -d' ' -f2-))
-    #     else
-    #         mapfile -t all_files < <(find . -type f -printf '%T@ %P\n' \
-    #             | sort -n -r -k1,1 | cut -d' ' -f2-)
-    #     fi
-    # fi
-    log_it "all_files:" "$dbglvl_data_types"
-    for f in "${all_files[@]}"; do
-        log_it "  $f" 20 # "$dbglvl_data_types"
-    done
     [[ "$verbosity_lvl" -ge 1 ]] && echo "done!"
 }
 
