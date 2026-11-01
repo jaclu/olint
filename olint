@@ -496,9 +496,12 @@ cache_add() {
 #---------------------------------------------------------------
 
 show_help() {
+
+    # Not implemented yet
+    # -S, --statistics        Store linting times in SQL DB
     #region help text
     echo "
-Usage: olint [-h] [-c] [-C] [-d] [-e] [-E] [-m] [-n] [-N] [-p] [-P] [-s] [-S]
+Usage: olint [-h] [-c] [-C] [-d] [-e] [-E] [-L] [-m] [-n] [-N] [-p] [-P] [-s]
                 [-u time] [-v verbosity_lvl] [-z] [-Z] [number]
 
 Lint all files recursively in reverse chronological order.
@@ -511,7 +514,7 @@ Available options:
 -o, --only-proj-lint    toggles 'Only run project linters'
 -p, --no-proj-lint      toggles 'Skip all project linters'
 -P, --force-proj-lint   Always run proj-linters
--S, --statistics        Store linting times in SQL DB
+-L, --linter-stats      Count how many times each linter is used in this run
 -v, --verbose           Set verbosity level, level must also be supplied
                         1 - Show gathering of available plugins & nr of files linted
                         2 - List files already linted (cached)
@@ -765,13 +768,6 @@ initialize_env() {
     defaults_for_cmdline_options
     defaults_for_proj_config_file
 
-    #  -----   sqlite3   -----
-
-    f_sqlite_db="$HOME/tmp/foo/olint_stats.sqlite"
-    f_sqlite_error="$HOME/tmp/foo/olint_stats.err"
-    db_version=1
-    b_log_sql=false
-
     #  -----   iSH specifics   -----
 
     ish_max_load=5
@@ -799,6 +795,7 @@ initialize_env() {
     declare -g -A linter_priorities
     declare -g -A linter_extensions
     declare -g -A linter_file_types
+    declare -g -A linter_usage_count # times each linter was triggered this run
     linter_order=() # used to display them in alphabetical order
     proj_linters=()
 
@@ -894,7 +891,8 @@ defaults_for_cmdline_options() {
     b_proj_linters_skip=false    # option: -p
     b_changed_file_found=false   # option: -P
     b_show_config_short=false    # option: -s
-    b_use_statistics=false       # option: -S
+    # b_use_statistics=false       # option: -S
+    b_linter_statistics=false    # option: -L
     t_cashe_interval=60          # option: -u
     verbosity_lvl=0              # option: -v
     zap_it=0                     # options: -z / -Z
@@ -992,6 +990,7 @@ parse_cmd_line() {
                 b_skip_common_excludes=false
                 b_lint_files=false
                 ;;
+            -L | --linter-stats) b_linter_statistics=true ;;
             -m | --mime-type) b_mime_type_limit=true ;;
             -n | --no-linter) b_lint_files=false ;;
             -N | --nocache) b_use_cache=false ;;
@@ -1005,9 +1004,9 @@ parse_cmd_line() {
                 b_show_config=true
                 b_show_config_short=true
                 ;;
-            -S | --statistics)
-                b_use_statistics=true
-                ;;
+            # -S | --statistics)
+            #     b_use_statistics=true
+            #     ;;
             -u | --update-cache)
                 t="${2:-missing param}"
                 [[ "$t" = "missing param" ]] && {
@@ -1872,9 +1871,30 @@ show_linter_action() {
     local linter="$1"
     local fname="$2"
 
+    $b_linter_statistics && {
+        linter_usage_count["$linter"]=$((${linter_usage_count["$linter"]:-0} + 1))
+    }
+
     # Print using printf with fixed-width formatting
     printf '%-17s: %s  ' "$linter" "$fname"
     t_lint_start="$(date +%s)"
+}
+
+show_linter_statistics() {
+    #
+    #  Display how many times each linter was triggered during this run
+    #
+    local linter
+
+    echo
+    if [[ "${#linter_usage_count[@]}" -eq 0 ]]; then
+        echo "No linters were used"
+        return
+    fi
+    echo "Linter usage:"
+    for linter in $(printf '%s\n' "${!linter_usage_count[@]}" | sort); do
+        printf '  %-17s %s\n' "$linter" "${linter_usage_count[$linter]}"
+    done
 }
 
 log_processing_statistics() {
@@ -1889,166 +1909,16 @@ log_processing_statistics() {
 }
 
 show_linter_time() {
-    local fname_override="$1"
+    # local fname_override="$1"
     local duration
 
     duration=$(($(date +%s) - t_lint_start))
-    $b_use_statistics && log_processing_statistics "$fname_override"
+    # $b_use_statistics && log_processing_statistics "$fname_override"
     if [[ "$duration" -ge "$long_lint_time" ]]; then
         printf ' - '
         display_time_elapsed "$duration"
     fi
     echo # always apply a LF
-}
-
-#---------------------------------------------------------------
-#
-#   SQL tasks
-#
-#---------------------------------------------------------------
-
-sqlite_err_handling() {
-    #
-    #  If SQLITE_BUSY is detected, two more attempt is done after a sleep
-    #  other error handling should be done by the caller
-    #
-    #  Loggs sqlite errors to $f_sqlite_error
-    #
-    #  Variables provided:
-    #    sqlite_result    - Output from query
-    #
-    local sql="$1"
-    local sqlite_exit_code
-
-    log_it "sqlite_err_handling([$sql])" 1
-    [[ -z "$sql" ]] && error_msg "sqlite_err_handling() - no param"
-
-    # log_it "sqlite_err_handling()" -1
-
-    if $b_log_sql; then # set to true to log sql queries
-        # this does some filtering to give a more meaningful summary
-        local sql_filtered
-        sql_filtered="$(echo "$sql" \
-            | sed 's/BEGIN TRANSACTION; -- Start the transaction//' \
-            | tr -d '\n' | tr -s ' ' | sed 's/^ //' | sed 's/ ;/;/g' \
-            | sed 's/; /;/g' | cut -c 1-50)"
-        log_it "SQL:$sql_filtered" -1
-    fi
-
-    # shellcheck disable=SC2034
-    sqlite_result="$(sqlite3 "$f_sqlite_db" "$sql" 2>"$f_sqlite_error")"
-    sqlite_exit_code=$?
-
-    case "$sqlite_exit_code" in
-        0)
-            [[ -f "$f_sqlite_error" ]] && {
-                log_it "><> present: $f_sqlite_error"
-            }
-            ;; # no error
-        *)
-            #  log error but leave handling error up to caller
-            local e_msg
-            e_msg="sqlite_err_handling()\n$sql\nerror code: $sqlite_exit_code\n"
-            e_msg+="error msg:  $(cat "$f_sqlite_error")"
-            error_msg "$e_msg" -1
-
-            [[ ! -s "$f_sqlite_db" ]] && [[ -f "$f_sqlite_db" ]] && {
-                #
-                #  If DB was removed, then a sql action would fail but lead
-                #  to an empty DB. By removing such, next call to
-                #  display_losses will recreate it and restart monitoring
-                #
-                error_msg "DB empty, terminating"
-            }
-            ;;
-    esac
-
-    return "$sqlite_exit_code"
-}
-
-sqlite_transaction() {
-    local sql_original="$1"
-    local sql
-
-    log_it "sqlite_transaction($sql_original)" -1
-    sql="
-        BEGIN TRANSACTION; -- Start the transaction
-
-        $sql_original ;
-
-        COMMIT; -- Commit the transaction
-        "
-    sqlite_err_handling "$sql"
-
-    #
-    #  this will exit true if $sqlite_err_handling is 0
-    #  caller should check sqlite_exit_code or $? depending how this was
-    #  called
-    #
-    return
-}
-
-sql_create_db() {
-    local sql
-
-    log_it "sql_create_db()" -1
-
-    # [[ -f "$f_sqlite_db" ]] && {
-    #     rm -f "$f_sqlite_db"
-    #     log_it "old_db removed" -1
-    # }
-    #
-    #  t_loss is limited to $cfg_history_size records, in order to make
-    #  statistics consistent
-    #
-    sql="
-    CREATE TABLE lint_stats (
-        time_stamp TIMESTAMP DEFAULT (datetime('now')) NOT NULL,
-        linter CHAR,
-        fname CHAR,
-        duration INT
-    );
-
-    PRAGMA journal_mode = WAL;
-    PRAGMA user_version = $db_version;  -- replace DB if out of date
-    "
-    log_it "  - sql defined" -1
-    sqlite_err_handling "$sql" || {
-        _m="sqlite3 exited with: $sqlite_exit_code \n"
-        _m="$_m when creating the DB"
-        error_msg "$_m"
-    }
-    log_it "Created DB - user_version: $db_version" -1
-}
-
-sql_init() {
-    log_it "sql_init($f_sqlite_db)" -1
-    rm -rf "$f_sqlite_error"
-    [[ ! -f "$f_sqlite_db" ]] && sql_create_db
-}
-
-sql_drop() {
-    [[ -f "$f_sqlite_db" ]] && {
-        echo "Removing: $f_sqlite_db"
-        rm "$f_sqlite_db"
-    }
-}
-
-# sql_cmd() {
-#     # runs an sql cmd at existing db
-#     local sql="$1"
-#     [[ -z "$sql" ]] && error_msg "sql_cmd() - no param"
-#     sqlite_err_handling "$sql"
-# }
-
-sql_log_lint_stats() {
-    local linter="$1"
-    local fname="$2"
-    local duration="$3"
-    local sql=
-    sql="INSERT INTO lint_stats (linter, fname, duration) "
-    sql+="values( '$linter', '$fname', $duration)"
-    sqlite_err_handling "$sql"
 }
 
 #---------------------------------------------------------------
@@ -2329,7 +2199,7 @@ parse_cmd_line "$@"
     t_app_start=$(date +%s)
 }
 
-$b_use_statistics && sql_init
+# $b_use_statistics && sql_init
 
 [[ "$verbosity_lvl" -gt 2 ]] && echo "Verbosity lvl is: $verbosity_lvl"
 
@@ -2361,4 +2231,5 @@ $b_use_cache || {
 cache_read ### R
 trap 'handle_ctrl_c INT' INT
 process_file_tree
+$b_linter_statistics && show_linter_statistics
 env_cleanup 0
