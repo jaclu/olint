@@ -1884,7 +1884,9 @@ show_linter_statistics() {
     #
     #  Display how many times each linter was triggered during this run
     #
-    local linter
+    local key
+    local count
+    local name
 
     echo
     if [[ "${#linter_usage_count[@]}" -eq 0 ]]; then
@@ -1892,9 +1894,14 @@ show_linter_statistics() {
         return
     fi
     echo "Linter usage:"
-    for linter in $(printf '%s\n' "${!linter_usage_count[@]}" | sort); do
-        printf '  %-17s %s\n' "$linter" "${linter_usage_count[$linter]}"
-    done
+    # process substitution instead of a pipe, so the loop stays in this shell
+    while read -r count name; do
+        printf '  %-17s %s\n' "$name" "$count"
+    done < <(
+        for key in "${!linter_usage_count[@]}"; do
+            echo "${linter_usage_count[$key]} $key"
+        done | sort -k1,1nr -k2,2
+    )
 }
 
 log_processing_statistics() {
