@@ -796,7 +796,7 @@ initialize_env() {
     declare -g -A linter_extensions
     declare -g -A linter_file_types
     declare -g -A linter_usage_count # times each linter was triggered this run
-    linter_order=() # used to display them in alphabetical order
+    linter_order=()                  # used to display them in alphabetical order
     proj_linters=()
 
     #  -----   caching env   -----
@@ -892,11 +892,11 @@ defaults_for_cmdline_options() {
     b_changed_file_found=false   # option: -P
     b_show_config_short=false    # option: -s
     # b_use_statistics=false       # option: -S
-    b_linter_statistics=false    # option: -L
-    t_cashe_interval=60          # option: -u
-    verbosity_lvl=0              # option: -v
-    zap_it=0                     # options: -z / -Z
-    max_age_mins=0               # no max file age for items to be processed
+    b_linter_statistics=false # option: -L
+    t_cashe_interval=60       # option: -u
+    verbosity_lvl=0           # option: -v
+    zap_it=0                  # options: -z / -Z
+    max_age_mins=0            # no max file age for items to be processed
 }
 
 defaults_for_proj_config_file() {
@@ -1887,6 +1887,7 @@ show_linter_statistics() {
     local key
     local count
     local name
+    local sorted_usage
 
     echo
     if [[ "${#linter_usage_count[@]}" -eq 0 ]]; then
@@ -1894,14 +1895,15 @@ show_linter_statistics() {
         return
     fi
     echo "Linter usage:"
-    # process substitution instead of a pipe, so the loop stays in this shell
-    while read -r count name; do
-        printf '  %-17s %s\n' "$name" "$count"
-    done < <(
+    #  Not using process substitution, iSH has no /dev/fd
+    sorted_usage="$(
         for key in "${!linter_usage_count[@]}"; do
             echo "${linter_usage_count[$key]} $key"
         done | sort -k1,1nr -k2,2
-    )
+    )"
+    while read -r count name; do
+        printf '  %-17s %s\n' "$name" "$count"
+    done <<<"$sorted_usage"
 }
 
 log_processing_statistics() {

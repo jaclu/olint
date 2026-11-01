@@ -16,7 +16,6 @@ f_sqlite_error="$HOME/tmp/foo/olint_stats.err"
 db_version=1
 b_log_sql=false
 
-
 #---------------------------------------------------------------
 #
 #   SQL tasks
@@ -166,4 +165,3 @@ sql_log_lint_stats() {
     sql+="values( '$linter', '$fname', $duration)"
     sqlite_err_handling "$sql"
 }
-
