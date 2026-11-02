@@ -36,7 +36,8 @@ skip_linters+=(
     # black         # Python code formatter
     # checkbashisms # Check for bashisms in /bin/sh scripts
     # codespell     # Fix common misspellings in source code and text files
-    # cppcheck      # Linter for C & C++
+    cppcheck # Linter for C & C++, only relevant for C/C++ projects
+    #                  enable in those projects with unskip_linters
     # flake8        # Python linter; handles multiple PEP 8 violations
     # isort         # Sort Python imports automatically
     # jsonlint      # JSON file linter
@@ -56,7 +57,8 @@ skip_linters+=(
     # ruff-format   # Formats code according to  ruff logic
     # shellcheck    # Linter for shell scripts
     # shfmt         # Autoformat shell script source code
-    # taplo         # TOML toolkit written in Rust
+    # taplo-lint    # TOML toolkit written in Rust, lints TOML files
+    # taplo-format  # Formats TOML files, modifies them
     # vulture       # 25 Python dead code analyzer
     # yamllint      # Linter for YAML files
 )
@@ -65,6 +67,7 @@ skip_linters+=(
 # project basis
 unskip_linters+=(
     # ansible-lint # Enable for ansible related projects in that .olint.conf
+    # cppcheck     # Enable for C/C++ projects in that .olint.conf
 )
 
 #  =====  Handling which files should be skipped by 'olint'.  =====
