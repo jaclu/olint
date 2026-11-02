@@ -48,13 +48,13 @@ This lists all detected linters (excluding those in `.olint.conf`) and the file 
 
 - **Ansible:** `ansible-lint`
 - **Python:** `bandit`, `black`, `flake8`, `isort`, `mypy`, `pycodestyle`, `pyflakes`,
-  `pylint`, `pyright`, `ruff`
+  `pylint`, `pyright`, `ruff-check`, `ruff-format`
 - **Bash/Posix:** `bashate`, `checkbashisms`, `shellcheck`
 - **C/C++:** `cppcheck`
-- **JavaScript/TypeScript:** `rslint`
+- **JavaScript/TypeScript:** `oxlint`
 - **Markdown:** `markdownlint`, `markdownlint-cli2`, `pymarkdown`
 - **JSON:** `jsonlint`
-- **TOML:** `taplo`
+- **TOML:** `taplo-lint`, `taplo-format`
 - **YAML:** `yamllint`
 - **Spelling checks:** `codespell` (checks comments for typos)
 
