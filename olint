@@ -33,8 +33,7 @@ error_msg() {
     local exit_code="${2:-1}"
 
     if [[ -z "$msg" ]]; then
-        echo
-        echo "error_msg() no param"
+        printf "\nerror_msg() no param\n" >&2
         env_cleanup 9
     fi
     # shellcheck disable=SC2059 # msg needs to be allowed to contain \n
@@ -137,7 +136,7 @@ remove_duplicates_2() {
             # Mark the value as seen
             seen[$value]=1
         else
-            log_it "remove_duplicates_2() - found duplicate: $value" >&2
+            log_it "remove_duplicates_2() - found duplicate: $value"
         fi
     done
 
@@ -1056,7 +1055,7 @@ olint_venv_enable() {
     # shellcheck disable=SC2154
     if [[ -d "$d_linting_venv" ]]; then
         if [[ $(command -v python3) == "$d_linting_venv/"* ]]; then
-            printf -- '---  Already using olint venv  ---\n' >&2
+            echo "---  Already using olint venv  ---" >&2
             return
         fi
         # [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
@@ -2146,13 +2145,10 @@ process_file_tree() {
     #   b_lint_files - files should be linted
     #   b_proj_linters_skip.  - skip all proj linters
     #   b_show_excluded - just list excluded files
-    #   b_changed_file_found  - at least one changed file was found
+    #   b_changed_file_found  - at least one changed file was found / forced by option -P
     #
-    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded && $b_changed_file_found && [[ ${#proj_linters[@]} -gt 0 ]] && {
-
-        # I don't think this should be done here, it resets the timer and might thus
-        # delay a cache write
-        # ! $b_proj_linters_only && cache_set_timer
+    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
+        && $b_changed_file_found && [[ ${#proj_linters[@]} -gt 0 ]] && {
 
         for linter_name in "${proj_linters[@]}"; do
 
