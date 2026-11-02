@@ -53,8 +53,8 @@ that should be linted, such as ~/.config/common_pull_config
 
 ## plugin order
 
-> 200 - executable/syntax validation
-> 199-100 - source-modifying handlers
+> 200+ - syntax validation, gates the file so nothing modifies code that does not parse
+> 199-100 - source-modifying handlers, run in order of priority
 > <100 - analysis handlers, all seeing the same final source
 
 ### Python
