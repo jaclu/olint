@@ -796,6 +796,8 @@ initialize_env() {
     declare -g -A linter_extensions
     declare -g -A linter_file_types
     declare -g -A linter_usage_count # times each linter was triggered this run
+    declare -g -A file_linters_done  # linters already run for the file being checked
+    file_has_issue=false             # set if a linter reported issues for this file
     linter_order=()                  # used to display them in alphabetical order
     proj_linters=()
 
@@ -940,6 +942,7 @@ defaults_for_proj_config_file() {
     )
     project_linters=(
         codespell # Normally always used as a project linter
+        cppcheck  # Analyses sources and headers together, not one file at a time
     )
 }
 
@@ -1750,12 +1753,11 @@ lint_by_ext() {
             show_linter_action "$linter" "$fname"
             lint_file "$linter" "$fname" || linter_found_issue=true
             show_linter_time
+            file_linters_done["$linter"]=1
         done
         if $b_linter_found; then
             log_it "processed by ext handler - $fname" "$dbglvl_lintscan_details"
-            $linter_found_issue || {
-                cache_add "$fname"
-            }
+            $linter_found_issue && file_has_issue=true
             return 0 # True - next file
         fi
     }
@@ -1787,6 +1789,8 @@ lint_by_file_type() {
                 # linter has been disabled
                 continue
             }
+            # already run for this file, when it was matched by extension
+            [[ -n ${file_linters_done["$linter"]} ]] && continue
             b_linter_found=true
             $b_lint_files || {
                 log_it "$not_linting_msg" "$dbglvl_lint_file_basic"
@@ -1796,6 +1800,7 @@ lint_by_file_type() {
             show_linter_action "$linter" "$fname"
             lint_file "$linter" "$fname" || linter_found_issue=true
             show_linter_time
+            file_linters_done["$linter"]=1
 
             # not needed for visual inspection, but might be handy for
             # log analysis to get both lf_type and linter in one line
@@ -1803,9 +1808,7 @@ lint_by_file_type() {
         done
     done
     if $b_linter_found; then
-        $linter_found_issue || {
-            cache_add "$fname"
-        }
+        $linter_found_issue && file_has_issue=true
         return 0 # True - next file
     fi
     log_it "Unsupported file_type - $file_type" "$dbglvl_lint_file_basic"
@@ -2080,6 +2083,8 @@ process_file_tree() {
             [[ -z "$fname" ]] && continue
 
             b_linter_found=false
+            file_linters_done=()
+            file_has_issue=false
             should_fname_be_excluded "$fname" && continue
             $b_show_excluded && continue # only show excluded files, dont lint anything
 
@@ -2103,9 +2108,7 @@ process_file_tree() {
             lint_by_ext "$fname" && {
                 b_linter_found=true
                 b_changed_file_found=true
-                continue
             }
-            $b_linter_found && continue
 
             #
             #  Processing by file type
@@ -2120,6 +2123,10 @@ process_file_tree() {
                     break
                 }
             done
+
+            #  Only cache if nothing failed, for either extension or file type
+            $b_lint_files && $b_linter_found && ! $file_has_issue && cache_add "$fname"
+            $b_linter_found && continue
 
             # If we got here the file was neither linted nor excluded, so
             # porj linters if defined should be run
