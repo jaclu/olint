@@ -1126,7 +1126,7 @@ bashate_gather_config() {
     bashate_ignore=""
 
     bashate_read_config "$olint_cfg_default"
-    bashate_read_config .bashateconfig
+    bashate_read_config "$olint_cfg_proj"
 
     # {
     #     echo "><> after both reads"
