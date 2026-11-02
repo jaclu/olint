@@ -30,20 +30,20 @@
 #  ignore=E001,E002
 
 bashate_wrapper() {
-    local config_file=".bashateconfig"
-    local max_line_length="" ignore=""
-    # shfmt-compatible baseline, project config adds to it
-    local base_ignore="E003,E010,E011,E020"
+    local params="$*"
+    local bashate_line_length
+    local bashate_ignore
 
-    if [[ -f $config_file ]]; then
-        max_line_length=$(sed -n 's/^max-line-length=//p' "$config_file")
-        ignore=$(sed -n 's/^ignore=//p' "$config_file")
-    fi
+    bashate_gather_config
 
-    bashate --error 'E*' \
-        --max-line-length "${max_line_length:-80}" \
-        --ignore "$base_ignore${ignore:+,$ignore}" \
-        "$@"
+    # shellcheck disable=SC2048,SC2086 # bashate_ignore intentionally unquoted
+    set -- \
+        bashate --error 'E*'
+
+    [[ -n $bashate_line_length ]] && set "$@" --max-line-length "$bashate_line_length"
+    [[ -n $bashate_ignore ]] && set "$@" --ignore "$bashate_ignore"
+    # shellcheck disable=SC2068 # $@ should be expanded
+    $@ "$params"
 }
 
 # Always run, bashate_wrapper ignores the rules shfmt handles, so they never

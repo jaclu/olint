@@ -560,6 +560,7 @@ display_config() {
     local file_type
     local lst
     local item
+    local extras
 
     log_it "display_config()" "$dbglvl_lintscan_basic"
 
@@ -595,7 +596,18 @@ display_config() {
 
     echo "==  Linters available  =="
     for linter_name in "${linter_order[@]}"; do
-        echo " $linter_name  - ${linter_cmd[$linter_name]}"
+        extras=""
+        if [[ "$linter_name" = bashate ]]; then
+            local bashate_line_length bashate_ignore
+            bashate_gather_config
+            [[ -n $bashate_line_length ]] && {
+                extras+="--max-line-length $bashate_line_length "
+            }
+            [[ -n $bashate_ignore ]] && {
+                extras+="--ignore $bashate_ignore "
+            }
+        fi
+        echo " $linter_name  - ${linter_cmd[$linter_name]} $extras"
     done
     echo
 
@@ -1080,6 +1092,52 @@ olint_venv_disable() {
 
 #---------------------------------------------------------------
 #
+#   Linter specific code
+#
+#---------------------------------------------------------------
+
+bashate_read_config() {
+    local f_cfg_file="$1"
+    local value
+
+    if [[ -f $f_cfg_file ]]; then
+        # echo "><> bashate read_settings: $f_cfg_file" >&2
+        value=$(sed -n 's/^bashate_line_length=//p' "$f_cfg_file")
+        [[ -n $value ]] && {
+            bashate_line_length="$value"
+            # echo "><> bashate_line_length=$bashate_line_length" >&2
+        }
+        value=$(sed -n 's/^bashate_ignore=//p' "$f_cfg_file")
+        [[ -n $value ]] && {
+            bashate_ignore="$value"
+            # echo "><> bashate_ignore=$bashate_ignore" >&2
+        }
+    fi
+}
+
+bashate_gather_config() {
+    #
+    # Provides (empty if unset):
+    #  bashate_line_length
+    #  bashate_ignore
+
+    # echo "><> bashate_gather_config()" >&2
+    bashate_line_length=""
+    bashate_ignore=""
+
+    bashate_read_config "$olint_cfg_default"
+    bashate_read_config .bashateconfig
+
+    # {
+    #     echo "><> after both reads"
+    #     echo "><>   bashate_line_length=$bashate_line_length"
+    #     echo "      bashate_ignore=$bashate_ignore"
+    #     echo " params: $params"
+    # } >&2
+}
+
+#---------------------------------------------------------------
+#
 #   Read configs
 #
 #---------------------------------------------------------------
@@ -1300,7 +1358,7 @@ check_linter_plugins() {
         error_msg "Plugin folder missing: $d_plugins"
     fi
 
-    log_it "check_linter_plugins($d_plugins)" 1
+    log_it "Inspecting plugins in: $d_plugins" 1
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
 
     # Loop through each file in alphabetical order, adding those where cmd is installed

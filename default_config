@@ -166,3 +166,8 @@ shfmt_change_code=0
 # with isort about import order. Primarilly relevant as a project setting, if
 # linted on multiple nodes, some using isort, some using ruff
 use_isort_style_import_ordering=0
+
+# Defaults for bashate plugin, can be overridden per project using a .bashateconfig
+# bashate_line_length=92
+# Ignores should not be quoted, and no space separating them!
+#bashate_ignore=E003,E010,E011,E020
