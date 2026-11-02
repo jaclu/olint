@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+
+# Purpose:
+#  Formats TOML files, using taplo. Be aware: Modifies the code!
+# Strengths:
+#  Consistent layout of TOML files, such as spacing and quoting.
+# Use case:
+#  Keeping pyproject.toml, .taplo.toml and other TOML files in one layout.
+# Caveats:
+#  Cosmetic only, it does not fix errors. Files with syntax errors are left
+#  untouched, and taplo-lint reports those.
+
+# Installation methods
+#  brew install taplo
+#  npm install -g @taplo/cli
+#  yarn global add @taplo/cli
+#  pnpm install -g @taplo/cli
+
+# project config: .taplo.toml
+# Global config: ~/.config/taplo/config.toml / $XDG_CONFIG_HOME/taplo/config.toml
+
+plugin_cmd="taplo format"
+proj_plugin_cmd="$plugin_cmd ."
+
+# modifies the code, so it runs in the source-modifying range
+plugin_priority=110
+
+plugin_extensions=(
+    .toml
+)

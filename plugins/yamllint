@@ -2,10 +2,13 @@
 # shellcheck disable=SC2034
 
 # Purpose:
-#  YAML syntax and style linting
-# Strengths: Detects YAML syntax, structure, and formatting problems
-# Use case: Generic YAML validation; complements Ansible-lint rather than replacing it
+#  YAML syntax and style linting.
+# Strengths:
+#  Detects YAML syntax, structure, and formatting problems.
+# Use case:
+#  Generic YAML validation. Complements ansible-lint rather than replacing it.
 # Caveats:
+#  Runs with -s, so warnings count as errors.
 
 # Installation methods;
 #  pip install yamllint
@@ -22,9 +25,9 @@
 #    level: warning
 
 plugin_cmd="yamllint -s" # -s trigger error on warnings
-proj_plugin_cmd="yamllint -s ."
+proj_plugin_cmd="$plugin_cmd ."
 
-plugin_priority=70
+plugin_priority=60
 
 plugin_extensions=(
     .yml

@@ -57,48 +57,66 @@ that should be linted, such as ~/.config/common_pull_config
 > 199-100 - source-modifying handlers, run in order of priority
 > <100 - analysis handlers, all seeing the same final source
 
-### Python
+Values are a judgment score: faster and lighter tools sit higher, and gaps are
+left between neighbours so later additions can fit in.
+
+### Syntax gate
 
 210 py-compile
+220 bash-n [skipped if shellcheck is found]
 
-120 ruff-check ruff check --fix [if ruff_change_code=1]
-115 isort
-110 ruff-format - ruff format
-108 black [if no ruff-format]
+### Python
 
-90 ruff-check [use_isort_style_import_ordering=1 disables some versions]
+145 ruff-check - `ruff check --fix` [if ruff_change_code=1]
+130 isort
+120 ruff-format - `ruff format`
+100 black [skipped if ruff-format]
+90 ruff-check - `ruff check` [check mode]
+85 pyflakes [skipped if ruff-check or flake8]
+72 mypy
+70 vulture [project linter]
+65 pycodestyle [skipped if ruff-check or flake8]
+45 bandit
+44 flake8 [skipped if ruff-check]
+30 pyright [skipped if mypy]
+12 pylint [skipped if ruff-check]
 
-85 flake8 [if no ruff]
-75 pycodestyle [if neither ruff/flake8]
-70 pyflakes [if neither ruff/flake8]
-50 mypy
-35 pyright [if no mypy]
-25 bandit
-20 vulture
-10 pylint [skipped if ruff and pyright installed]
+### Shell script
 
-### shell script
+160 shfmt - rewrites code [if shfmt_change_code=1]
+95 shfmt - check mode [if shfmt_change_code != 1]
+80 shellcheck
+57 bashate
+35 checkbashisms [POSIX shell only]
 
-220 bash-n # Extremely basic check, should only be enabled if shellcheck is unavailable
+### Markdown
 
-150 shfmt - used if shfmt_change_code=1 - rewrites code
-... Autoformat shell script source code, when using -w rewrites code
+42 markdownlint-cli2
+42 markdownlint [skipped if markdownlint-cli2]
+42 pymarkdown [skipped if markdownlint-cli2 or markdownlint]
 
-85 shfmt - used if shfmt_change_code != 1
-50 shellcheck # Linter for shell scripts
-40 bashate # Code style enforcement for bash programs
-30 checkbashisms # Checks for portability issues in shell scripts
+### YAML and Ansible
 
-### markdown
+60 yamllint
+5 ansible-lint [skipped by default]
 
-70 markdownlint-cli2 # inter for Markdown files
-69 markdownlint # Linter for Markdown files
-68 pymarkdownlint # Linter for Markdown files
+### TOML
 
-### yaml/ansible
+110 taplo-format - `taplo format`
+74 taplo-lint - `taplo lint`
 
-70 yamllint # Linter for YAML files
-15 ansible-lint # Checks ansible playbooks for practices and behaviour
+### JSON
+
+47 jsonlint
+
+### JavaScript
+
+105 oxlint - `oxlint --fix`
+
+### Other
+
+78 cppcheck [project linter, skipped by default]
+55 codespell [project linter]
 
 ### sorted by priority
 
@@ -106,29 +124,30 @@ that should be linted, such as ~/.config/common_pull_config
 | ------ | ----------------- | ---------------------------------------------------- |
 | 220    | bash-n            | Super simple and quick script                        |
 | 210    | py-compile        | Syntax validation                                    |
-| 150/85 | shfmt             | Autoformat shell script source code                  |
-| 120/90 | ruff-check        | `ruff check`                                         |
-| 115    | isort             | Checks and formats import statements                 |
-| 110    | ruff-format       | `ruff format`                                        |
-| 108    | black             | Py Code formatter                                    |
-| 98     | codespell         | Fix common misspellings                              |
-| 95     | oxlint            | linter for JavaScript and TypeScript                 |
-| 85     | flake8            | Lightweight tool for enforcing PEP 8                 |
-| 75     | pycodestyle       | PEP 8 style checker                                  |
-| 70     | pyflakes          | lightweight linting                                  |
-| 70     | jsonlint          | JSON file linter                                     |
-| 70     | markdownlint-cli2 | Linter for Markdown files                            |
-| 70     | yamllint          | YAML syntax and style linting                        |
-| 70     | taplo             | TOML toolkit written in Rust                         |
-| 69     | markdownlint      | Linter for Markdown files                            |
-| 68     | pymarkdown        | python markdown linter                               |
-| 50     | mypy              | Static type checker                                  |
-| 50     | cppcheck          | Linter for C & C++                                   |
-| 50     | shellcheck        | Linter for shell scripts                             |
-| 40     | bashate           | Code style enforcement for bash programs             |
-| 35     | pyright           | Static type checker for Python                       |
-| 30     | checkbashisms     | Check for bashisms in /bin/sh scripts                |
-| 25     | bandit            | Security-focused py linter                           |
-| 20     | vulture           | Dead code finder (py)                                |
-| 15     | ansible-lint      | Checks ansible playbooks for practices and behaviour |
-| 10     | pylint            | code smells / deeper static analysis                 |
+| 160/95 | shfmt             | Autoformat shell script source code                  |
+| 145/90 | ruff-check        | `ruff check`                                         |
+| 130    | isort             | Checks and formats import statements                 |
+| 120    | ruff-format       | `ruff format`                                        |
+| 110    | taplo-format      | Formats TOML files                                   |
+| 105    | oxlint            | Linter and fixer for JavaScript and TypeScript       |
+| 100    | black             | Py code formatter                                    |
+| 85     | pyflakes          | Lightweight linting                                  |
+| 80     | shellcheck        | Linter for shell scripts                             |
+| 78     | cppcheck          | Linter for C & C++ (project only)                    |
+| 74     | taplo-lint        | TOML linter                                          |
+| 72     | mypy              | Static type checker                                  |
+| 70     | vulture           | Dead code finder (py)                                |
+| 65     | pycodestyle       | PEP 8 style checker                                  |
+| 60     | yamllint          | YAML syntax and style linting                        |
+| 57     | bashate           | Code style enforcement for bash programs             |
+| 55     | codespell         | Fix common misspellings (project)                    |
+| 47     | jsonlint          | JSON file linter                                     |
+| 45     | bandit            | Security-focused py linter                           |
+| 44     | flake8            | Lightweight tool for enforcing PEP 8                 |
+| 42     | markdownlint-cli2 | Linter for Markdown files                            |
+| 42     | markdownlint      | Linter for Markdown files                            |
+| 42     | pymarkdown        | Python markdown linter                               |
+| 35     | checkbashisms     | Check for bashisms in /bin/sh scripts                |
+| 30     | pyright           | Static type checker for Python                       |
+| 12     | pylint            | Code smells / deeper static analysis                 |
+| 5      | ansible-lint      | Checks ansible playbooks for practices and behaviour |

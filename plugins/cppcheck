@@ -3,20 +3,35 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Linter for C & C++
+#  Static analysis for C and C++.
 # Strengths:
+#  Finds bugs such as memory leaks, buffer overruns and undefined behaviour
+#  without compiling the code.
 # Use case:
+#  C and C++ projects.
 # Caveats:
+#  Project linter only: a single file is analysed without the headers and
+#  sources it depends on, which gives noise and misses cross-file issues.
+#  Skipped by default, enable in C/C++ projects with unskip_linters.
+#  The project run skips .git, .venv and .mypy_cache. Tune other options with
+#  override_linter_cmd if needed.
 
 # Installation methods;
 #  brew install cppcheck
 #  (Ubuntu) sudo apt install cppcheck
 #  (Alpine) sudo apk add cppcheck
 
-plugin_cmd=cppcheck
-proj_plugin_cmd="cppcheck ."
+# Only used as a project linter, see project_linters in olint
+proj_plugin_cmd="cppcheck --error-exitcode=1 -i .git -i .venv -i .mypy_cache ."
 
-plugin_priority=50
+# cppcheck has no project config file, change the command in .olint.conf
+# if the include path or standard needs to be set, e.g.:
+# override_linter_cmd["cppcheck"]="cppcheck --std=c++17 -I include -i .git -i .venv -i .mypy_cache ."
+# if there are known false positives, list them in a suppressions file:
+# override_linter_cmd["cppcheck"]="cppcheck --suppressions-list=cppcheck.suppress -i .git -i .venv -i .mypy_cache ."
+# or inline, with // cppcheck-suppress <id> on the line before, which needs --inline-suppr
+
+plugin_priority=78
 
 plugin_extensions=(
     .c # C Source File

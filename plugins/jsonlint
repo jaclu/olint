@@ -3,11 +3,14 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  JSON file linter
+#  JSON file linter.
 # Strengths:
+#  Quick syntax validation for JSON files.
 # Use case:
+#  Catching malformed JSON before a tool that reads it fails on it.
 # Caveats:
-#  This linter ignores Ctrl-C and I haven't figured out how to solve this...
+#  Not run as a project linter, since it would idle forever. Ignores Ctrl-C,
+#  which is not solved yet.
 
 # Installation methods;
 #   brew install jsonlint
@@ -20,7 +23,7 @@ plugin_cmd="jsonlint -p"
 # If run as a project linter, the process does nothing and idles forever...
 proj_plugin_cmd=/dev/null
 
-plugin_priority=70
+plugin_priority=47
 
 plugin_extensions=(
     .json

@@ -3,10 +3,13 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  PEP 8 style checker; redundant if flake8 is used
+#  PEP 8 style checker.
 # Strengths:
+#  Focused on style only, lightweight and needs no config to start.
 # Use case:
-# Caveats: Skipped if ruff or flake8 is found
+#  Enforcing PEP 8 on projects that do not use flake8 or ruff.
+# Caveats:
+#  Redundant if flake8 is used. Skipped if ruff-check or flake8 is found.
 
 # Installation methods;
 #  pip install pycodestyle  # usable on iSH
@@ -19,12 +22,12 @@
 #  [pycodestyle]
 #  max-line-length = 92
 
-skip_if_used=(ruff-format flake8)
+skip_if_used=(ruff-check flake8)
 
 plugin_cmd=pycodestyle
 proj_plugin_cmd="pycodestyle --exclude=.venv ."
 
-plugin_priority=75
+plugin_priority=65
 
 plugin_extensions=(
     .py

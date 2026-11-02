@@ -3,10 +3,14 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Linter for shell scripts
+#  Linter for shell scripts.
 # Strengths:
+#  Catches quoting mistakes, common bugs and portability issues in shell code.
 # Use case:
+#  Primary linter for bash and sh scripts.
 # Caveats:
+#  Uses -o all, which enables optional checks, so output can be noisy. SC2250
+#  and SC2312 are disabled. Using -a -x can use a lot of RAM.
 
 # Installation methods;
 #  pip install shellcheck-py  # fails to install on iSH
@@ -30,13 +34,15 @@
 # I can't remember why I added: -a -x
 # sometimes it causes shellcheck to eat all available ram
 plugin_cmd="shellcheck -a -x -o all -e SC2250,SC2312"
+# not usable as a project linter, it does not accept a directory
+proj_plugin_cmd=/dev/null
 
 if [[ -f /etc/debian_version ]] && grep -q 10 /etc/debian_version; then
     # Debian 10 comes with shellcheck 0.5. lacking the -o option
     plugin_cmd="shellcheck -a -x -e SC1117,SC2250,SC2312"
 fi
 
-plugin_priority=50
+plugin_priority=80
 
 plugin_extensions=(
     .sh

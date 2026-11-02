@@ -3,10 +3,16 @@
 #  shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Check for bashisms in /bin/sh scripts
+#  Check for bashisms in /bin/sh scripts.
 # Strengths:
+#  Catches bash-only constructs in scripts that declare POSIX sh, which fail
+#  on dash and busybox.
 # Use case:
+#  Scripts meant to run on minimal shells, such as Debian's dash or Alpine's
+#  busybox.
 # Caveats:
+#  Only checks scripts identified as POSIX shell. Bash scripts are not
+#  checked.
 
 # Installation methods;
 #  brew install checkbashisms
@@ -14,8 +20,10 @@
 #  (Alpine) sudo apk add checkbashisms
 
 plugin_cmd="checkbashisms -n -x "
+# not usable as a project linter, given a directory it silently checks nothing
+proj_plugin_cmd=/dev/null
 
-plugin_priority=30
+plugin_priority=35
 
 plugin_file_types=(
     "POSIX shell script*"

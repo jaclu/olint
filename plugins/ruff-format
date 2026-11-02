@@ -3,14 +3,16 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Extremely fast Python linter, written in Rust, this instance only handles formatting
+#  Python code formatter, written in Rust. Only handles formatting, lint rules
+#  are left to ruff-check. Be aware: Modifies the code!
 # Strengths:
-#  Ruff can be used to replace Flake8 (plus dozens of plugins), Black, isort,
-#  pydocstyle, pyupgrade, autoflake, and more, all while executing tens or
-#  hundreds of times faster than any individual tool.
+#  Extremely fast. Output is designed to match Black's style, so layout is
+#  consistent without debate.
 # Use case:
-#  Rapid linting
+#  Enforcing one consistent Python layout across a project, kept separate from
+#  lint rules so each can be configured on its own.
 # Caveats:
+#  Rewrites files in place, this plugin has no check-only mode.
 
 # Installation methods;
 # Not usable on iSH - segfaults - last checked: 26-08-18
@@ -28,9 +30,9 @@
 # inline-excludes:  # noqa: F403,F401
 
 plugin_cmd="ruff format"
-proj_plugin_cmd="ruff format"
+proj_plugin_cmd="$plugin_cmd"
 
-plugin_priority=110
+plugin_priority=120
 
 plugin_extensions=(
     .py

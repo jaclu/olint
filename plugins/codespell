@@ -3,10 +3,15 @@
 #  shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Fix common misspellings in source code and text files
+#  Find common misspellings in source code and text files. Reports only, it
+#  does not fix anything.
 # Strengths:
+#  Fast and low on noise. Works on any text file, not only code.
 # Use case:
+#  Catching typos in comments, docs and identifiers across a project.
 # Caveats:
+#  Project linter only, since there is no file type to match on. Can flag
+#  valid words, which can be accepted with override_linter_cmd.
 
 # Installation methods;
 #  pip install codespell  # usable on iSH
@@ -24,7 +29,7 @@
 # there isn't any file type associated, so in the clobal config this
 # is set as a project linter.
 
-proj_plugin_cmd="codespell -H -S './.git,./.venv,./.mypy_cache'"
+proj_plugin_cmd="codespell -H -S './.git,./.venv,./.mypy_cache,./.ruff_cache'"
 
-# extremely fast tool, so might as well run early
-plugin_priority=98
+# text-only check, it does not analyze code, so it runs after the code analyzers
+plugin_priority=55

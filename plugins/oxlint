@@ -2,10 +2,14 @@
 # shellcheck disable=SC2034
 
 # Purpose:
-#  High-performance linter for JavaScript and TypeScript written in Rust
+#  High-performance linter for JavaScript and TypeScript, written in Rust. Be
+#  aware: Modifies the code!
 # Strengths:
+#  Very fast, with a large set of built-in rules.
 # Use case:
+#  JavaScript and TypeScript projects.
 # Caveats:
+#  Fixes are applied on every run, there is no check-only mode in this plugin.
 
 # Installing methods;
 #  brew install oxlint
@@ -18,7 +22,8 @@
 plugin_cmd="oxlint --fix"
 proj_plugin_cmd="rslint ."
 
-plugin_priority=95
+# Modifies the code, so it runs in the source-modifying range, before analysis
+plugin_priority=105
 
 plugin_extensions=(
     .js

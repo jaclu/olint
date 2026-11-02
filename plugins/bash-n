@@ -3,15 +3,20 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Super simple and quick script tesster, will print out basic errors detected
-#  so can be used if shellcheck is unavailable.
+#  Super simple and quick script tester, will print out basic errors detected.
 # Strengths:
+#  Ships with bash, so nothing needs to be installed. Very fast.
 # Use case:
-# Caveats: Only checks if script can run at all
+#  Quick first pass before the heavier linters run.
+# Caveats:
+#  Only checks if the script can run at all, no style or logic checks. Skipped
+#  if shellcheck is found.
 
 skip_if_used=(shellcheck)
 
 plugin_cmd="bash --norc -n"
+# not usable as a project linter, it does not accept a directory
+proj_plugin_cmd=/dev/null
 
 # Extremely fast but only checks for basic syntax issues
 plugin_priority=220

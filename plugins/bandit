@@ -3,12 +3,15 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Security-focused linter.
+#  Security-focused linter for Python.
 # Strengths:
-#  Identifies security vulnerabilities (e.g., usage of insecure functions
-#  or libraries).
+#  Identifies security vulnerabilities, e.g. usage of insecure functions or
+#  libraries.
 # Use case:
 #  Essential for projects where security is a concern.
+# Caveats:
+#  Reports possible issues, not confirmed ones, so some findings will be false
+#  positives. Reviewed lines can be silenced with # nosec.
 
 # Installation methods;
 #  pip install bandit  # usable on iSH
@@ -20,7 +23,7 @@
 plugin_cmd=bandit
 proj_plugin_cmd="bandit --exclude './.venv' -r ."
 
-plugin_priority=25
+plugin_priority=45
 
 plugin_extensions=(
     .py

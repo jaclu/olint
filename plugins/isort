@@ -3,17 +3,16 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Checks and formats import statements. - Be aware: Modifies the code!
+#  Checks and formats import statements. Be aware: Modifies the code!
 # Strengths:
 #  Ensures imports are grouped and ordered correctly according to PEP 8.
 # Use case:
 #  Keeps imports organized and clean.
 # Caveats:
-#  Baseline is to skip isort if ruff-check is found.
-#  isort conflicts with some versions of ruff for import ordering
-#  If project is linted on nodes where some use isort and othets ruff-check
-#  it is recommended to set use_isort_style_import_ordering=1 in proj config
-#  to skip ruff versions that will collide with isort sort order
+#  Skipped if ruff-check is found, unless use_isort_style_import_ordering=1.
+#  Ruff's import ordering can conflict with isort. If nodes in a project use
+#  different tools, set use_isort_style_import_ordering=1 in the project
+#  config to avoid conflicting changes.
 
 # Installation methods;
 #  pip install isort  # usable on iSH
@@ -28,7 +27,7 @@
 plugin_cmd=isort
 proj_plugin_cmd="isort --gitignore ."
 
-plugin_priority=115
+plugin_priority=130
 
 plugin_extensions=(
     .py

@@ -3,18 +3,16 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Extremely fast Python linter, written in Rust, this instance checks code
-#  if ruff_change_code=1 then it auto-fixes issues
+#  Python linter, written in Rust. Checks code for correctness and style rule
+#  violations. If ruff_change_code=1 it auto-fixes issues.
 # Strengths:
-#  Ruff can be used to replace Flake8 (plus dozens of plugins), Black, isort,
-#  pydocstyle, pyupgrade, autoflake, and more, all while executing tens or
-#  hundreds of times faster than any individual tool.
+#  Extremely fast. Its rules cover much of what flake8 (with plugins), isort,
+#  pyupgrade and autoflake do, and it runs far faster than any of them.
 # Use case:
-#  Rapid linting
+#  Rapid linting of Python code for correctness and style problems.
 # Caveats:
-#  use_isort_style_import_ordering=1 and ruff using I001 disables this plugin,
-#  in order to not have different nodes some using isort generate conflicting
-#  code changes
+#  If use_isort_style_import_ordering=1 and rule I001 is active, this plugin
+#  is disabled, to avoid changes that conflict with isort.
 
 # Installation methods;
 #  Not usable on iSH - segfaults - last checked: 26-08-18
@@ -35,11 +33,11 @@
 # shellcheck disable=SC2154 # ruff_change_code is supplied via config when applicable.
 if [[ "$ruff_change_code" = 1 ]]; then
     plugin_cmd="ruff check --fix"
-    proj_plugin_cmd="ruff check --fix ."
-    plugin_priority=120
+    proj_plugin_cmd="$plugin_cmd ."
+    plugin_priority=145
 else
     plugin_cmd="ruff check"
-    proj_plugin_cmd="ruff check ."
+    proj_plugin_cmd="$plugin_cmd ."
     plugin_priority=90
 fi
 

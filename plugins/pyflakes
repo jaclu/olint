@@ -3,15 +3,16 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  lightweight linting: undefined names, unused imports etc
-#  Fast static checker for Python that looks for actual code errors,
-#  not formatting issues or style violations.
+#  Lightweight linting: undefined names, unused imports etc. Static checker for
+#  Python that looks for actual code errors, not formatting issues or style
+#  violations.
 # Strengths:
-#  Blazingly fast
-# Issues:
-#  pyflakes doesn't seem to have an exclude param, so might not be practical
-#  to use as a project linter....
-# Caveats: Skipped if ruff or flake8 is found
+#  Very fast, and reports real errors without style noise.
+# Use case:
+#  Quick check for mistakes such as undefined names and unused imports.
+# Caveats:
+#  Not usable as a project linter, it has no exclude parameter.
+#  Skipped if ruff-check or flake8 is found.
 
 # Installation methods;
 #  pip install pyflakes  # usable on iSH
@@ -21,15 +22,16 @@
 
 # inline-excludes:  # noqa: F401,F403
 
-skip_if_used=(ruff-format flake8)
+skip_if_used=(ruff-check flake8)
 
 plugin_cmd=pyflakes
 # obviously there are two names it might use...
 command -v pyflakes3 >/dev/null && plugin_cmd=pyflakes3
 
-proj_plugin_cmd="$plugin_cmd ."
+# not usable as a project linter, since it has no exclude parameter
+proj_plugin_cmd=/dev/null
 
-plugin_priority=70
+plugin_priority=85
 
 plugin_extensions=(
     .py

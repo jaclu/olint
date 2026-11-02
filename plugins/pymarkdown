@@ -3,10 +3,17 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  python markdown linter, could be used when brew can not provide markdownlint-cli2
+#  Python markdown linter, could be used when brew can not provide
+#  markdownlint-cli2.
 # Strengths:
+#  Python based, so it fits projects that already use pip and need no Node.js.
 # Use case:
-# Caveats: typically has to be installed in a venv
+#  Markdown linting where markdownlint-cli2 is not available.
+# Caveats:
+#  Typically has to be installed in a venv.
+#  Uses its own config (pyproject.toml, .pymarkdown.yaml or .pymarkdown), not
+#  .markdownlint.yaml.
+#  Skipped if markdownlint-cli2 or markdownlint is found.
 
 # Installation methods;
 #  pip install pymarkdownlnt - Do NOT install pymarkdown pkg!
@@ -40,10 +47,12 @@
 #     }
 # }
 
-plugin_cmd="pymarkdown scan"
-proj_plugin_cmd="pymarkdown scan -r ."
+skip_if_used=(markdownlint-cli2 markdownlint)
 
-plugin_priority=68
+plugin_cmd="pymarkdown scan"
+proj_plugin_cmd="$plugin_cmd -r ."
+
+plugin_priority=42
 
 plugin_extensions=(
     .md

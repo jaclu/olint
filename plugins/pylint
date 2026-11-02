@@ -3,14 +3,15 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  code smells / deeper static analysis
+#  Code smells and deeper static analysis.
 # Strengths:
-#  Provides detailed and strict checks.
-#  Customizable via a .pylintrc configuration file.
+#  Provides detailed and strict checks. Customizable via a .pylintrc
+#  configuration file.
 # Use case:
 #  Detects potential bugs, enforces coding standards, and warns about unused
 #  imports or variables.
-# Caveats: Skipped if ruff is found
+# Caveats:
+#  Slow. Skipped if ruff-check is found.
 
 # Installation methods;
 #  pip install pylint  # usable on iSH
@@ -30,12 +31,12 @@
 #  [base.py]
 #  disable=R0904
 
-skip_if_used=(ruff-format flake8)
+skip_if_used=(ruff-check)
 
 plugin_cmd=pylint
 proj_plugin_cmd="pylint --ignore-paths .venv/ ."
 
-plugin_priority=10
+plugin_priority=12
 
 plugin_extensions=(
     .py

@@ -3,10 +3,17 @@
 #  shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Code style enforcement for bash programs
+#  Code style enforcement for bash programs.
 # Strengths:
+#  Much faster than shellcheck. Checks layout rules, such as indentation and
+#  line length, that shellcheck does not cover.
 # Use case:
+#  Enforces a consistent layout across shell scripts.
 # Caveats:
+#  Run after shellcheck: a missing } is reported as an unexpected end of file,
+#  which is unclear. Project settings are read from .bashateconfig by
+#  bashate_wrapper. Rules that shfmt handles (E003, E010, E011, E020) are
+#  ignored, so the two do not contradict each other.
 
 # Installation methods;
 #  pip3 install bashate  # usable on iSH
@@ -37,35 +44,29 @@ bashate_wrapper() {
         "$@"
 }
 
-skip_if_used=("shfmt && shellcheck")
-
-if [[ " ${valid_plugins[*]-} " == *" shfmt "* ]]; then
-    # In this case where shellcheck is absent, shfmt does the heavy lifting and
-    # bashate is only used for residual policy checks
-    plugin_cmd="bashate -eE005,E042,E043,E044 -iE003,E006,E010,E011,E020"
-else
-    # this supports proj config of options, like line-length etc
-    # claude note if both are specified, plugin_cmd is the linter being checked
-    # for presence, and bashate_wrapper is a wrapper func in-here that first
-    # parses the proj config file
-    plugin_cmd=bashate
-    plugin_cmd_actual=bashate_wrapper
-fi
+# Always run, bashate_wrapper ignores the rules shfmt handles, so they never
+# conflict with shfmt, and it applies the project config, like line-length etc
+# plugin_cmd is the linter being checked for presence, and plugin_cmd_actual is
+# the wrapper func in-here that first parses the proj config file
+plugin_cmd=bashate
+plugin_cmd_actual=bashate_wrapper
+# not usable as a project linter, it does not accept a directory
+proj_plugin_cmd=/dev/null
 
 # much faster than shellcheck, but in a few corner cases will fail to
 # give a meaningful error. such as missing a } somewhere will just
 # be reported as unexpected end of file.
 # so better to run after shellcheck
-plugin_priority=40
+plugin_priority=57
 
 plugin_extensions=(
     .bash
+    .sh
 )
 
 plugin_file_types=(
     "Bourne-Again shell script*"
     "Paul Falstad's zsh script*"
 
-    "a /sbin/openrc-run script*"
-    "OpenRC script"
+    "a *openrc-run script*"
 )

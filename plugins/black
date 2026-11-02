@@ -3,13 +3,14 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Code formatter. - Be aware: Modifies the code!
+#  Code formatter for Python. Be aware: Modifies the code!
 # Strengths:
 #  Enforces consistent formatting across your codebase.
 # Use case:
-#  Works well alongside linters like Flake8 and Pylint for a unified style.
+#  Projects that want a fixed Python layout without deciding it manually.
 # Caveats:
-#  Only used if black_allow_usage=1, since it disagrees with ruff format in many cases
+#  Skipped if ruff-format is found, since both do the same job and they
+#  disagree in some cases.
 
 # Installation methods;
 #  pip install black  # usable on iSH
@@ -37,7 +38,7 @@ skip_if_used=(ruff-format)
 plugin_cmd=black
 proj_plugin_cmd="black ."
 
-plugin_priority=108
+plugin_priority=100
 
 plugin_extensions=(
     .py

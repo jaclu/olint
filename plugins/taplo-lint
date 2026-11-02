@@ -3,10 +3,13 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 #
 # Purpose:
-#  TOML toolkit written in Rust
+#  Lints TOML files for syntax and semantic errors, using taplo.
 # Strengths:
+#  Catches TOML syntax errors before tools that read the file fail on them.
 # Use case:
+#  Checking pyproject.toml, .taplo.toml and other TOML files in a project.
 # Caveats:
+#  Only lints. Formatting is done by taplo-format, which runs separately.
 
 # Installation methods
 #  brew install taplo
@@ -22,8 +25,9 @@
 #
 
 plugin_cmd="taplo lint"
+proj_plugin_cmd="$plugin_cmd ."
 
-plugin_priority=70
+plugin_priority=74
 
 plugin_extensions=(
     .toml

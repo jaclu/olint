@@ -3,13 +3,15 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Static type checker for Python
+#  Static type checker for Python.
 # Strengths:
-#  Ensures type correctness when using type hints.
-#  Helps catch errors early in larger projects with complex type relationships.
+#  Ensures type correctness when using type hints. Helps catch errors early in
+#  larger projects with complex type relationships.
 # Use case:
 #  Recommended for projects that use type annotations to improve code
 #  robustness.
+# Caveats:
+#  Only checks types, not style or formatting.
 
 # Installation methods;
 #  pip install mypy  # usable on iSH
@@ -29,9 +31,7 @@
 plugin_cmd=mypy
 proj_plugin_cmd="mypy --namespace-packages --explicit-package-bases ."
 
-# do this plugin late, since if other plugins find issues
-# on next run the mypy cache might cause issues
-plugin_priority=50
+plugin_priority=72
 
 plugin_extensions=(
     .py

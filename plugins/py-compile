@@ -3,13 +3,15 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  compiling the module to ensure syntactic correctness - really fast initial test
-#  but says nothing about good coding style
+#  Compiles the module to ensure syntactic correctness. An initial test, but
+#  says nothing about good coding style.
 # Strengths:
+#  Very fast, uses only the Python standard library.
 # Use case:
-#  Rapid code validation, if it can't even be compiled, not much point in running linters
-#  on it
+#  Rapid validation: if the code can't even be compiled, there is not much
+#  point in running linters on it.
 # Caveats:
+#  Only detects syntax errors, nothing about style or logic.
 
 plugin_cmd="python3 -m py_compile"
 proj_plugin_cmd=/dev/null

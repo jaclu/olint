@@ -3,10 +3,16 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Linter for Markdown files
+#  Linter for Markdown files.
 # Strengths:
+#  Checks Markdown against a set of rules, configurable via
+#  .markdownlint.yaml.
+#  sample: https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
 # Use case:
+#  Keeping README and other Markdown documents consistent.
 # Caveats:
+#  Shares the .markdownlint.yaml config with markdownlint-cli2.
+#  Skipped if markdownlint-cli2 is found.
 
 # Installation methods;
 #  For python, consider pymarkdown
@@ -14,13 +20,12 @@
 #  (Ubuntu)
 #  apt install markdownlint
 
-# project config file: .markdownlint.yaml
-# sample: https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
+skip_if_used=(markdownlint-cli2)
 
 plugin_cmd=markdownlint
 proj_plugin_cmd="markdownlint ."
 
-plugin_priority=69
+plugin_priority=42
 
 plugin_extensions=(
     .md

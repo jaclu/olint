@@ -3,10 +3,14 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Autoformat shell script source code
+#  Autoformat shell script source code.
 # Strengths:
+#  Consistent layout across scripts, with 4 space indent, matching what
+#  bashate expects.
 # Use case:
-# Caveats: Only changes code if shfmt_change_code=1
+#  Keeping shell scripts in one consistent format without manual decisions.
+# Caveats:
+#  Only changes code if shfmt_change_code=1. Otherwise it only reports.
 
 # Installation methods;
 #  brew install shfmt
@@ -17,12 +21,16 @@
 
 # shfmt_change_code is supplied via config when applicable.
 # shellcheck disable=SC2154
+# Without -w shfmt only prints formatted output, exit code is 0 even when
+# the file needs changes. -d prints the diff and exits non-zero instead.
 if [[ "$shfmt_change_code" -eq 1 ]]; then
     plugin_cmd="shfmt -i 4 -ci -bn -w"
-    plugin_priority=150
+    proj_plugin_cmd="$plugin_cmd ."
+    plugin_priority=160
 else
-    plugin_cmd="shfmt -i 4 -ci -bn"
-    plugin_priority=85
+    plugin_cmd="shfmt -i 4 -ci -bn -d"
+    proj_plugin_cmd="$plugin_cmd ."
+    plugin_priority=95
 fi
 
 plugin_extensions=(
@@ -34,6 +42,5 @@ plugin_file_types=(
     "POSIX shell script*"
     "Bourne-Again shell script*"
 
-    "a /sbin/openrc-run script*"
-    "OpenRC script"
+    "a *openrc-run script*"
 )
