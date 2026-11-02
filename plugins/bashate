@@ -23,7 +23,9 @@
 # bashate doesn't have a config file, so I created one!
 # and included bashate_wrapper. This is called by olint to first parse
 # this config then run bashate
-# project config file: .bashateconfig
+# olint plugins only displays output if plugin exits error
+# so rules always error, to skip one, add it to ignore
+# project config file: .bashateconfig sample below
 #  max-line-length=92
 #  ignore=E001,E002
 
@@ -38,7 +40,7 @@ bashate_wrapper() {
         ignore=$(sed -n 's/^ignore=//p' "$config_file")
     fi
 
-    bashate -e E005,E042,E043,E044 \
+    bashate --error 'E*' \
         --max-line-length "${max_line_length:-80}" \
         --ignore "$base_ignore${ignore:+,$ignore}" \
         "$@"
