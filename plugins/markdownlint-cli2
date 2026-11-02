@@ -12,10 +12,17 @@
 #  Shares the .markdownlint.yaml config with markdownlint.
 
 # Installation methods;
-#  For python, consider pymarkdown
 #  brew install markdownlint-cli2
 
 # project config file: .markdownlint.yaml
+# ---
+# MD013:
+#   line_length: 92
+#   tables: false
+# MD033:
+#   allowed_elements: [nbsp, prefix]
+
+skip_if_used=(rumdl)
 
 plugin_cmd=markdownlint-cli2
 proj_plugin_cmd="markdownlint-cli2 \"**.{md,markdown}\""

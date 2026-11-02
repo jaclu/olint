@@ -36,7 +36,7 @@
 #   MD013:
 #     enabled: true
 #     line_length: 92
-
+#
 # .pymarkdown (JSON5)
 # {
 #     "plugins": {
@@ -47,7 +47,7 @@
 #     }
 # }
 
-skip_if_used=(markdownlint-cli2 markdownlint)
+skip_if_used=(rumdl markdownlint-cli2 markdownlint)
 
 plugin_cmd="pymarkdown scan"
 proj_plugin_cmd="$plugin_cmd -r ."

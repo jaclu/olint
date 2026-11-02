@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+
+# Purpose:
+# Strengths:
+# Use case:
+# Caveats:
+
+# Simple Installation methods;
+#  pip install rumdl
+#  brew install rumdl
+#
+# For Termux
+#  Enable TUR repo first
+#  pkg install tur-repo
+#
+#  Then install rumdl
+#  pkg install rumdl
+#
+#  No pkgs for rpm/apt yet, but several install methods listed
+# Installation:  https://rumdl.dev/getting-started/installation/
+# Configuration hints: https://rumdl.dev/configuration/
+#
+
+# shellcheck disable=SC2154 # rumdl_change_code is supplied via config when applicable.
+if [[ "$rumdl_change_code" = 1 ]]; then
+    plugin_cmd="rumdl check --fix"
+    proj_plugin_cmd="$plugin_cmd ."
+    plugin_priority=150
+else
+    plugin_cmd="rumdl check"
+    proj_plugin_cmd="$plugin_cmd ."
+    plugin_priority=80
+fi
+
+plugin_extensions=(
+    .md
+)

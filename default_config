@@ -55,6 +55,7 @@ skip_linters+=(
     # pyright       # Static type checker for Python
     # ruff-check    # Extremely fast Python linter, written in Rust
     # ruff-format   # Formats code according to  ruff logic
+    # rumdl         # Markdown Linter and Formatter written in Rust
     # shellcheck    # Linter for shell scripts
     # shfmt         # Autoformat shell script source code
     # taplo-lint    # TOML toolkit written in Rust, lints TOML files
@@ -119,6 +120,8 @@ excluded_basename_prefixes+=(
 )
 
 # List linters that should run on the whole project, not on individual files
+# Some linters default to be project linters. If full control is wanted over
+# this use `=` insteadof `+=` to gain full conttrol.
 project_linters+=(
 )
 
@@ -158,6 +161,7 @@ project_linters+=(
 
 # optionally allow linter to change code
 ruff_change_code=0
+rumdl_change_code=0
 shfmt_change_code=0
 
 # old var name, kept for a while to ensure other nodes know what change to make
@@ -167,7 +171,7 @@ shfmt_change_code=0
 # linted on multiple nodes, some using isort, some using ruff
 use_isort_style_import_ordering=0
 
-# Defaults for bashate plugin, can be overridden per project using a .bashateconfig
+# Defaults for bashate plugin, can be overridden per project in .olint.conf
 # bashate_line_length=92
 # Ignores should not be quoted, and no space separating them!
 #bashate_ignore=E003,E010,E011,E020

@@ -924,6 +924,7 @@ defaults_for_proj_config_file() {
         .mypy_cache/
         .pytest_cache/
         .ruff_cache/
+        .rumdl_cache/
         .venv/
         .vscode/
     )
@@ -954,6 +955,7 @@ defaults_for_proj_config_file() {
     project_linters=(
         codespell # Normally always used as a project linter
         cppcheck  # Analyses sources and headers together, not one file at a time
+        rumdl     # Normally always used as a project linter
     )
 }
 
@@ -2255,6 +2257,7 @@ parse_cmd_line "$@"
     cache_folders=(
         .mypy_cache
         .pytest_cache
+        .rumdl_cache
         .ruff_cache
     )
     for d_ceche_folder in "${cache_folders[@]}"; do
@@ -2263,7 +2266,7 @@ parse_cmd_line "$@"
             rm -rf "$d_ceche_folder"
         fi
     done
-    [[ "$zap_it" -eq 1 ]] && sql_drop
+    # [[ "$zap_it" -eq 1 ]] && sql_drop
     [[ "$zap_it" -eq 1 ]] && env_cleanup 0
     # restart timer after zapping to get correct linting time
     t_app_start=$(date +%s)

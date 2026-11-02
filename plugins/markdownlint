@@ -15,7 +15,6 @@
 #  Skipped if markdownlint-cli2 is found.
 
 # Installation methods;
-#  For python, consider pymarkdown
 #  brew install markdownlint-cli
 #  (Ubuntu)
 #  apt install markdownlint
