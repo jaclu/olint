@@ -67,6 +67,6 @@ plugin_extensions=(
 plugin_file_types=(
     "Bourne-Again shell script*"
     "Paul Falstad's zsh script*"
-
+    "a /usr/bin/env zsh script*"
     "a *openrc-run script*"
 )
