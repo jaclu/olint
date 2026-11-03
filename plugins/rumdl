@@ -3,9 +3,14 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
+#  Linter and formatter for Markdown files.
 # Strengths:
+#  Very fast, and a single binary with no Node.js or Python runtime needed.
+#  Can also fix issues when rumdl_change_code=1.
 # Use case:
+#  Markdown linting in projects that want a fast tool without Node.js.
 # Caveats:
+#  Reads .rumdl.toml, pyproject.toml ([tool.rumdl]) or .markdownlint.yaml.
 
 # Simple Installation methods;
 #  pip install rumdl

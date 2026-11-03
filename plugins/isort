@@ -9,10 +9,13 @@
 # Use case:
 #  Keeps imports organized and clean.
 # Caveats:
-#  Skipped if ruff-check is found, unless use_isort_style_import_ordering=1.
-#  Ruff's import ordering can conflict with isort. If nodes in a project use
-#  different tools, set use_isort_style_import_ordering=1 in the project
-#  config to avoid conflicting changes.
+#  Controlled by use_isort_style_import_ordering in olint.conf (global) or
+#  .olint.conf (project):
+#    0  (default) used only if ruff-check is not found
+#    1  isort ordering wanted, ruff-check is disabled if it conflicts with it
+#   -1  isort ordering not wanted, isort is never used
+#  Ruff's import ordering can conflict with isort, so set it to avoid
+#  conflicting changes.
 
 # Installation methods;
 #  pip install isort  # usable on iSH
@@ -22,10 +25,20 @@
 
 # use_isort_style_import_ordering is supplied via config when applicable.
 # shellcheck disable=SC2154
-[[ "$use_isort_style_import_ordering" -ne 1 ]] && skip_if_used=(ruff-check)
+if [[ "$use_isort_style_import_ordering" -eq -1 ]]; then
+    # isort ordering explicitly not wanted, so isort is never used
+    plugin_cmd=/dev/null
+    proj_plugin_cmd=/dev/null
+    return 0
+else
+    plugin_cmd=isort
+    proj_plugin_cmd="isort --gitignore ."
+fi
 
-plugin_cmd=isort
-proj_plugin_cmd="isort --gitignore ."
+[[ "$use_isort_style_import_ordering" -ne 1 ]] && {
+    # Not run if any of these commands are found, even when this plugin is installed
+    disabled_by=(ruff-check)
+}
 
 plugin_priority=130
 

@@ -12,7 +12,8 @@
 #  Only checks if the script can run at all, no style or logic checks. Skipped
 #  if shellcheck is found.
 
-skip_if_used=(shellcheck)
+# Not run if any of these commands are found, even when this plugin is installed
+disabled_by=(shellcheck)
 
 plugin_cmd="bash --norc -n"
 # not usable as a project linter, it does not accept a directory

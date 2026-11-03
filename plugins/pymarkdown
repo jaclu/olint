@@ -47,7 +47,8 @@
 #     }
 # }
 
-skip_if_used=(rumdl markdownlint-cli2 markdownlint)
+# Not run if any of these commands are found, even when this plugin is installed
+disabled_by=(rumdl markdownlint-cli2 markdownlint)
 
 plugin_cmd="pymarkdown scan"
 proj_plugin_cmd="$plugin_cmd -r ."

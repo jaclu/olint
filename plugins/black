@@ -33,7 +33,8 @@
 # )/
 # '''
 
-skip_if_used=(ruff-format)
+# Not run if any of these commands are found, even when this plugin is installed
+disabled_by=(ruff-format)
 
 plugin_cmd=black
 proj_plugin_cmd="black ."

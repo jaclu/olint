@@ -29,7 +29,8 @@
 #     ],
 # }
 
-skip_if_used=(mypy)
+# Not run if any of these commands are found, even when this plugin is installed
+disabled_by=(mypy)
 
 plugin_cmd=pyright
 proj_plugin_cmd="pyright ."

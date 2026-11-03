@@ -51,6 +51,14 @@ that should be linted, such as ~/.config/common_pull_config
 - jsonlint
 - rslint
 
+## linter candidates to investigate
+
+- ty - newer Python type checker, possible faster alternative to mypy/pyright.
+  Check maturity and rule coverage before adopting.
+- pyrefly - newer Python type checker, same role as ty. Compare with ty.
+- rumdl vs markdownlint-cli2 - current order puts rumdl first, based on speed
+  and maintenance claims that haven't been verified yet.
+
 ## plugin order
 
 > 200+ - syntax validation, gates the file so nothing modifies code that does not parse

@@ -12,14 +12,15 @@
 #  Keeping README and other Markdown documents consistent.
 # Caveats:
 #  Shares the .markdownlint.yaml config with markdownlint-cli2.
-#  Skipped if markdownlint-cli2 is found.
+#  Skipped if markdownlint-cli2 or rumdl is found.
 
 # Installation methods;
 #  brew install markdownlint-cli
 #  (Ubuntu)
 #  apt install markdownlint
 
-skip_if_used=(markdownlint-cli2)
+# Not run if any of these commands are found, even when this plugin is installed
+disabled_by=(markdownlint-cli2 rumdl)
 
 plugin_cmd=markdownlint
 proj_plugin_cmd="markdownlint ."

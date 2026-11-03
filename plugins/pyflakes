@@ -22,7 +22,8 @@
 
 # inline-excludes:  # noqa: F401,F403
 
-skip_if_used=(ruff-check flake8)
+# Not run if any of these commands are found, even when this plugin is installed
+disabled_by=(ruff-check flake8)
 
 plugin_cmd=pyflakes
 # obviously there are two names it might use...

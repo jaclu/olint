@@ -787,7 +787,7 @@ initialize_env() {
     #  -----   linting env   -----
 
     # Store plugins with command found in valid_plugins, this only means the
-    # command is present, the plugin might be evicted and not used based on skip_if_used
+    # command is present, the plugin might be evicted and not used based on disabled_by
     # Config has already been processed, so this causes the scan to know if the
     # plugin_cmd / proj_plugin_cmd should be verified
     valid_plugins=()
@@ -1435,7 +1435,7 @@ prel_plugin_check() {
     local plugin_name="${f_plugin##*/}" # same but faster than basename
 
     # encapsulate all f_plugin variables, so that they dont leak
-    local skip_if_used=() # initiate as empty list
+    local disabled_by=() # initiate as empty list
     local plugin_cmd plugin_cmd_actual proj_plugin_cmd
     local plugin_priority=50 # set a default priority, higher prios are run first
     local plugin_extensions plugin_file_types
@@ -1514,7 +1514,7 @@ parse_plugin_file() {
     local ext file_type
 
     # encapsulate all f_plugin variables, so that they dont leak
-    local skip_if_used=() # initiate as empty list
+    local disabled_by=() # initiate as empty list
     local plugin_cmd plugin_cmd_actual proj_plugin_cmd
     local plugin_priority=50 # set a default priority, higher prios are run first
     local plugin_extensions plugin_file_types
@@ -1533,12 +1533,12 @@ parse_plugin_file() {
 
     source_file "$f_plugin" || return 1
 
-    for priority_plugin in "${skip_if_used[@]}"; do
+    for priority_plugin in "${disabled_by[@]}"; do
         # skip this if listed item(s) making this redundant are present
-        # needs to be done in 2nd pass, to know if the skip_if_used items are
+        # needs to be done in 2nd pass, to know if the disabled_by items are
         # present. "a && b" requires all, a single name just that one
         all_blockers_present "$priority_plugin" && {
-            log_it "$priority_plugin evicts $plugin_name" 2 # "$dbglvl_lintscan_details"
+            log_it "$plugin_name is disabled by $priority_plugin" 2 # "$dbglvl_lintscan_details"
             plugin_invalidate "$plugin_name"
             return 1
         }
