@@ -47,6 +47,75 @@
 #     }
 # }
 
+# pymarkdown` uses pymarkdown plugin names (not IDs) for compatibility across
+# pymarkdown versions. Use this list to map between the two and to markdownlint
+# IDs in .markdownlint.yaml.
+# Rule cross reference: pymarkdown config name <-> markdownlint ID
+# Default is the pymarkdown default state. MD IDs match markdownlint, PML is
+# pymarkdown-only. Keys can be IDs (MD013) or names (line-length) in a config.
+#
+# ID      Config name                        Default  Alias names
+# ------  ---------------------------------  -------  -----------------------------
+# MD001   heading-increment                  on       header-increment
+# MD002   first-heading-h1                   off      first-header-h1
+# MD003   heading-style                      on       header-style
+# MD004   ul-style                           on
+# MD005   list-indent                        on
+# MD006   ul-start-left                      off
+# MD007   ul-indent                          on
+# MD009   no-trailing-spaces                 on
+# MD010   no-hard-tabs                       on
+# MD011   no-reversed-links                  on
+# MD012   no-multiple-blanks                 on
+# MD013   line-length                        on
+# MD014   commands-show-output               on
+# MD018   no-missing-space-atx               on
+# MD019   no-multiple-space-atx              on
+# MD020   no-missing-space-closed-atx        on
+# MD021   no-multiple-space-closed-atx       on
+# MD022   blanks-around-headings             on       blanks-around-headers
+# MD023   heading-start-left                 on       header-start-left
+# MD024   no-duplicate-heading               on       no-duplicate-header
+# MD025   single-title                       on       single-h1
+# MD026   no-trailing-punctuation            on
+# MD027   no-multiple-space-blockquote       on
+# MD028   no-blanks-blockquote               on
+# MD029   ol-prefix                          on
+# MD030   list-marker-space                  on
+# MD031   blanks-around-fences               on
+# MD032   blanks-around-lists                on
+# MD033   no-inline-html                     on
+# MD034   no-bare-urls                       on
+# MD035   hr-style                           on
+# MD036   no-emphasis-as-heading             on       no-emphasis-as-header
+# MD037   no-space-in-emphasis               on
+# MD038   no-space-in-code                   on
+# MD039   no-space-in-links                  on
+# MD040   fenced-code-language               on
+# MD041   first-line-heading                 on       first-line-h1
+# MD042   no-empty-links                     on
+# MD043   required-headings                  on       required-headers
+# MD044   proper-names                       on
+# MD045   no-alt-text                        on
+# MD046   code-block-style                   on
+# MD047   single-trailing-newline            on
+# MD048   code-fence-style                   on
+# MD049   emphasis-style                     on
+# MD050   strong-style                       on
+# MD051   link-fragments                     on
+# MD053   link-image-reference-definitions   on
+# MD054   link-image-style                   on
+# MD055   table-pipe-style                   on
+# MD056   table-column-count                 on
+# MD058   blanks-around-tables               on
+# MD059   descriptive-link-text              on
+# MD060   table-column-style                 on
+# PML100  disallowed-html                    off      pymarkdown only
+# PML101  list-anchored-indent               off      pymarkdown only
+# PML102  disallow-lazy-list-indentation     off      pymarkdown only
+#
+# MD052 has no pymarkdown plugin.
+
 # Not run if any of these commands are found, even when this plugin is installed
 disabled_by=(rumdl markdownlint-cli2 markdownlint)
 
