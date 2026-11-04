@@ -51,7 +51,7 @@ skip_linters+=(
     # pycodestyle   # PEP 8 style checker; redundant if flake8 is used
     # pyflakes      # Passive checker of Python 3 programs
     # pylint        # Comprehensive Python code linter
-    # pymarkdown    # 35 Linter for Markdown files
+    # pymarkdown    # Linter for Markdown files
     # pyright       # Static type checker for Python
     # ruff-check    # Extremely fast Python linter, written in Rust
     # ruff-format   # Formats code according to  ruff logic

@@ -769,7 +769,8 @@ initialize_env() {
     else
         olint_cfg_dir=~/.config/olint
     fi
-    olint_plugin_dir="$olint_cfg_dir"/plugins
+    default_olint_plugin_dir="$olint_cfg_dir"/plugins
+    olint_plugin_dir="$default_olint_plugin_dir"
 
     d_linting_venv=~/.config/olint/.venv
     b_olint_venv_enabled=false
@@ -953,9 +954,10 @@ defaults_for_proj_config_file() {
         \#
     )
     project_linters=(
-        codespell # Normally always used as a project linter
-        cppcheck  # Analyses sources and headers together, not one file at a time
-        rumdl     # Normally always used as a project linter
+        codespell  # Normally always used as a project linter
+        cppcheck   # Analyses sources and headers together, not one file at a time
+        pymarkdown # Linter for Markdown files
+        rumdl      # Normally always used as a project linter
     )
 }
 
@@ -1363,6 +1365,9 @@ check_linter_plugins() {
     log_it "Inspecting plugins in: $d_plugins" 1
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
 
+    [[ "$d_plugins" != "$default_olint_plugin_dir" ]] && {
+        printf 'Using non-default plugin folder: %s\n\n' "$(realpath "$d_plugins")"
+    }
     # Loop through each file in alphabetical order, adding those where cmd is installed
     for f_plugin in "$d_plugins"/*; do
         [[ -d $f_plugin ]] && continue
