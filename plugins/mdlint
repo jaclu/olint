@@ -23,7 +23,7 @@ if [[ "$mdlint_change_code" = 1 ]]; then
     proj_plugin_cmd="$plugin_cmd"
     plugin_priority=145
 else
-    plugin_cmd="mdlint check"
+    plugin_cmd="mdlint check --no-fix"
     proj_plugin_cmd="$plugin_cmd"
     plugin_priority=75
 fi
