@@ -159,6 +159,42 @@ project_linters+=(
 #  latter takes precedence
 #
 
+# Since project linters always run, even if fast, using linters for
+# file types not really used ends up generating overhead.
+# So the more project type specific lintters are better suited
+# to be added where relevant in .olint.conf to project_linters
+not_project_linters+=(
+    # projects containing many python files
+    bandit
+    black
+    flake8
+    isort
+    mypy
+    pycodestyle
+    pylint
+    pyright
+    ruff-check
+    ruff-format
+    vulture
+
+    # Markdown heavy projects
+    rumdl
+    markdownlint-cli2
+    markdownlint
+    pymarkdown
+    mdlint
+
+    # toml
+    taplo-format
+    taplo-lint
+
+    # JavaScript and TypeScript
+    oxlint
+
+    # yaml
+    yamllint
+)
+
 # optionally allow linter to change code
 mdlint_change_code=0
 oxlint_change_code=0

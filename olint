@@ -954,15 +954,9 @@ defaults_for_proj_config_file() {
         \#
     )
     project_linters=(
-        black
+        shfmt     # some shellscripts will be used in virtually all projects
         codespell # There is no filetype for this, so normally run on entire project
         cppcheck  # Analyses sources and headers together, not one file at a time
-        isort
-        ruff-check
-        ruff-format
-        rumdl
-        shfmt
-        taplo-format
     )
 }
 
