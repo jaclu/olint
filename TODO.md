@@ -24,7 +24,7 @@ flake8
 isort
 pylint
 
-flake8 | ruff
+ruff & flake8
 pycodestyle
 pyflakes
 
