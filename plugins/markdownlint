@@ -20,7 +20,7 @@
 #  apt install markdownlint
 
 # Not run if any of these commands are found, even when this plugin is installed
-disabled_by=(markdownlint-cli2 rumdl)
+disabled_by=(rumdl markdownlint-cli2)
 
 plugin_cmd=markdownlint
 proj_plugin_cmd="markdownlint ."

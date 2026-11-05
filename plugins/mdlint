@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# This is sourced. Fake bang-path to help editors and linters
+# shellcheck disable=SC2034  # don't warn about unused variables
+
+# Purpose:
+# Strengths:
+# Use case:
+# Caveats:
+
+# Simple Installation methods;
+#  pip install markdownlint-rs
+#  pipx install markdownlint-rs
+#
+#  No pkgs for rpm/apt, but several install methods listed
+#  https://pypi.org/project/markdownlint-rs/
+
+# Not run if any of these commands are found, even when this plugin is installed
+disabled_by=(rumdl markdownlint-cli2 markdownlint pymarkdown)
+
+# shellcheck disable=SC2154 # mdlint_change_code is supplied via config when applicable.
+if [[ "$mdlint_change_code" = 1 ]]; then
+    plugin_cmd="mdlint check --fix"
+    proj_plugin_cmd="$plugin_cmd"
+    plugin_priority=145
+else
+    plugin_cmd="mdlint check"
+    proj_plugin_cmd="$plugin_cmd"
+    plugin_priority=75
+fi
+
+plugin_extensions=(
+    .md
+)

@@ -160,6 +160,7 @@ project_linters+=(
 #
 
 # optionally allow linter to change code
+mdlint_change_code=0
 ruff_change_code=0
 rumdl_change_code=0
 shfmt_change_code=0
