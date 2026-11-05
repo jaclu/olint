@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034  # don't warn about unused variables
 
 # Purpose:
-#  Dead code finder.
+#  Dead Python code finder.
 # Strengths:
 #  Identifies unused functions, classes, variables and imports across the
 #  project. Complements type checkers and style linters which don't detect

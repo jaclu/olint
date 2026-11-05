@@ -33,7 +33,7 @@
 disabled_by=(mypy)
 
 plugin_cmd=pyright
-proj_plugin_cmd="pyright ."
+proj_plugin_cmd="$plugin_cmd ."
 
 plugin_priority=30
 
