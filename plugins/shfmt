@@ -24,10 +24,10 @@
 # Without -w shfmt only prints formatted output, exit code is 0 even when
 # the file needs changes. -d prints the diff and exits non-zero instead.
 if [[ "$shfmt_change_code" -eq 1 ]]; then
-    plugin_cmd="shfmt -i 4 -ci -bn -w"
+    plugin_cmd="shfmt --detect=all -i 4 -ci -bn -w"
     plugin_priority=160
 else
-    plugin_cmd="shfmt -i 4 -ci -bn -d"
+    plugin_cmd="shfmt --detect=all -i 4 -ci -bn -d"
     plugin_priority=95
 fi
 proj_plugin_cmd="$plugin_cmd ."
