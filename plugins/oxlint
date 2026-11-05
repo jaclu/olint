@@ -19,11 +19,15 @@
 # project config files:
 #  .oxlintrc.json
 
-plugin_cmd="oxlint --fix"
-proj_plugin_cmd="rslint ."
-
-# Modifies the code, so it runs in the source-modifying range, before analysis
-plugin_priority=105
+# shellcheck disable=SC2154 # oxlint_change_code is supplied via config when applicable.
+if [[ "$oxlint_change_code" = 1 ]]; then
+    plugin_cmd="oxlint --fix"
+    plugin_priority=105
+else
+    plugin_cmd="oxlint"
+    plugin_priority=65
+fi
+proj_plugin_cmd="$plugin_cmd ."
 
 plugin_extensions=(
     .js
