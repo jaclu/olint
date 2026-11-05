@@ -33,13 +33,12 @@
 # shellcheck disable=SC2154 # ruff_change_code is supplied via config when applicable.
 if [[ "$ruff_change_code" = 1 ]]; then
     plugin_cmd="ruff check --fix"
-    proj_plugin_cmd="$plugin_cmd ."
     plugin_priority=145
 else
     plugin_cmd="ruff check"
-    proj_plugin_cmd="$plugin_cmd ."
     plugin_priority=90
 fi
+proj_plugin_cmd="$plugin_cmd ."
 
 # use_isort_style_import_ordering is supplied via config when applicable.
 # shellcheck disable=SC2154

@@ -32,13 +32,12 @@
 # shellcheck disable=SC2154 # rumdl_change_code is supplied via config when applicable.
 if [[ "$rumdl_change_code" = 1 ]]; then
     plugin_cmd="rumdl check --fix"
-    proj_plugin_cmd="$plugin_cmd ."
     plugin_priority=150
 else
     plugin_cmd="rumdl check"
-    proj_plugin_cmd="$plugin_cmd ."
     plugin_priority=80
 fi
+proj_plugin_cmd="$plugin_cmd ."
 
 plugin_extensions=(
     .md
