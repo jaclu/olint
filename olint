@@ -954,9 +954,15 @@ defaults_for_proj_config_file() {
         \#
     )
     project_linters=(
-        codespell # Normally always used as a project linter
+        black
+        codespell # There is no filetype for this, so normally run on entire project
         cppcheck  # Analyses sources and headers together, not one file at a time
-        rumdl     # Normally always used as a project linter
+        isort
+        ruff-check
+        ruff-format
+        rumdl
+        shfmt
+        taplo-format
     )
 }
 
