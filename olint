@@ -1365,7 +1365,7 @@ check_linter_plugins() {
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
 
     [[ "$d_plugins" != "$default_olint_plugin_dir" ]] && {
-        printf 'Using non-default plugin folder: %s\n\n' "$(realpath "$d_plugins")"
+        printf '===  Using non-default plugin folder: %s\n\n' "$(realpath "$d_plugins")"
     }
     # Loop through each file in alphabetical order, adding those where cmd is installed
     for f_plugin in "$d_plugins"/*; do
