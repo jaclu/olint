@@ -172,15 +172,26 @@ deploy_plugins() {
 deploy_app() {
     app="$1"
 
-    if rsync -ahP "$REPO_DIR/$app" "$d_app_dest" | grep -q "$app"; then
+    # Capture output and check rsync's own exit status. Piping into
+    # "grep -q" would exit on first match, breaking rsync's pipe, and the
+    # pipeline status would then hide the failure.
+    if ! cmd_output="$(rsync -ai "$REPO_DIR/$app" "$d_app_dest" 2>&1)"; then
+        echo "ERROR: installing $app to $d_app_dest failed"
+        echo
+        echo "$cmd_output"
+        exit 1
+    fi
+
+    # -i lists only items that were transferred, so match on the app name
+    if echo "$cmd_output" | grep -q "$app"; then
         echo "---  Install: $app"
         echo "Latest version installed: $d_app_dest/$app"
         echo
         files_changed=true
+    fi
     # elif $force_deploy; then
     #     echo "---  Install: $app"
     #     echo "Was current: $d_app_dest/$app"
-    fi
 }
 
 #===============================================================
