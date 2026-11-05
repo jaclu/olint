@@ -10,6 +10,7 @@
 # Use case:
 #  Markdown linting in projects that want a fast tool without Node.js.
 # Caveats:
+#  Does not work on iSH
 #  Reads .rumdl.toml, pyproject.toml ([tool.rumdl]) or .markdownlint.yaml.
 
 # Simple Installation methods;

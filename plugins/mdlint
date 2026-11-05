@@ -7,7 +7,7 @@
 # Use case:
 # Caveats:
 
-# Simple Installation methods;
+# Simple Installation methods - Fails to install on iSH
 #  pip install markdownlint-rs
 #  pipx install markdownlint-rs
 #
