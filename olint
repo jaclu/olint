@@ -2128,6 +2128,24 @@ process_file_tree() {
     log_it "process_file_tree()" "$dbglvl_major_tasks"
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
 
+    #
+    #  Conditions
+    #   b_lint_files - files should be linted
+    #   b_proj_linters_skip.  - skip all proj linters
+    #   b_show_excluded - just list excluded files
+    #
+    $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
+        && [[ ${#proj_linters[@]} -gt 0 ]] && {
+
+        for linter_name in "${proj_linters[@]}"; do
+            # Only code modifying project linters are done before the file loop
+            [[ ${linter_priorities[$linter_name]} -lt 100 ]] && continue
+
+            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
+            lint_proj "$linter_name"
+        done
+    }
+
     ! $b_proj_linters_only && {
         [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
 
@@ -2215,6 +2233,9 @@ process_file_tree() {
         && $b_changed_file_found && [[ ${#proj_linters[@]} -gt 0 ]] && {
 
         for linter_name in "${proj_linters[@]}"; do
+
+            # Code modifying project linters were done before the file loop
+            [[ ${linter_priorities[$linter_name]} -ge 100 ]] && continue
 
             [[ "$cache_written_during_proj_linters" -ne 1 ]] && {
                 # the cache doesn't update during proj linting, but if it takes ages
