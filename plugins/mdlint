@@ -10,6 +10,7 @@
 # Simple Installation methods - Fails to install on iSH
 #  pip install markdownlint-rs
 #  pipx install markdownlint-rs
+#  cargo install markdownlint-rs - Works on Termux
 #
 #  No pkgs for rpm/apt, but several install methods listed
 #  https://pypi.org/project/markdownlint-rs/
