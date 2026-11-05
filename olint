@@ -1881,13 +1881,19 @@ lint_by_file_type() {
 
 lint_proj() {
     local linter="$1"
+    local timing="${2:-post}"
     local lint_pid
     local lint_exit_status
+    local label
 
     log_it "lint_proj($linter)" "$dbglvl_lint_file_basic"
     log_it " running: ${proj_linter_cmd["$linter"]}" "$dbglvl_lint_file"
 
-    show_linter_action "$linter" "=====  entire project  ====="
+    case "$timing" in
+        pre) label="entire project - pre file loop" ;;
+        *) label="entire project - post file loop" ;;
+    esac
+    show_linter_action "$linter" "=====  $label  ====="
     #
     #  In order to avoid some linters untrapping Ctrl-C
     #  they are run in the background. Then some code to ensure the
@@ -2142,7 +2148,7 @@ process_file_tree() {
             [[ ${linter_priorities[$linter_name]} -lt 100 ]] && continue
 
             [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
-            lint_proj "$linter_name"
+            lint_proj "$linter_name" pre
         done
     }
 
