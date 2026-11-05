@@ -1881,7 +1881,7 @@ lint_by_file_type() {
 
 lint_proj() {
     local linter="$1"
-    local timing="${2:-post}"
+    local role="${2:-post}"
     local lint_pid
     local lint_exit_status
     local label
@@ -1889,7 +1889,7 @@ lint_proj() {
     log_it "lint_proj($linter)" "$dbglvl_lint_file_basic"
     log_it " running: ${proj_linter_cmd["$linter"]}" "$dbglvl_lint_file"
 
-    case "$timing" in
+    case "$role" in
         pre) label="entire project - pre file loop" ;;
         *) label="entire project - post file loop" ;;
     esac
@@ -2115,6 +2115,32 @@ ish_sysload_check() {
     done
 }
 
+handle_project_linters() {
+    local role="$1"
+
+    for linter_name in "${proj_linters[@]}"; do
+        case "$role" in
+            pre)
+                # Only code modifying project linters are done before the file loop
+                [[ ${linter_priorities[$linter_name]} -lt 100 ]] && continue
+                ;;
+            post)
+                [[ "$cache_written_during_proj_linters" -ne 1 ]] && {
+                    # the cache doesn't update during proj linting, but if it takes ages
+                    # on a slow system, it still makes sense to do one last flush
+                    maybe_update_cache && cache_written_during_proj_linters=1
+                }
+                # Non code modyfing linters
+                [[ ${linter_priorities[$linter_name]} -ge 100 ]] && continue
+                ;;
+            *) error_msg "proj_linters() called with bad param: $role" ;;
+        esac
+
+        [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
+        lint_proj "$linter_name" "$role"
+    done
+}
+
 process_file_tree() {
     #
     #  Loop over all files, sorted by file age, newest first.
@@ -2134,23 +2160,10 @@ process_file_tree() {
     log_it "process_file_tree()" "$dbglvl_major_tasks"
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
 
-    #
-    #  Conditions
-    #   b_lint_files - files should be linted
-    #   b_proj_linters_skip.  - skip all proj linters
-    #   b_show_excluded - just list excluded files
-    #
+    #  project linters run before file tree is parsed, ie those that might
+    #  alter code
     $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
-        && [[ ${#proj_linters[@]} -gt 0 ]] && {
-
-        for linter_name in "${proj_linters[@]}"; do
-            # Only code modifying project linters are done before the file loop
-            [[ ${linter_priorities[$linter_name]} -lt 100 ]] && continue
-
-            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
-            lint_proj "$linter_name" pre
-        done
-    }
+        && [[ ${#proj_linters[@]} -gt 0 ]] && handle_project_linters pre
 
     ! $b_proj_linters_only && {
         [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
@@ -2228,30 +2241,10 @@ process_file_tree() {
         done
     }
 
-    #
-    #  Conditions
-    #   b_lint_files - files should be linted
-    #   b_proj_linters_skip.  - skip all proj linters
-    #   b_show_excluded - just list excluded files
-    #   b_changed_file_found  - at least one changed file was found / forced by option -P
-    #
+    #  project linters run after file tree is parsed
     $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
         && $b_changed_file_found && [[ ${#proj_linters[@]} -gt 0 ]] && {
-
-        for linter_name in "${proj_linters[@]}"; do
-
-            # Code modifying project linters were done before the file loop
-            [[ ${linter_priorities[$linter_name]} -ge 100 ]] && continue
-
-            [[ "$cache_written_during_proj_linters" -ne 1 ]] && {
-                # the cache doesn't update during proj linting, but if it takes ages
-                # on a slow system, it still makes sense to do one last flush
-                maybe_update_cache && cache_written_during_proj_linters=1
-            }
-
-            [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
-            lint_proj "$linter_name"
-        done
+        handle_project_linters post
     }
 
     [[ $files_without_matching_linter -gt 0 ]] && {

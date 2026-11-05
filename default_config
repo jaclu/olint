@@ -165,34 +165,34 @@ project_linters+=(
 # to be added where relevant in .olint.conf to project_linters
 not_project_linters+=(
     # projects containing many python files
-    bandit
-    black
-    flake8
-    isort
-    mypy
-    pycodestyle
-    pylint
-    pyright
-    ruff-check
-    ruff-format
-    vulture
+    ruff-check  # 145/90 depending on ruff_change_code
+    isort       # 130
+    ruff-format # 120
+    black       # 100
+    mypy        # 72
+    vulture     # 70
+    pycodestyle # 65
+    bandit      # 45
+    flake8      # 44
+    pyright     # 30
+    pylint      # 12
 
     # Markdown heavy projects
-    rumdl
-    markdownlint-cli2
-    markdownlint
-    pymarkdown
-    mdlint
+    rumdl             # 150/80 depending on rumdl_change_code
+    mdlint            # 145/75 depending on mdlint_change_code
+    markdownlint-cli2 # 42
+    markdownlint      # 42
+    pymarkdown        # 42
 
     # toml
-    taplo-format
-    taplo-lint
+    taplo-format # 110
+    taplo-lint   # 74
 
     # JavaScript and TypeScript
-    oxlint
+    oxlint # 105/65 depending on oxlint_change_code
 
     # yaml
-    yamllint
+    yamllint # 60
 )
 
 # optionally allow linter to change code
