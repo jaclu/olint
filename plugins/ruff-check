@@ -44,7 +44,7 @@ proj_plugin_cmd="$plugin_cmd ."
 # shellcheck disable=SC2154
 if [[ "$use_isort_style_import_ordering" = 1 ]]; then
     case "$(ruff check --show-settings 2>/dev/null)" in
-        *I001*)
+        *"(I001)"*)
             # ruff import order might conflict with isort, thus disabled
             plugin_cmd=/dev/null
             proj_plugin_cmd=/dev/null
