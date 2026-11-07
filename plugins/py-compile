@@ -13,11 +13,14 @@
 # Caveats:
 #  Only detects syntax errors, nothing about style or logic.
 
+# Skipped if any of these plugins are used, even when this plugin is installed
+disabled_by=(ruff-format ruff-check isort black)
+
 plugin_cmd="python3 -m py_compile"
 proj_plugin_cmd=/dev/null # not usable as a project linter, it does not accept a directory
 
 # really fast so run early
-plugin_priority=210
+plugin_priority=100
 
 plugin_extensions=(
     .py

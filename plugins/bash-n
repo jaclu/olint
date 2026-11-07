@@ -12,7 +12,7 @@
 #  Only checks if the script can run at all, no style or logic checks. Skipped
 #  if shellcheck is found.
 
-# Not run if any of these commands are found, even when this plugin is installed
+# Skipped if any of these plugins are used, even when this plugin is installed
 disabled_by=(shellcheck)
 
 plugin_cmd="bash --norc -n"

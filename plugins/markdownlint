@@ -19,8 +19,8 @@
 #  (Ubuntu)
 #  apt install markdownlint
 
-# Not run if any of these commands are found, even when this plugin is installed
-disabled_by=(rumdl markdownlint-cli2)
+# Skipped if any of these plugins are used, even when this plugin is installed
+disabled_by=(rumdl markdownlint-cli2 pymarkdown mdlint)
 
 plugin_cmd=markdownlint
 proj_plugin_cmd="markdownlint ."

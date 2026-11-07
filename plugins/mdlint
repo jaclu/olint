@@ -15,8 +15,8 @@
 #  No pkgs for rpm/apt, but several install methods listed
 #  https://pypi.org/project/markdownlint-rs/
 
-# Not run if any of these commands are found, even when this plugin is installed
-disabled_by=(rumdl markdownlint-cli2 markdownlint pymarkdown)
+# Skipped if any of these plugins are used, even when this plugin is installed
+disabled_by=(rumdl markdownlint-cli2 pymarkdown)
 
 # shellcheck disable=SC2154 # mdlint_change_code is supplied via config when applicable.
 if [[ "$mdlint_change_code" = 1 ]]; then

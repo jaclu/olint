@@ -116,8 +116,8 @@
 #
 # MD052 has no pymarkdown plugin.
 
-# Not run if any of these commands are found, even when this plugin is installed
-disabled_by=(rumdl markdownlint-cli2 markdownlint)
+# Skipped if any of these plugins are used, even when this plugin is installed
+disabled_by=(rumdl markdownlint-cli2)
 
 _pymd_exts="markdown-tables,markdown-strikethrough,markdown-task-list-items"
 plugin_cmd="pymarkdown --enable-extensions $_pymd_exts scan"

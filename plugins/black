@@ -33,13 +33,13 @@
 # )/
 # '''
 
-# Not run if any of these commands are found, even when this plugin is installed
+# Skipped if any of these plugins are used, even when this plugin is installed
 disabled_by=(ruff-format)
 
 plugin_cmd=black
 proj_plugin_cmd="black ."
 
-plugin_priority=100
+plugin_priority=101
 
 plugin_extensions=(
     .py

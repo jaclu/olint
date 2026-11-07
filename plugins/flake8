@@ -30,7 +30,7 @@
 #  [flake8]
 #  max-line-length = 92
 
-# Not run if any of these commands are found, even when this plugin is installed
+# Skipped if any of these plugins are used, even when this plugin is installed
 disabled_by=(ruff-check)
 
 # avoiding parallelism is normally not a performance bottle neck
