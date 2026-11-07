@@ -62,7 +62,6 @@ log_it() {
     }
     [[ "$verbosity_lvl" -lt "$this_verbose_level" ]] && return
     printf '%s>%*s%s\n' "$this_verbose_level" "$dbg_indent" "" "$msg" >&2
-    printf '%s>%*s%s\n' "$this_verbose_level" "$dbg_indent" "" "$msg" >>~/tmp/olint.log
 }
 
 #---------------------------------------------------------------
@@ -112,22 +111,6 @@ str_in_array() {
     return 1 # Return 1 (false) if not found
 }
 
-# remove_duplicates_1() {
-#     # Does not require associative arrays, which makes it compatible with older
-#     # versions of bash (pre-4.0). Inefficient for large arrays.
-#     local item
-#     local result
-
-#     result=("$@") # can't send $@ as a param
-#     result=()
-#     for item in "$@"; do
-#         if [[ ! " ${result[*]} " =~ $item ]]; then
-#             result+=("$item")
-#         fi
-#     done
-#     echo "${result[@]}"
-# }
-
 remove_duplicates_2() {
     # More efficient because it uses an associative array (declare -A),
     # where lookups are constant time (O(1)).
@@ -157,19 +140,6 @@ remove_duplicates_2() {
     # Output the unique array
     echo "${unique_array[@]}"
 }
-
-# remove_duplicates_3() {
-#     # Fully POSIX-compatible if you replace local -a with set to handle arrays.
-#     # Slower than remove_duplicates_2 for large arrays due to linear search.
-#     local item
-#     local -a unique_array=()
-#     for item in "$@"; do
-#         if ! printf '%s\n' "${unique_array[@]}" | grep -qxF -- "$item"; then
-#             unique_array+=("$item")
-#         fi
-#     done
-#     echo "${unique_array[@]}"
-# }
 
 de_duplicate_config() {
     # Remove dupes
@@ -669,7 +639,7 @@ olint_venv_enable() {
         }
         b_olint_venv_enabled=true
     else
-        log_it "><> no d_linting_venv [$d_linting_venv]" 1
+        log_it "no d_linting_venv [$d_linting_venv]" 3
     fi
 }
 
@@ -698,37 +668,6 @@ is_termux() {
 #   File Age related
 #
 #---------------------------------------------------------------
-
-# recent_enough() {
-#     local dbg_indent=$dbg_indent
-#     local f_name="$1"
-#     local current_time
-#     local span_in_seconds
-
-#     log_it "recent_enough()" 9
-#     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
-
-#     case "$max_age_mins" in
-#         0) return 0 ;;  # Return right away if no max age is used
-#         -1) return 1 ;; # Always fail in -s mode
-#         *) ;;
-#     esac
-
-#     if [[ -z "$t_cutoff" ]]; then
-#         #
-#         #  For performance reasons only calculate once, and
-#         #  use a global var
-#         #
-#         current_time=$(date +%s) # Get current time in seconds since epoch
-#         span_in_seconds="$((3600 * h_max_age))"
-#         t_cutoff="$((current_time - span_in_seconds))"
-#     fi
-
-#     [[ "$(get_mtime "$f_name" || true)" -lt "$t_cutoff" ]] && {
-#         return 1
-#     }
-#     return 0
-# }
 
 get_mtime() {
     local fname="$1"
@@ -1236,6 +1175,65 @@ display_time_elapsed() {
     fi
 }
 
+show_linter_action() {
+    #
+    #  Display what linter is used and what file is processed
+    #
+    local linter="$1"
+    local fname="$2"
+
+    # Print using printf with fixed-width formatting
+    printf '%-17s: %s  ' "$linter" "$fname"
+    t_lint_start="$(date +%s)"
+}
+
+show_excluded_file() {
+    local excl_type="$1"
+    local fname="$2"
+    printf "%-16s: %s\n" "$excl_type" "$fname"
+}
+
+show_linter_time() {
+    # local fname_override="$1"
+    local duration
+
+    duration=$(($(date +%s) - t_lint_start))
+    # $b_use_statistics && log_processing_statistics "$fname_override"
+    if [[ "$duration" -ge "$long_lint_time" ]]; then
+        printf ' - '
+        display_time_elapsed "$duration"
+    fi
+    echo # always apply a LF
+}
+
+show_linter_statistics() {
+    #
+    #  Display how many times each linter was triggered during this run
+    #
+    local key
+    local count
+    local name
+    local sorted_usage
+
+    echo
+    if [[ "${#linter_usage_count[@]}" -eq 0 ]]; then
+        echo "No linters were used"
+        return
+    fi
+    echo "Linter usage:"
+    echo "Name                count   time"
+    #  Not using process substitution, iSH has no /dev/fd
+    sorted_usage="$(
+        for key in "${!linter_usage_count[@]}"; do
+            echo "${linter_usage_count[$key]} $key ${linter_usage_time["$key"]}"
+        done | sort -k3,3nr -k1,1nr -k2,2
+    )"
+    while read -r count name t; do
+        # printf '  %-17s %4s    %s\n' "$name" "$count" "${linter_usage_time["$name"]}"
+        printf '  %-17s %4s    %s\n' "$name" "$count" "$t"
+    done <<<"$sorted_usage"
+}
+
 #---------------------------------------------------------------
 #
 #   Linter specific code
@@ -1247,16 +1245,13 @@ bashate_read_config() {
     local value
 
     if [[ -f $f_cfg_file ]]; then
-        # echo "><> bashate read_settings: $f_cfg_file" >&2
         value=$(sed -n 's/^bashate_line_length=//p' "$f_cfg_file")
         [[ -n $value ]] && {
             bashate_line_length="$value"
-            # echo "><> bashate_line_length=$bashate_line_length" >&2
         }
         value=$(sed -n 's/^bashate_ignore=//p' "$f_cfg_file")
         [[ -n $value ]] && {
             bashate_ignore="$value"
-            # echo "><> bashate_ignore=$bashate_ignore" >&2
         }
     fi
 }
@@ -1267,19 +1262,11 @@ bashate_gather_config() {
     #  bashate_line_length
     #  bashate_ignore
 
-    # echo "><> bashate_gather_config()" >&2
     bashate_line_length=""
     bashate_ignore=""
 
     bashate_read_config "$olint_cfg_default"
     bashate_read_config "$olint_cfg_proj"
-
-    # {
-    #     echo "><> after both reads"
-    #     echo "><>   bashate_line_length=$bashate_line_length"
-    #     echo "      bashate_ignore=$bashate_ignore"
-    #     echo " params: $params"
-    # } >&2
 }
 
 #---------------------------------------------------------------
@@ -1893,12 +1880,8 @@ update_linter_statistics() {
             -v a="${linter_usage_time["$linter"]}" \
             -v b="$t_usu_time_span" \
             'BEGIN { print a + b }')
-        _s="${linter_usage_time["$linter"]} + $t_usu_time_span = "
-        _s+="${linter_usage_time["$linter"]}"
-        # log_it "><> $_s" 0
     else
         linter_usage_time["$linter"]="$t_usu_time_span"
-        # log_it "><> initialized to: ${linter_usage_time["$linter"]}"
     fi
 }
 
@@ -2110,46 +2093,6 @@ handle_linting_error() {
     env_cleanup 2
 }
 
-show_linter_action() {
-    #
-    #  Display what linter is used and what file is processed
-    #
-    local linter="$1"
-    local fname="$2"
-
-    # Print using printf with fixed-width formatting
-    printf '%-17s: %s  ' "$linter" "$fname"
-    t_lint_start="$(date +%s)"
-}
-
-show_linter_statistics() {
-    #
-    #  Display how many times each linter was triggered during this run
-    #
-    local key
-    local count
-    local name
-    local sorted_usage
-
-    echo
-    if [[ "${#linter_usage_count[@]}" -eq 0 ]]; then
-        echo "No linters were used"
-        return
-    fi
-    echo "Linter usage:"
-    echo "Name                count   time"
-    #  Not using process substitution, iSH has no /dev/fd
-    sorted_usage="$(
-        for key in "${!linter_usage_count[@]}"; do
-            echo "${linter_usage_count[$key]} $key ${linter_usage_time["$key"]}"
-        done | sort -k3,3nr -k1,1nr -k2,2
-    )"
-    while read -r count name t; do
-        # printf '  %-17s %4s    %s\n' "$name" "$count" "${linter_usage_time["$name"]}"
-        printf '  %-17s %4s    %s\n' "$name" "$count" "$t"
-    done <<<"$sorted_usage"
-}
-
 log_processing_statistics() {
     local l_fname
     if [[ -n "$1" ]]; then
@@ -2159,19 +2102,6 @@ log_processing_statistics() {
     fi
     # printf 'linter: %s \t%s \t%s\n' "$duration" "$linter" "$fname"
     sql_log_lint_stats "$linter" "$l_fname" "$duration"
-}
-
-show_linter_time() {
-    # local fname_override="$1"
-    local duration
-
-    duration=$(($(date +%s) - t_lint_start))
-    # $b_use_statistics && log_processing_statistics "$fname_override"
-    if [[ "$duration" -ge "$long_lint_time" ]]; then
-        printf ' - '
-        display_time_elapsed "$duration"
-    fi
-    echo # always apply a LF
 }
 
 #---------------------------------------------------------------
@@ -2203,12 +2133,6 @@ generate_list_of_files_to_process() {
     [[ -n $files_out ]] && mapfile -t all_files <<<"$files_out"
 
     [[ "$verbosity_lvl" -ge 1 ]] && echo "done!"
-}
-
-show_excluded_file() {
-    local excl_type="$1"
-    local fname="$2"
-    printf "%-16s: %s\n" "$excl_type" "$fname"
 }
 
 should_fname_be_excluded() {
@@ -2360,12 +2284,6 @@ process_file_tree() {
             file_has_issue=false
             should_fname_be_excluded "$fname" && continue
             $b_show_excluded && continue # only show excluded files, dont lint anything
-
-            # abort if a time limit was set
-            # recent_enough "$fname" || {
-            #     log_it "$fname too old to be processed" "$dbglvl_lint_file_basic"
-            #     env_cleanup 0
-            # }
 
             log_it "Examining file: $fname" "$dbglvl_major_tasks"
             dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
