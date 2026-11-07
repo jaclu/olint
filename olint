@@ -62,6 +62,7 @@ log_it() {
     }
     [[ "$verbosity_lvl" -lt "$this_verbose_level" ]] && return
     printf '%s>%*s%s\n' "$this_verbose_level" "$dbg_indent" "" "$msg" >&2
+    printf '%s>%*s%s\n' "$this_verbose_level" "$dbg_indent" "" "$msg" >>~/tmp/olint.log
 }
 
 #---------------------------------------------------------------
@@ -72,11 +73,24 @@ log_it() {
 
 is_integer() {
     log_it "is_integer($1)" "$dbglvl_data_types"
-    if [[ $1 =~ ^[0-9]+$ ]]; then
-        return 0
-    else
-        return 1
-    fi
+    case $1 in
+        '') return 1 ;;        # reject empty string
+        -) return 1 ;;         # reject lone '-'
+        -*) set -- "${1#-}" ;; # strip leading '-'
+        *) : ;;                # default no-op
+    esac
+
+    case $1 in
+        *[!0-9]*) return 1 ;; # reject any non-digit chars
+        *) return 0 ;;        # accept pure digits
+    esac
+}
+
+int_part() {
+    # Prints int part of a numerical param
+    local f="$1"
+    [[ -z $f ]] && error_msg "int_part() - no param"
+    printf '%s\n' "${f%%.*}"
 }
 
 lowercase_it() {
@@ -195,6 +209,492 @@ toggle_bool() {
 
 #---------------------------------------------------------------
 #
+#   Timing
+#
+#---------------------------------------------------------------
+
+select_safe_now_method() { # local usage by safe_now()
+    #
+    # Select and save the time method for future use.
+    # Using milliseconds when possible
+    #
+    # Provides:
+    #   usu_selected_safe_now_mthd
+    #   usu_t_max_digits
+    #
+    [[ -n $usu_selected_safe_now_mthd ]] && {
+        error_msg "Recursive call to: select_safe_now_method"
+    }
+    # log_it "select_safe_now_method()"
+
+    if is_linux || is_termux; then
+        usu_t_max_digits=9
+        usu_selected_safe_now_mthd="date" # date supports high precision
+    elif command -v gdate >/dev/null 2>&1; then
+        usu_t_max_digits=6
+        usu_selected_safe_now_mthd="gdate" # GNU date found
+    elif command -v perl >/dev/null 2>&1; then
+        # fallback via Perl, can display higher prec, but takes a long
+        # and hugely variable time to run
+        usu_t_max_digits=3
+        usu_selected_safe_now_mthd="perl"
+    else
+        usu_t_max_digits=0
+        usu_selected_safe_now_mthd="date" # last resort, seconds-only
+    fi
+}
+
+safe_now() {
+    #
+    #  Sets t_usu_now to the current timestamp. If a variable name is given,
+    #  it will be assigned the same value directly (no subshell).
+    #
+    #  Provides:
+    #      t_usu_now - current unix time
+    #
+    _sn_var_name="$1"
+
+    case "$usu_selected_safe_now_mthd" in
+        date) t_usu_now="$(date +%s.%9N)" ;;
+        gdate) t_usu_now="$(gdate +%s.%6N)" ;;
+        perl)
+            # shellcheck disable=SC2034 # t_usu_now is used below in eval
+            t_usu_now="$(perl -MTime::HiRes=time -e \
+                'printf "%.3f\n", time()*100000 /100000')"
+            ;;
+        *)
+            select_safe_now_method
+
+            # to prevent infinite recursion, eunsure a valid timing method is now selected
+            case "$usu_selected_safe_now_mthd" in
+                date | gdate | perl) ;;
+                *) error_msg "safe_now($_sn_var_name) - failed to select a timing method" ;;
+            esac
+
+            safe_now "$_sn_var_name"
+            return
+            ;;
+    esac
+    [[ -n "$_sn_var_name" ]] && {
+        # if variable name provided set it to t_usu_now
+        eval "$_sn_var_name=\"\$t_usu_now\""
+    }
+}
+
+time_span() { # display_menu() / check_speed_cutoff()
+    #
+    # Calculates a time span in seconds compared to param
+    # Additional params:
+    #   milli      - calculate time span in milli-seconds
+    #   nodisplay  - do not display elapsed time
+    #
+    # Provides: t_usu_time_span
+    #
+    local t_start="$1"
+    local decimals=3
+    local msg
+    local t_now
+    local t_start_i t_now_i
+
+    [[ -n $t_start ]] || error_msg "time_span() - no start time provided"
+    [[ "$decimals" -gt "$usu_t_max_digits" ]] && {
+        msg="time_span() - requested $decimals digite,"
+        msg+=" only $usu_t_max_digits available, will be rounded down"
+        log_it "$msg" 0
+        decimals="$usu_t_max_digits"
+    }
+    safe_now t_now
+    if [[ $decimals = 0 ]]; then
+        t_start_i=$(int_part "$t_start")
+        t_now_i=$(int_part "$t_now")
+        # shellcheck disable=SC2154 # t_now assigned via safe_now
+        t_usu_time_span=$((t_now_i - t_start_i))
+    else
+        t_usu_time_span=$(awk \
+            -v t2="$t_now" \
+            -v t1="$t_start" \
+            -v decimals="$decimals" '
+                BEGIN {
+                    factor = 10 ^ decimals
+                    print int((t2 - t1) * factor) / factor
+                }')
+    fi
+}
+
+#---------------------------------------------------------------
+#
+#   Handle env
+#
+#---------------------------------------------------------------
+
+initialize_env() {
+    # log_it "initialize_env()" forced
+
+    kernel_name="$(uname -s)"
+    dbg_indent=1 # used to indent printouts in log_it
+
+    # cache if this is running on iSH, since skipping a syscall on iSH makes a difference
+    running_on_ish=0
+    if [[ -d /proc/ish ]]; then
+        running_on_ish=1
+        ish_ift_uptime=/usr/local/bin/uptime
+        [[ ! -x "$ish_ift_uptime" ]] && ish_ift_uptime=""
+    fi
+
+    # local folder for plugin overrides
+    d_plugin_overrides="$(pwd)"/.olint_plugin_overrides
+
+    # basenames, checked in multiple folders
+    bname_proj_config=.olint.conf
+    bname_cache=.cache.olint # mtime|date|fname
+
+    #  Define Global config location
+    # shellcheck disable=SC2154
+    if [[ -n "$XDG_CONFIG_HOME" ]]; then
+        olint_cfg_dir="$XDG_CONFIG_HOME"/olint
+    else
+        olint_cfg_dir=~/.config/olint
+    fi
+    default_olint_plugin_dir="$olint_cfg_dir"/plugins
+    olint_plugin_dir="$default_olint_plugin_dir"
+
+    d_linting_venv=~/.config/olint/.venv
+    b_olint_venv_enabled=false
+
+    long_lint_time=5
+
+    defaults_for_cmdline_options
+    defaults_for_proj_config_file
+
+    #  -----   iSH specifics   -----
+
+    ish_max_load=5
+    ish_high_load_sleep=30
+
+    #  -----   linting env   -----
+
+    # Store plugins with command found in valid_plugins, this only means the
+    # command is present, the plugin might be evicted and not used based on disabled_by
+    # Config has already been processed, so this causes the scan to know if the
+    # plugin_cmd / proj_plugin_cmd should be verified
+    valid_plugins=()
+
+    files_without_matching_linter=0
+    not_linting_msg="skipped task due to no-linters display being selected"
+
+    # used as a temp file during one linting cmd to capture output
+    # to be displayed in case of issue
+    f_linter_output="${TMPDIR:-/tmp}/olint-linter-output-$$"
+
+    declare -g -A linter_cmd
+    declare -g -A proj_linter_cmd
+    declare -g -A override_linter_cmd
+
+    declare -g -A linter_priorities
+    declare -g -A linter_extensions
+    declare -g -A linter_file_types
+    declare -g -A linter_usage_count # times each linter was triggered this run
+    declare -g -A linter_usage_time  # times each linter was triggered this run
+
+    declare -g -A file_linters_done # linters already run for the file being checked
+    file_has_issue=false            # set if a linter reported issues for this file
+    linter_order=()                 # used to display them in alphabetical order
+    proj_linters=()
+
+    #  -----   caching env   -----
+
+    # Will only be updated if cache format is changed
+    olint_cache_version="olint cache vers: 0.4.0"
+
+    cache_is_changed=false
+    declare -g -A cache_old     # What is read from cache file
+    declare -g -A cache_new     # What will be written to cache file
+    f_cache_file="$bname_cache" # initiaally assume its in same foleer
+
+    # On slow system, log what proj linters have completed in the
+    # cache file. This will be cleared once linting completes, so
+    # on next run, all proj linters will be run
+    proj_lint_tasks_completed=""
+
+    #  -----   debug level helpers   -----
+
+    #  Some debug level constants, to make it easier to limit what
+    #  is displayed
+
+    dbglvl_no_changes=2
+    dbglvl_major_tasks=3
+    dbglvl_cache_events_basic=6
+    dbglvl_cache_events_more="$((dbglvl_cache_events_basic + 1))"
+    dbglvl_lintscan_basic=6
+    dbglvl_lintscan_details="$((dbglvl_lintscan_basic + 1))"
+    dbglvl_lint_file_basic=7
+    dbglvl_lint_file=8
+    dbglvl_data_types=9
+    dbglvl_all_detils=20
+}
+
+env_cleanup() {
+    #
+    #  Call this instead of exit, to ensure any cleanup will happen
+    #    0 - no errors
+    #    1 - did Ctrl-C
+    #    2 - linting error
+    #    9 - error_msg no param
+    #
+    #
+    local duration
+    local ex_code="${1:-1}"
+
+    # when completed, clear this so that on next run all proj linters are run
+    proj_lint_tasks_completed=""
+
+    cache_write
+    [[ -f "$f_linter_output" ]] && rm -f "$f_linter_output" # clear tmp file
+
+    olint_venv_disable
+
+    [[ $ex_code -gt 1 ]] && {
+        echo
+        echo "*****  olint exited with an error  *****"
+        echo
+    }
+
+    [[ -n "$t_app_start" ]] && $b_lint_files && {
+        duration=$(($(date +%s) - t_app_start))
+        if [[ "$verbosity_lvl" -ge 1 ]] || [[ "$duration" -ge "$long_lint_time" ]]; then
+            # dont show time elapsed for very quick runs
+            printf 'olint processing time: '
+            display_time_elapsed "$duration"
+            printf '\n'
+            [[ "$verbosity_lvl" -ge 1 ]] && {
+                echo
+                echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
+                [[ "$verbosity_lvl" -lt 2 ]] && {
+                    echo "run with -v 2 to see cached files listed"
+                }
+            }
+        fi
+    }
+    exit "$ex_code"
+}
+
+defaults_for_cmdline_options() {
+    #  -----   defaults for cmdline options   -----
+
+    b_show_config=false          # options: -c / -s
+    b_lint_continue=false        # option: -C
+    b_show_excluded=false        # options: -e / -E
+    b_skip_common_excludes=false # extra setting for: -e / -E
+    b_show_help=false            # option: -h
+    b_mime_type_limit=false      # option: -m
+    b_lint_files=true            # option: -n
+    b_use_cache=true             # option: -N
+    b_proj_linters_only=false    # option: -o
+    b_proj_linters_skip=false    # option: -p
+    b_changed_file_found=false   # option: -P
+    b_show_config_short=false    # option: -s
+    # b_use_statistics=false     # option: -S
+    b_linter_statistics=false # option: -l
+    t_cashe_interval=60       # option: -u
+    verbosity_lvl=0           # option: -v
+    zap_it=0                  # options: -z / -Z
+    max_age_mins=0            # no max file age for items to be processed
+}
+
+defaults_for_proj_config_file() {
+    ignore_project=no
+
+    skip_linters=() # plugins to skip in this project
+    unskip_linters=()
+    excluded_prefixes=( # start of fname
+        __pycache__/
+        .git/
+        .idea/ # Used by JetBrains
+        .mypy_cache/
+        .pytest_cache/
+        .ruff_cache/
+        .rumdl_cache/
+        .venv/
+        .vscode/
+    )
+    hidden_patterns=( # exclude from display of excluded_prefixes unless -E is used
+        __pycache__/
+        .git/
+        .mypy_cache/
+        .pytest_cache/
+        .ruff_cache/
+        .venv/
+        .vscode/
+    )
+    hidden_patterns=("${excluded_prefixes[@]}")
+    excluded_suffixes=( # excludes by filename suffix
+        \~
+        \#
+        .pyc
+        .tmp
+    )
+    excludes=( # Specific excludes
+        "$bname_cache"
+    )
+    excluded_basenames=( # basename (filename without any path) excludes
+    )
+    excluded_basename_prefixes=( # excludes by basename prefix
+        \#
+    )
+    project_linters=(
+        shfmt     # some shellscripts will be used in virtually all projects
+        codespell # There is no filetype for this, so normally run on entire project
+        cppcheck  # Analyses sources and headers together, not one file at a time
+    )
+}
+
+should_project_be_ignored() {
+    #  Abort Check
+    case "$(lowercase_it "$ignore_project")" in
+        1 | "true" | "yes")
+            echo "olint - Project ignored due to:"
+            if [[ -n "$olint_cfg_proj" ]]; then
+                echo " ignore_project=$ignore_project - defined in: $olint_cfg_proj"
+            else
+                echo "  No .olint.conf found"
+            fi
+            env_cleanup 0
+            ;;
+        *) ;;
+    esac
+}
+
+parse_cmd_line() {
+    local cache_folders d_ceche_folder
+    local h_max_age
+
+    # log_it "parse_cmd_line()" forced
+    while [[ -n "$1" ]]; do
+        case $1 in
+            -h | --help)
+                #
+                # only toggle a switch now, help will be displayed after
+                # git_config is called
+                #
+                # shellcheck disable=SC2317
+                b_show_help=true
+                ;;
+            -c | --config) b_show_config=true ;;
+            -C | --continue) b_lint_continue=true ;;
+            -d | --config-dir) # Support for ./deploy - prints out the config dir
+                echo "$olint_cfg_dir"
+                env_cleanup 0
+                ;;
+            -e | --excluded)
+                b_show_excluded=true
+                b_skip_common_excludes=true
+                b_lint_files=false
+                ;;
+            -E | --excluded-all)
+                b_show_excluded=true
+                b_skip_common_excludes=false
+                b_lint_files=false
+                ;;
+            -l | --skip-linter-stats) b_linter_statistics=true ;;
+            -m | --mime-type) b_mime_type_limit=true ;;
+            -n | --no-linter) b_lint_files=false ;;
+            -N | --nocache) b_use_cache=false ;;
+            -o | --only-proj-lint)
+                toggle_bool b_proj_linters_only
+                b_changed_file_found=true
+                ;;
+            -p | --no-proj-lint) toggle_bool b_proj_linters_skip ;;
+            -P | --force-proj-lint) b_changed_file_found=true ;;
+            -s | --conffig-short)
+                b_show_config=true
+                b_show_config_short=true
+                ;;
+            # -S | --statistics)
+            #     b_use_statistics=true
+            #     ;;
+            -u | --update-cache)
+                t="${2:-missing param}"
+                [[ "$t" = "missing param" ]] && {
+                    error_msg "-u/--update-cache without time param"
+                }
+                is_integer "$t" || error_msg "-u/--update-cache is no int: [$t]"
+                t_cashe_interval="$t"
+                shift # pop update interval
+                ;;
+            -v | --verbose)
+                lvl="${2:-missing param}"
+                [[ "$lvl" = "missing param" ]] && {
+                    error_msg "-v/--verbose without verbosity lvl param"
+                }
+                is_integer "$lvl" || error_msg "verbosity_lvl is not int: [$lvl]"
+                verbosity_lvl="$lvl"
+                shift # pop debug level
+                ;;
+            -z | --zapcache)
+                zap_it=1 # zap then exit
+                ;;
+            -Z | --zaprun)
+                zap_it=2 # zap then run
+                ;;
+            *[!0-9]*) error_msg "Unrecognized option: $1" ;;
+
+            *) # only remaining param type is an int
+                h_max_age="$1"
+                is_integer "$h_max_age" || error_msg "Max age is not int: $h_max_age"
+                echo "Will only check files changed in the last $h_max_age hours"
+                max_age_mins="$((h_max_age * 60))" # the variable actually used
+                ;;
+
+        esac
+        shift
+    done
+    $b_proj_linters_skip && $b_proj_linters_only && {
+        error_msg "-p & -o are both true - invalid state."
+    }
+}
+
+olint_venv_enable() {
+    log_it "olint_venv_enable()" 1
+    # shellcheck disable=SC2154
+    if [[ -d "$d_linting_venv" ]]; then
+        if [[ $(command -v python3) == "$d_linting_venv/"* ]]; then
+            echo "---  Already using olint venv  ---" >&2
+            return
+        fi
+        # [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
+        echo "===  Activating olint venv  ===" >&2
+        # shellcheck source=/dev/null
+        . "$d_linting_venv/bin/activate" || {
+            error_msg "Failed to activate linting venv"
+        }
+        b_olint_venv_enabled=true
+    else
+        log_it "><> no d_linting_venv [$d_linting_venv]" 1
+    fi
+}
+
+olint_venv_disable() {
+    $b_olint_venv_enabled && {
+        echo "===  de-activating olint venv  ===" >&2
+        deactivate || error_msg "Failed to deactivate alpine linting venv"
+    }
+    return 0
+}
+
+is_linux() { # returns true if kernel is Linux, very broad check
+    [[ "$kernel_name" = "Linux" ]]
+}
+
+is_darwin() {
+    [[ "$kernel_name" == "Darwin" ]]
+}
+
+is_termux() {
+    [[ "$HOME" = /data/data/com.termux/files/home ]]
+}
+
+#---------------------------------------------------------------
+#
 #   File Age related
 #
 #---------------------------------------------------------------
@@ -234,7 +734,7 @@ get_mtime() {
     local fname="$1"
 
     log_it "get_mtime($fname)" "$dbglvl_data_types"
-    if [[ "$kernel_name" == "Darwin" ]]; then
+    if is_darwin; then
         # macOS version
         stat -f "%m" "$fname"
     else
@@ -255,10 +755,11 @@ mtime_2_date() {
         f_mtime="$(get_mtime "$1")"
     fi
 
-    case "$kernel_name" in
-        "Darwin") as_date="$(date -r "$f_mtime" +'%F %T')" ;;
-        *) as_date="$(date -d "@$f_mtime" +'%F %T')" ;;
-    esac
+    if is_darwin; then
+        as_date="$(date -r "$f_mtime" +'%F %T')"
+    else
+        as_date="$(date -d "@$f_mtime" +'%F %T')"
+    fi
 
     log_it "result [$as_date]" "$((dbglvl_data_types + 1))"
     echo "$as_date"
@@ -500,7 +1001,7 @@ show_help() {
     # -S, --statistics        Store linting times in SQL DB
     #region help text
     echo "
-Usage: olint [-h] [-c] [-C] [-d] [-e] [-E] [-L] [-m] [-n] [-N] [-p] [-P] [-s]
+Usage: olint [-h] [-c] [-C] [-d] [-e] [-E] [-l] [-m] [-n] [-N] [-p] [-P] [-s]
                 [-u time] [-v verbosity_lvl] [-z] [-Z] [number]
 
 Lint all files recursively in reverse chronological order.
@@ -513,7 +1014,7 @@ Available options:
 -o, --only-proj-lint    toggles 'Only run project linters'
 -p, --no-proj-lint      toggles 'Skip all project linters'
 -P, --force-proj-lint   Always run proj-linters
--L, --linter-stats      Count how many times each linter is used in this run
+-l, --linter-stats      Listing how many times each linter is used in this run
 -v, --verbose           Set verbosity level, level must also be supplied
                         1 - Show gathering of available plugins & nr of files linted
                         2 - List files already linted (cached)
@@ -733,364 +1234,6 @@ display_time_elapsed() {
     else
         printf '%ss' "$duration"
     fi
-}
-
-#---------------------------------------------------------------
-#
-#   Handle env
-#
-#---------------------------------------------------------------
-
-initialize_env() {
-    # log_it "initialize_env()" forced
-
-    kernel_name="$(uname -s)"
-    dbg_indent=1 # used to indent printouts in log_it
-
-    # cache if this is running on iSH, since skipping a syscall on iSH makes a difference
-    running_on_ish=0
-    if [[ -d /proc/ish ]]; then
-        running_on_ish=1
-        ish_ift_uptime=/usr/local/bin/uptime
-        [[ ! -x "$ish_ift_uptime" ]] && ish_ift_uptime=""
-    fi
-
-    # local folder for plugin overrides
-    d_plugin_overrides="$(pwd)"/.olint_plugin_overrides
-
-    # basenames, checked in multiple folders
-    bname_proj_config=.olint.conf
-    bname_cache=.cache.olint # mtime|date|fname
-
-    #  Define Global config location
-    # shellcheck disable=SC2154
-    if [[ -n "$XDG_CONFIG_HOME" ]]; then
-        olint_cfg_dir="$XDG_CONFIG_HOME"/olint
-    else
-        olint_cfg_dir=~/.config/olint
-    fi
-    default_olint_plugin_dir="$olint_cfg_dir"/plugins
-    olint_plugin_dir="$default_olint_plugin_dir"
-
-    d_linting_venv=~/.config/olint/.venv
-    b_olint_venv_enabled=false
-
-    long_lint_time=5
-
-    defaults_for_cmdline_options
-    defaults_for_proj_config_file
-
-    #  -----   iSH specifics   -----
-
-    ish_max_load=5
-    ish_high_load_sleep=30
-
-    #  -----   linting env   -----
-
-    # Store plugins with command found in valid_plugins, this only means the
-    # command is present, the plugin might be evicted and not used based on disabled_by
-    # Config has already been processed, so this causes the scan to know if the
-    # plugin_cmd / proj_plugin_cmd should be verified
-    valid_plugins=()
-
-    files_without_matching_linter=0
-    not_linting_msg="skipped task due to no-linters display being selected"
-
-    # used as a temp file during one linting cmd to capture output
-    # to be displayed in case of issue
-    f_linter_output="${TMPDIR:-/tmp}/olint-linter-output-$$"
-
-    declare -g -A linter_cmd
-    declare -g -A proj_linter_cmd
-    declare -g -A override_linter_cmd
-
-    declare -g -A linter_priorities
-    declare -g -A linter_extensions
-    declare -g -A linter_file_types
-    declare -g -A linter_usage_count # times each linter was triggered this run
-    declare -g -A file_linters_done  # linters already run for the file being checked
-    file_has_issue=false             # set if a linter reported issues for this file
-    linter_order=()                  # used to display them in alphabetical order
-    proj_linters=()
-
-    #  -----   caching env   -----
-
-    # Will only be updated if cache format is changed
-    olint_cache_version="olint cache vers: 0.4.0"
-
-    cache_is_changed=false
-    declare -g -A cache_old     # What is read from cache file
-    declare -g -A cache_new     # What will be written to cache file
-    f_cache_file="$bname_cache" # initiaally assume its in same foleer
-
-    # On slow system, log what proj linters have completed in the
-    # cache file. This will be cleared once linting completes, so
-    # on next run, all proj linters will be run
-    proj_lint_tasks_completed=""
-
-    #  -----   debug level helpers   -----
-
-    #  Some debug level constants, to make it easier to limit what
-    #  is displayed
-
-    dbglvl_no_changes=2
-    dbglvl_major_tasks=3
-    dbglvl_cache_events_basic=6
-    dbglvl_cache_events_more="$((dbglvl_cache_events_basic + 1))"
-    dbglvl_lintscan_basic=6
-    dbglvl_lintscan_details="$((dbglvl_lintscan_basic + 1))"
-    dbglvl_lint_file_basic=7
-    dbglvl_lint_file=8
-    dbglvl_data_types=9
-    dbglvl_all_detils=20
-}
-
-env_cleanup() {
-    #
-    #  Call this instead of exit, to ensure any cleanup will happen
-    #    0 - no errors
-    #    1 - did Ctrl-C
-    #    2 - linting error
-    #    9 - error_msg no param
-    #
-    #
-    local duration
-    local ex_code="${1:-1}"
-
-    # when completed, clear this so that on next run all proj linters are run
-    proj_lint_tasks_completed=""
-
-    cache_write
-    [[ -f "$f_linter_output" ]] && rm -f "$f_linter_output" # clear tmp file
-
-    olint_venv_disable
-
-    [[ $ex_code -gt 1 ]] && {
-        echo
-        echo "*****  olint exited with an error  *****"
-        echo
-    }
-
-    [[ -n "$t_app_start" ]] && $b_lint_files && {
-        duration=$(($(date +%s) - t_app_start))
-        if [[ "$verbosity_lvl" -ge 1 ]] || [[ "$duration" -ge "$long_lint_time" ]]; then
-            # dont show time elapsed for very quick runs
-            printf 'olint processing time: '
-            display_time_elapsed "$duration"
-            printf '\n'
-            [[ "$verbosity_lvl" -ge 1 ]] && {
-                echo
-                echo "${#cache_new[@]} successfully linted files cached in: $f_cache_file"
-                [[ "$verbosity_lvl" -lt 2 ]] && {
-                    echo "run with -v 2 to see cached files listed"
-                }
-            }
-        fi
-    }
-    exit "$ex_code"
-}
-
-defaults_for_cmdline_options() {
-    #  -----   defaults for cmdline options   -----
-
-    b_show_config=false          # options: -c / -s
-    b_lint_continue=false        # option: -C
-    b_show_excluded=false        # options: -e / -E
-    b_skip_common_excludes=false # extra setting for: -e / -E
-    b_show_help=false            # option: -h
-    b_mime_type_limit=false      # option: -m
-    b_lint_files=true            # option: -n
-    b_use_cache=true             # option: -N
-    b_proj_linters_only=false    # option: -o
-    b_proj_linters_skip=false    # option: -p
-    b_changed_file_found=false   # option: -P
-    b_show_config_short=false    # option: -s
-    # b_use_statistics=false       # option: -S
-    b_linter_statistics=false # option: -L
-    t_cashe_interval=60       # option: -u
-    verbosity_lvl=0           # option: -v
-    zap_it=0                  # options: -z / -Z
-    max_age_mins=0            # no max file age for items to be processed
-}
-
-defaults_for_proj_config_file() {
-    ignore_project=no
-
-    skip_linters=() # plugins to skip in this project
-    unskip_linters=()
-    excluded_prefixes=( # start of fname
-        __pycache__/
-        .git/
-        .idea/ # Used by JetBrains
-        .mypy_cache/
-        .pytest_cache/
-        .ruff_cache/
-        .rumdl_cache/
-        .venv/
-        .vscode/
-    )
-    hidden_patterns=( # exclude from display of excluded_prefixes unless -E is used
-        __pycache__/
-        .git/
-        .mypy_cache/
-        .pytest_cache/
-        .ruff_cache/
-        .venv/
-        .vscode/
-    )
-    hidden_patterns=("${excluded_prefixes[@]}")
-    excluded_suffixes=( # excludes by filename suffix
-        \~
-        \#
-        .pyc
-        .tmp
-    )
-    excludes=( # Specific excludes
-        "$bname_cache"
-    )
-    excluded_basenames=( # basename (filename without any path) excludes
-    )
-    excluded_basename_prefixes=( # excludes by basename prefix
-        \#
-    )
-    project_linters=(
-        shfmt     # some shellscripts will be used in virtually all projects
-        codespell # There is no filetype for this, so normally run on entire project
-        cppcheck  # Analyses sources and headers together, not one file at a time
-    )
-}
-
-should_project_be_ignored() {
-    #  Abort Check
-    case "$(lowercase_it "$ignore_project")" in
-        1 | "true" | "yes")
-            echo "olint - Project ignored due to:"
-            if [[ -n "$olint_cfg_proj" ]]; then
-                echo " ignore_project=$ignore_project - defined in: $olint_cfg_proj"
-            else
-                echo "  No .olint.conf found"
-            fi
-            env_cleanup 0
-            ;;
-        *) ;;
-    esac
-}
-
-parse_cmd_line() {
-    local cache_folders d_ceche_folder
-    local h_max_age
-
-    # log_it "parse_cmd_line()" forced
-    while [[ -n "$1" ]]; do
-        case $1 in
-            -h | --help)
-                #
-                # only toggle a switch now, help will be displayed after
-                # git_config is called
-                #
-                # shellcheck disable=SC2317
-                b_show_help=true
-                ;;
-            -c | --config) b_show_config=true ;;
-            -C | --continue) b_lint_continue=true ;;
-            -d | --config-dir) # Support for ./deploy - prints out the config dir
-                echo "$olint_cfg_dir"
-                env_cleanup 0
-                ;;
-            -e | --excluded)
-                b_show_excluded=true
-                b_skip_common_excludes=true
-                b_lint_files=false
-                ;;
-            -E | --excluded-all)
-                b_show_excluded=true
-                b_skip_common_excludes=false
-                b_lint_files=false
-                ;;
-            -L | --linter-stats) b_linter_statistics=true ;;
-            -m | --mime-type) b_mime_type_limit=true ;;
-            -n | --no-linter) b_lint_files=false ;;
-            -N | --nocache) b_use_cache=false ;;
-            -o | --only-proj-lint)
-                toggle_bool b_proj_linters_only
-                b_changed_file_found=true
-                ;;
-            -p | --no-proj-lint) toggle_bool b_proj_linters_skip ;;
-            -P | --force-proj-lint) b_changed_file_found=true ;;
-            -s | --conffig-short)
-                b_show_config=true
-                b_show_config_short=true
-                ;;
-            # -S | --statistics)
-            #     b_use_statistics=true
-            #     ;;
-            -u | --update-cache)
-                t="${2:-missing param}"
-                [[ "$t" = "missing param" ]] && {
-                    error_msg "-u/--update-cache without time param"
-                }
-                is_integer "$t" || error_msg "-u/--update-cache is no int: [$t]"
-                t_cashe_interval="$t"
-                shift # pop update interval
-                ;;
-            -v | --verbose)
-                lvl="${2:-missing param}"
-                [[ "$lvl" = "missing param" ]] && {
-                    error_msg "-v/--verbose without verbosity lvl param"
-                }
-                is_integer "$lvl" || error_msg "verbosity_lvl is not int: [$lvl]"
-                verbosity_lvl="$lvl"
-                shift # pop debug level
-                ;;
-            -z | --zapcache)
-                zap_it=1 # zap then exit
-                ;;
-            -Z | --zaprun)
-                zap_it=2 # zap then run
-                ;;
-            *[!0-9]*) error_msg "Unrecognized option: $1" ;;
-
-            *) # only remaining param type is an int
-                h_max_age="$1"
-                is_integer "$h_max_age" || error_msg "Max age is not int: $h_max_age"
-                echo "Will only check files changed in the last $h_max_age hours"
-                max_age_mins="$((h_max_age * 60))" # the variable actually used
-                ;;
-
-        esac
-        shift
-    done
-    $b_proj_linters_skip && $b_proj_linters_only && {
-        error_msg "-p & -o are both true - invalid state."
-    }
-}
-
-olint_venv_enable() {
-    log_it "olint_venv_enable()" 1
-    # shellcheck disable=SC2154
-    if [[ -d "$d_linting_venv" ]]; then
-        if [[ $(command -v python3) == "$d_linting_venv/"* ]]; then
-            echo "---  Already using olint venv  ---" >&2
-            return
-        fi
-        # [[ "$VIRTUAL_ENV_PROMPT" != "(linters) " ]]; then
-        echo "===  Activating olint venv  ===" >&2
-        # shellcheck source=/dev/null
-        . "$d_linting_venv/bin/activate" || {
-            error_msg "Failed to activate linting venv"
-        }
-        b_olint_venv_enabled=true
-    else
-        log_it "><> no d_linting_venv [$d_linting_venv]" 1
-    fi
-}
-
-olint_venv_disable() {
-    $b_olint_venv_enabled && {
-        echo "===  de-activating olint venv  ===" >&2
-        deactivate || error_msg "Failed to deactivate alpine linting venv"
-    }
-    return 0
 }
 
 #---------------------------------------------------------------
@@ -1715,14 +1858,15 @@ sort_linters() {
         #
         # shellcheck disable=SC2207
         sorted_linters=($(
-            for linter in "${linters_array[@]}"; do
-                echo "$linter ${linter_priorities[$linter]}"
+            for linter2 in "${linters_array[@]}"; do
+                echo "$linter2 ${linter_priorities[$linter2]}"
             done | sort -k2nr | awk '{print $1}'
         ))
     else
         mapfile -t sorted_linters < <(
-            for linter in "${linters_array[@]}"; do
-                echo "$linter ${linter_priorities[$linter]}"
+            # shellcheck disable=SC2030 # intentional subshell
+            for linter2 in "${linters_array[@]}"; do
+                echo "$linter2 ${linter_priorities[$linter2]}"
             done | sort -k2nr | awk '{print $1}'
         )
     fi
@@ -1735,11 +1879,35 @@ sort_linters() {
 #
 #---------------------------------------------------------------
 
+update_linter_statistics() {
+    local t_lint_start_d="$1"
+    local t_usu_time_span
+
+    log_it "update_linter_statistics() $t_lint_start_d"
+    [[ -n $t_lint_start_d ]] || error_msg "update_linter_statistics() - no param"
+
+    time_span "$t_lint_start_d"
+    linter_usage_count["$linter"]=$((${linter_usage_count["$linter"]:-0} + 1))
+    if [[ -n ${linter_usage_time["$linter"]} ]]; then
+        linter_usage_time["$linter"]=$(awk \
+            -v a="${linter_usage_time["$linter"]}" \
+            -v b="$t_usu_time_span" \
+            'BEGIN { print a + b }')
+        _s="${linter_usage_time["$linter"]} + $t_usu_time_span = "
+        _s+="${linter_usage_time["$linter"]}"
+        # log_it "><> $_s" 0
+    else
+        linter_usage_time["$linter"]="$t_usu_time_span"
+        # log_it "><> initialized to: ${linter_usage_time["$linter"]}"
+    fi
+}
+
 lint_file() {
     local linter="$1"
     local fname="$2"
     local lint_pid
     local lint_exit_status
+    local t_lint_start_d
 
     log_it "lint_file($linter, $fname)" "$dbglvl_lint_file_basic"
     log_it " running: ${linter_cmd["$linter"]} $fname" "$dbglvl_lint_file"
@@ -1749,12 +1917,14 @@ lint_file() {
     #  they are run in the background. Then some code to ensure the
     #  exit code of the linter is captured
     #
+    $b_linter_statistics && safe_now t_lint_start_d
     eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output" 2>&1 &
     lint_pid=$!
     wait "$lint_pid"
     lint_exit_status=$?
 
     if [[ "$lint_exit_status" -eq 0 ]]; then
+        $b_linter_statistics && update_linter_statistics "$t_lint_start_d"
         return 0
     else
         printf '\n\n' # start error display on new line
@@ -1782,6 +1952,7 @@ lint_by_ext() {
     local b_linter_found
     local linter_found_issue
     local linter
+    local t_lint_start
 
     log_it "lint_by_ext($fname)" "$dbglvl_lintscan_details"
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
@@ -1885,6 +2056,7 @@ lint_proj() {
     local lint_pid
     local lint_exit_status
     local label
+    local t_lint_start_d
 
     log_it "lint_proj($linter)" "$dbglvl_lint_file_basic"
     log_it " running: ${proj_linter_cmd["$linter"]}" "$dbglvl_lint_file"
@@ -1899,13 +2071,15 @@ lint_proj() {
     #  they are run in the background. Then some code to ensure the
     #  exit code of the linter is captured
     #
+    $b_linter_statistics && safe_now t_lint_start_d
     eval "${proj_linter_cmd["$linter"]}" >"$f_linter_output" 2>&1 &
     lint_pid=$!
     wait "$lint_pid"
     lint_exit_status=$?
-    show_linter_time "proj"
 
     if [[ "$lint_exit_status" -eq 0 ]]; then
+        $b_linter_statistics && update_linter_statistics "$t_lint_start_d"
+        show_linter_time "proj"
         proj_lint_tasks_completed+=" $linter"
         return 0
     else
@@ -1943,10 +2117,6 @@ show_linter_action() {
     local linter="$1"
     local fname="$2"
 
-    $b_linter_statistics && {
-        linter_usage_count["$linter"]=$((${linter_usage_count["$linter"]:-0} + 1))
-    }
-
     # Print using printf with fixed-width formatting
     printf '%-17s: %s  ' "$linter" "$fname"
     t_lint_start="$(date +%s)"
@@ -1967,14 +2137,16 @@ show_linter_statistics() {
         return
     fi
     echo "Linter usage:"
+    echo "Name                count   time"
     #  Not using process substitution, iSH has no /dev/fd
     sorted_usage="$(
         for key in "${!linter_usage_count[@]}"; do
-            echo "${linter_usage_count[$key]} $key"
-        done | sort -k1,1nr -k2,2
+            echo "${linter_usage_count[$key]} $key ${linter_usage_time["$key"]}"
+        done | sort -k3,3nr -k1,1nr -k2,2
     )"
-    while read -r count name; do
-        printf '  %-17s %s\n' "$name" "$count"
+    while read -r count name t; do
+        # printf '  %-17s %4s    %s\n' "$name" "$count" "${linter_usage_time["$name"]}"
+        printf '  %-17s %4s    %s\n' "$name" "$count" "$t"
     done <<<"$sorted_usage"
 }
 
@@ -2160,10 +2332,11 @@ process_file_tree() {
     log_it "process_file_tree()" "$dbglvl_major_tasks"
     dbg_indent=$((dbg_indent + 1)) # increase indent until this returns
 
-    #  project linters run before file tree is parsed, ie those that might
-    #  alter code
     $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
-        && [[ ${#proj_linters[@]} -gt 0 ]] && handle_project_linters pre
+        && [[ ${#proj_linters[@]} -gt 0 ]] && {
+        #  project linters with priority >= 100, ie those that might alter code
+        handle_project_linters pre
+    }
 
     ! $b_proj_linters_only && {
         [[ "$running_on_ish" -eq 1 ]] && ish_sysload_check
@@ -2244,6 +2417,7 @@ process_file_tree() {
     #  project linters run after file tree is parsed
     $b_lint_files && ! $b_proj_linters_skip && ! $b_show_excluded \
         && $b_changed_file_found && [[ ${#proj_linters[@]} -gt 0 ]] && {
+        #  project linters with priority < 100, ie those not altering code
         handle_project_linters post
     }
 
