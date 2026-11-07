@@ -464,11 +464,11 @@ defaults_for_cmdline_options() {
     b_changed_file_found=false   # option: -P
     b_show_config_short=false    # option: -s
     # b_use_statistics=false     # option: -S
-    b_linter_statistics=false # option: -l
-    t_cashe_interval=60       # option: -u
-    verbosity_lvl=0           # option: -v
-    zap_it=0                  # options: -z / -Z
-    max_age_mins=0            # no max file age for items to be processed
+    linter_statistics=1 # option: -l / -L
+    t_cashe_interval=60 # option: -u
+    verbosity_lvl=0     # option: -v
+    zap_it=0            # options: -z / -Z
+    max_age_mins=0      # no max file age for items to be processed
 }
 
 defaults_for_proj_config_file() {
@@ -565,7 +565,14 @@ parse_cmd_line() {
                 b_skip_common_excludes=false
                 b_lint_files=false
                 ;;
-            -l | --skip-linter-stats) b_linter_statistics=true ;;
+            -l | --skip-linter-stats)
+                [[ $linter_statistics -ne 1 ]] && error_msg "Can not be combined -l and -L"
+                linter_statistics=0
+                ;;
+            -L | --stats-with-time)
+                [[ $linter_statistics -ne 1 ]] && error_msg "Can not be combined -l and -L"
+                linter_statistics=2
+                ;;
             -m | --mime-type) b_mime_type_limit=true ;;
             -n | --no-linter) b_lint_files=false ;;
             -N | --nocache) b_use_cache=false ;;
@@ -940,7 +947,7 @@ show_help() {
     # -S, --statistics        Store linting times in SQL DB
     #region help text
     echo "
-Usage: olint [-h] [-c] [-C] [-d] [-e] [-E] [-l] [-m] [-n] [-N] [-p] [-P] [-s]
+Usage: olint [-h] [-c] [-C] [-d] [-e] [-E] [-l/-L] [-m] [-n] [-N] [-p] [-P] [-s]
                 [-u time] [-v verbosity_lvl] [-z] [-Z] [number]
 
 Lint all files recursively in reverse chronological order.
@@ -950,15 +957,17 @@ Available options:
 -h, --help              Print this help and exit
 -m, --mime-type         When scanning files, only identify by mime-type
 -n, --no-linter         Lists all files without a matching linter
--o, --only-proj-lint    toggles 'Only run project linters'
--p, --no-proj-lint      toggles 'Skip all project linters'
--P, --force-proj-lint   Always run proj-linters
--l, --linter-stats      Listing how many times each linter is used in this run
+-o, --only-proj-lint    Only run project linters
+-p, --no-proj-lint      Skip all project linters
+-P, --force-proj-lint   Always run proj-linters, even if not needed
+-l, --skip-statistics   Do not collect linter statistics at all
+-L  --stats-with-time   Collect usage time for each linter in statistics
 -v, --verbose           Set verbosity level, level must also be supplied
                         1 - Show gathering of available plugins & nr of files linted
                         2 - List files already linted (cached)
                         Higher levels are mostly for debugging
 -C, --continue          Continue with the next file after linter issues are found
+number                  Only check files changed in the last number hours
 
 --  Display configuration  --
 -c, --config            List supported and used linters and excluded file patterns
@@ -979,8 +988,6 @@ $(display_hidden_excludes)
 -z, --zapcache          Remove cache file if present, then exit
 -Z, --zaprun            First remove cache if present, then continue
 
-number                  Only check files changed in the last number hours
-
 If a file is successfully linted, the filename and time of the latest change
 are saved in a cache '$bname_cache'. Next time olint is run, files that have
 not been changed are skipped.
@@ -988,7 +995,7 @@ not been changed are skipped.
 If an '$bname_proj_config' is found, it is read after the global config file.
 This can be used to define plugins, filenames, prefixes and suffixes
 that should be excluded for this project.
-See README.md for more information about this file.
+See <olint>/README.md for more information.
 "
     #endregion
 }
@@ -1024,12 +1031,12 @@ display_config() {
     # echo "---  Display configuration  ---"
     # echo
     # echo "== State variables =="
-    echo " verbosity_lvl:     $verbosity_lvl"
-    echo " cache update:      $t_cashe_interval seconds"
-    echo " ignore_project:    $ignore_project"
+    echo " verbosity_lvl:       $verbosity_lvl"
+    echo " cache update:        $t_cashe_interval seconds"
+    echo " ignore_project:      $ignore_project"
     echo " b_mime_type_limit:   $b_mime_type_limit"
     echo " b_lint_continue:     $b_lint_continue"
-    echo " olint_plugin_dir:  $olint_plugin_dir"
+    echo " olint_plugin_dir:    $olint_plugin_dir"
     echo " b_proj_linters_skip: $b_proj_linters_skip"
     echo " b_proj_linters_only: $b_proj_linters_only"
     echo
@@ -1221,17 +1228,31 @@ show_linter_statistics() {
         return
     fi
     echo "Linter usage:"
-    echo "Name                count   time"
-    #  Not using process substitution, iSH has no /dev/fd
-    sorted_usage="$(
-        for key in "${!linter_usage_count[@]}"; do
-            echo "${linter_usage_count[$key]} $key ${linter_usage_time["$key"]}"
-        done | sort -k3,3nr -k1,1nr -k2,2
-    )"
-    while read -r count name t; do
-        # printf '  %-17s %4s    %s\n' "$name" "$count" "${linter_usage_time["$name"]}"
-        printf '  %-17s %4s    %s\n' "$name" "$count" "$t"
-    done <<<"$sorted_usage"
+    if [[ $linter_statistics -eq 2 ]]; then
+        echo "Name                count   time"
+        #  Not using process substitution, iSH has no /dev/fd
+        sorted_usage="$(
+            for key in "${!linter_usage_count[@]}"; do
+                echo "${linter_usage_count[$key]} $key ${linter_usage_time["$key"]}"
+            done | sort -k3,3nr -k1,1nr -k2,2
+        )"
+        while read -r count name t; do
+            # printf '  %-17s %4s    %s\n' "$name" "$count" "${linter_usage_time["$name"]}"
+            printf '  %-17s %4s    %s\n' "$name" "$count" "$t"
+        done <<<"$sorted_usage"
+    else
+        echo "Name                count"
+        #  Not using process substitution, iSH has no /dev/fd
+        sorted_usage="$(
+            for key in "${!linter_usage_count[@]}"; do
+                echo "${linter_usage_count[$key]} $key"
+            done | sort -k1,1nr -k2,2
+        )"
+        while read -r count name; do
+            # printf '  %-17s %4s    %s\n' "$name" "$count" "${linter_usage_time["$name"]}"
+            printf '  %-17s %4s\n' "$name" "$count"
+        done <<<"$sorted_usage"
+    fi
 }
 
 #---------------------------------------------------------------
@@ -1871,18 +1892,20 @@ update_linter_statistics() {
     local t_usu_time_span
 
     log_it "update_linter_statistics() $t_lint_start_d"
-    [[ -n $t_lint_start_d ]] || error_msg "update_linter_statistics() - no param"
 
-    time_span "$t_lint_start_d"
     linter_usage_count["$linter"]=$((${linter_usage_count["$linter"]:-0} + 1))
-    if [[ -n ${linter_usage_time["$linter"]} ]]; then
-        linter_usage_time["$linter"]=$(awk \
-            -v a="${linter_usage_time["$linter"]}" \
-            -v b="$t_usu_time_span" \
-            'BEGIN { print a + b }')
-    else
-        linter_usage_time["$linter"]="$t_usu_time_span"
-    fi
+    [[ $linter_statistics -eq 2 ]] && {
+        [[ -n $t_lint_start_d ]] || error_msg "update_linter_statistics() - no param"
+        time_span "$t_lint_start_d"
+        if [[ -n ${linter_usage_time["$linter"]} ]]; then
+            linter_usage_time["$linter"]=$(awk \
+                -v a="${linter_usage_time["$linter"]}" \
+                -v b="$t_usu_time_span" \
+                'BEGIN { print a + b }')
+        else
+            linter_usage_time["$linter"]="$t_usu_time_span"
+        fi
+    }
 }
 
 lint_file() {
@@ -1900,14 +1923,14 @@ lint_file() {
     #  they are run in the background. Then some code to ensure the
     #  exit code of the linter is captured
     #
-    $b_linter_statistics && safe_now t_lint_start_d
+    [[ $linter_statistics -eq 2 ]] && safe_now t_lint_start_d
     eval "${linter_cmd["$linter"]}" "$fname" >"$f_linter_output" 2>&1 &
     lint_pid=$!
     wait "$lint_pid"
     lint_exit_status=$?
 
     if [[ "$lint_exit_status" -eq 0 ]]; then
-        $b_linter_statistics && update_linter_statistics "$t_lint_start_d"
+        [[ $linter_statistics -gt 0 ]] && update_linter_statistics "$t_lint_start_d"
         return 0
     else
         printf '\n\n' # start error display on new line
@@ -2054,14 +2077,14 @@ lint_proj() {
     #  they are run in the background. Then some code to ensure the
     #  exit code of the linter is captured
     #
-    $b_linter_statistics && safe_now t_lint_start_d
+    [[ $linter_statistics -eq 2 ]] && safe_now t_lint_start_d
     eval "${proj_linter_cmd["$linter"]}" >"$f_linter_output" 2>&1 &
     lint_pid=$!
     wait "$lint_pid"
     lint_exit_status=$?
 
     if [[ "$lint_exit_status" -eq 0 ]]; then
-        $b_linter_statistics && update_linter_statistics "$t_lint_start_d"
+        [[ $linter_statistics -gt 0 ]] && update_linter_statistics "$t_lint_start_d"
         show_linter_time "proj"
         proj_lint_tasks_completed+=" $linter"
         return 0
@@ -2080,6 +2103,7 @@ lint_proj() {
         fi
         handle_linting_error
     fi
+    $b_lint_continue && return 0
     return 1
 }
 
@@ -2420,5 +2444,5 @@ $b_use_cache || {
 cache_read ### R
 trap 'handle_ctrl_c INT' INT
 process_file_tree
-$b_linter_statistics && show_linter_statistics
+[[ $linter_statistics -gt 0 ]] && show_linter_statistics
 env_cleanup 0
