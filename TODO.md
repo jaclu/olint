@@ -5,6 +5,13 @@ plugin_cmd_actual - if defined also check this, and use as plugin commandproj_pl
 
 investigate in oxlint as oxlint as a much faster alternative than rslint
 
+## Termux
+
+```shell
+pip install bandit bashate codespell mypy pycodestyle pyflakes pylint \
+    pymarkdownlnt pyright pycodestyle pyflakes
+```
+
 ## filetypes only handled by proj linters
 
 Are mistakenly listed as --no-linter - should not be
